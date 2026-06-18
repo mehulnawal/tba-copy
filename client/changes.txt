@@ -1,0 +1,214 @@
+Home Page 
+1. Home Page - Video create - banner 
+
+2. Whatsapp original logo 
+3. FAQ copy from jewell box 
+4. Life time exchange remove from entire website 
+5. why choose TBA section - add a point of Highly customization as per customer and remove      lifetime exchange point
+6. remove logo from banner images 
+7. animate the prime collection option  - Home Page - The animation would be - as someone clicks on the plus button one line will go from ring to the box in animated and the box will open in the right side
+8. announcement section - copy from JewellBox 
+9. increase the font size in live rate 
+10. change the stats section entirely
+11. change the photo in show location section 
+
+12. the logo and content is wrong in why choose us 
+
+Product Details page 
+1. Initially 25 product will be visible - each categories 5 products - without login
+   and if person login then only he can see all the products 
+2. Jewel box = copy - product details page & filter & sort options 
+3. share option on product details page
+4. Color order Yellow, White, Rose
+5. the certificate and hallmark will not come on product details page 
+
+Catalog Page 
+1. Carousel in product display - automatic in every product 
+2. Filter remove option of karat filtration complete 
+3. one each product all th karat option should be visible 
+
+Entire website - 
+1. no lagging on the website 
+2. each image should be load fast 
+3. Highlight in the website in the text 
+4. https://www.semrush.com/analytics/keywordoverview/?q=jewelbox&db=in - check this out and find similar websites which rank at top
+
+Backend - 
+1. if order is more than 10 products then the admin should be able to download the excel sheet of that order
+2. IP address access of customer 
+
+
+Backend Order:
+User Model + DB Connection + Server Setup
+Auth APIs (Signup, Login, Forgot/Reset Password, JWT + Refresh Token)
+JWT Middleware + Role-based Auth (User/Admin)
+User Profile + Address APIs
+Wishlist APIs
+Cart APIs
+Coupon APIs (Admin create/manage + User apply)
+Checkout Preparation
+Banner + Announcement APIs
+Admin User Management
+
+
+Meeting - 
+1. Check all the changes 
+2. Buy hosting 
+3. Razorpay Registration 
+4. Confirm Product Model
+5. Banner video creation 
+6. Category List 
+7. 5 Products from each Category 
+8. Coupon system - for example a coupon should be applied on all products or on a specific conditions only or on a specific product only 
+
+
+Razorpay Registration Required Documents
+
+1. If the Business is a Sole Proprietorship
+* GST Certificate
+* Shops & Establishments Certificate (Shop Act License)
+* Trade License
+* VAT Registration
+* TIN Registration
+* Sales Tax Registration
+
+Bank Account Proof (Any One Required)
+* Current Account Bank Statement (last 3 months)
+* Cancelled Cheque
+* First page of the settlement bank account statement/passbook
+
+Owner's Personal Documents (Required)
+* Owner's PAN Card
+* Any one Government-approved Identity & Address Proof:
+  * Aadhaar Card
+  * Voter ID Card
+  * Driving License
+  * Passport
+---
+
+2. If the Business is a Partnership Firm
+
+Business Documents (Required)
+* Registered Partnership Deed (Mandatory)
+* Partnership Firm PAN Card
+
+Additional Business Registration (Any One Required)
+* GST Certificate
+* Shops & Establishments Certificate (Shop Act License)
+* Trade License
+* VAT Registration
+* TIN Registration
+* Sales Tax Registration
+
+Partnership Firm Bank Account Proof (Any One Required)
+* Current Account Bank Statement (last 3 months)
+* Cancelled Cheque
+* First page of the settlement bank account statement/passbook
+
+Authorized Signatory / Partner Personal Documents (Required)
+* Authorized Signatory's PAN Card
+* Any one Government-approved Identity & Address Proof:
+  * Aadhaar Card
+  * Voter ID Card
+  * Driving License
+  * Passport
+
+Important:
+* The PAN Card and Identity/Address Proof should belong to the same Authorized Signatory.
+---
+
+## Quick Summary
+
+For Sole Proprietorship:
+* Business proof document
+* Business bank account proof
+* Owner's PAN Card
+* Owner's Identity & Address Proof
+
+For Partnership Firm:
+* Registered Partnership Deed
+* Firm PAN Card
+* Business registration proof
+* Partnership firm's bank account proof
+* Authorized Partner's PAN Card
+* Authorized Partner's Identity & Address Proof
+
+
+
+Product Model - 
+https://jewelbox.co.in/twisted-curtsy-padma-cut-diamond-ring/
+
+Basic Info:
+  name = "Twisted Curtsy Padma Cut Diamond Ring"
+  slug (unique) = (URL) twisted-curtsy-padma-cut-diamond-ring
+  sku (unique) = WRI201109YG10100
+  shortDescription =  
+  Grace meets grandeur in the Twisted Curtsy Padma Cut Diamond Ring, a striking solitaire piece that celebrates bold individuality. At its heart lies a rare Padma-cut lab-grown diamond, set in a graceful twist of precious metal that symbolises unity and movement. With its brilliance and sculptural form, this statement ring is ideal for milestone moments, engagements, or simply indulging in a showstopping piece of wearable art. A solitaire that doesn’t whisper, it shines, unapologetically.
+  categories: [String]   ← ["Rings", "Solitaire Rings", "Engagement Rings"]
+  tags: [String]         ← ["Anniversary", "Big Solitaires", "Engagement"]
+  collection: String     ← "Padma Signature Cut"
+  isActive
+  isFeatured
+
+Pricing:
+  basePrice (Number)
+  priceExcludesTax (Boolean)
+  priceBreakup: [{ label, amount }]
+
+Variants:
+  colors: [{ label, dot }]
+  defaultColor
+  metalOptions: [String]
+  defaultMetal
+  ringSizes: [Number]
+  defaultRingSize
+
+Weight & Purity:
+  weightGross = Total jewellery weight (gold + diamond + everything)
+  weightNet   = Sirf gold ka weight
+  purity      = Gold purity (e.g. "14Kt Gold Yellow")
+
+Diamonds:
+  diamondSummary: { totalWeight, totalCount }
+  diamonds: [{
+    shape → ref: DiamondShape
+    count, totalWeight, color, clarity, sizeRange
+  }]
+
+otherStones: [{      - if need to add other stones    
+  name
+  count
+  totalWeight
+}]
+
+Media:
+  media: [{
+    type (image | video)
+    url, alt         ← image only
+    youtubeId, thumbnail  ← video only
+  }]
+
+SEO:
+  metaTitle
+  metaDescription
+
+Timestamps: createdAt, updatedAt
+
+Ready To Ship:
+  readyToShip: [{
+    imageUrl, price, sku
+    metalWeight, diamondWeight
+    purity, ringSize
+  }]
+
+
+
+  Bracelet 
+
+GIA -  IMP
+IGI - IMP
+BIS
+GIC - Certificate - Why choose us 
+SGL
+
+  

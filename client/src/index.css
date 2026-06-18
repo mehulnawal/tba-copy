@@ -1,0 +1,367 @@
+/* ============================================
+   TBA JEWELLERY — GLOBAL STYLES
+   Fonts: Clash Display, Montserrat
+   Colors: Brand palette only
+   ============================================ */
+
+/* ── Local Fonts ── */
+@font-face {
+  font-family: "Clash Display";
+  src:
+    url("/fonts/ClashDisplay_Complete/Fonts/WEB/fonts/ClashDisplay-Variable.woff2")
+      format("woff2"),
+    url("/fonts/ClashDisplay_Complete/Fonts/WEB/fonts/ClashDisplay-Variable.woff")
+      format("woff");
+  font-weight: 200 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Montserrat";
+  src: url("/fonts/Montserrat/Montserrat-VariableFont_wght.woff2")
+    format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Montserrat";
+  src: url("/fonts/Montserrat/Montserrat-Italic-VariableFont_wght.woff2")
+    format("woff2");
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+@import "tailwindcss";
+
+@theme {
+  /* ── Brand Colors ── */
+  --color-bg: #faf9f7; 
+  --color-bg-secondary: #f5efeb; /* Parchment — alternate sections, cards */
+  --color-cream: #dbd5b5; /* Sand Dune — borders, dividers, decorative */
+  --color-cream-light: #f0ede6; /* Lighter parchment — hover states, subtle fills */
+
+  --color-teal: #1c3b48; /* Charcoal Blue — primary headings, nav, CTAs */
+  --color-teal-light: #567c8d; /* Air Force Blue — secondary accents, links */
+  --color-teal-dark: #132831; /* Deeper blue — hover on primary */
+
+  --color-charcoal: #1c1c1c; /* Dark Charcoal — body text, labels */
+  --color-text: #1c1c1c; /* Dark Charcoal — default text */
+  --color-text-secondary: #1c3b48; /* Charcoal Blue — headings, emphasis */
+  --color-text-muted: #6b7a80; /* Muted blue-grey — captions, placeholders */
+  --color-white: #ffffff;
+
+  --color-border: #dbd5b5; /* Sand Dune — default borders */
+  --color-border-subtle: rgba(28, 59, 72, 0.1);
+  --color-border-tertiary: rgba(28, 59, 72, 0.06);
+
+  /* ── Status Colors ── */
+  --color-success: #27ae60;
+  --color-error: #c0392b;
+
+  /* ── Fonts ── */
+  --font-primary: "Clash Display", "Georgia", serif;
+  --font-secondary: "Montserrat", "Helvetica Neue", sans-serif;
+
+  /* ── Type Scale ── */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: clamp(1.75rem, 3vw, 2.25rem);
+  --text-4xl: clamp(2rem, 4vw, 3rem);
+  --text-5xl: clamp(2.5rem, 5vw, 4rem);
+  --text-6xl: clamp(3rem, 7vw, 5.5rem);
+  --text-hero: clamp(3.5rem, 10vw, 9rem);
+
+  /* ── Spacing ── */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
+  --space-32: 8rem;
+
+  /* ── Border Radius ── */
+  --radius-sm: 2px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  /* ── Shadows ── */
+  --shadow-sm: 0 1px 3px rgba(28, 59, 72, 0.06);
+  --shadow-md: 0 4px 16px rgba(28, 59, 72, 0.1);
+  --shadow-lg: 0 8px 32px rgba(28, 59, 72, 0.14);
+  --shadow-cream: 0 4px 24px rgba(219, 213, 181, 0.4);
+
+  /* ── Transitions ── */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 500ms cubic-bezier(0.76, 0, 0.24, 1);
+  --transition-spring: 600ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ── Z-Index ── */
+  --z-base: 1;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-overlay: 300;
+  --z-modal: 400;
+  --z-loader: 900;
+  --z-float: 999;
+
+  /* ── Layout ── */
+  --navbar-height: 72px;
+  --announcement-height: 44px;
+  --gold-bar-height: 48px;
+  --category-bar-height: 48px;
+}
+
+/* ============================================
+   BASE RESET
+   ============================================ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: clip;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-secondary);
+  font-size: var(--text-base);
+  line-height: 1.6;
+}
+
+body.modal-open {
+  overflow: hidden;
+  height: 100vh;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-primary);
+  color: var(--color-teal);
+  line-height: 1.25;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ============================================
+   SCROLLBAR
+   ============================================ */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-cream);
+  border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-teal-light);
+}
+
+.styled-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.styled-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.styled-scrollbar::-webkit-scrollbar-thumb {
+  background-color: var(--color-teal);
+  border-radius: 999px;
+  opacity: 0.6;
+}
+.styled-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-teal-light);
+}
+.styled-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-teal) transparent;
+}
+
+/* ============================================
+   KEYFRAMES
+   ============================================ */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.4);
+    opacity: 0.5;
+  }
+}
+
+@keyframes hotspot-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+/* ============================================
+   LAYOUT UTILITIES
+   ============================================ */
+.container,
+html body .container,
+section .container,
+main .container,
+div .container {
+  max-width: 1320px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  padding-left: 1.5rem !important;
+  padding-right: 1.5rem !important;
+}
+
+@media (max-width: 768px) {
+  .container,
+  html body .container,
+  section .container,
+  main .container,
+  div .container {
+    padding-left: var(--space-4) !important;
+    padding-right: var(--space-4) !important;
+  }
+}
+
+.section-padding,
+html body .section-padding,
+section.section-padding,
+main .section-padding {
+  padding-top: 5rem !important;
+  padding-bottom: 5rem !important;
+}
+
+@media (max-width: 768px) {
+  .section-padding,
+  html body .section-padding,
+  section.section-padding,
+  main .section-padding {
+    padding-top: var(--space-12) !important;
+    padding-bottom: var(--space-12) !important;
+  }
+}
+
+/* ============================================
+   FONT UTILITY CLASSES
+   ============================================ */
+.font-primary {
+  font-family: var(--font-primary);
+}
+.font-secondary {
+  font-family: var(--font-secondary);
+}
+
+/* ============================================
+   REUSABLE COMPONENT CLASSES
+   ============================================ */
+.section-label {
+  font-family: var(--font-secondary);
+  font-size: var(--text-xs);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  display: block;
+  margin-bottom: var(--space-3);
+}
+
+.teal-divider {
+  width: 40px;
+  height: 2px;
+  background: var(--color-teal);
+  display: block;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ============================================
+   SKELETON / LOADING
+   ============================================ */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-cream-light) 25%,
+    var(--color-cream) 50%,
+    var(--color-cream-light) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-sm);
+}
+
+/* ============================================
+   PULSE / HOTSPOT
+   ============================================ */
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--color-success);
+  border-radius: var(--radius-full);
+  animation: pulse-dot 2s ease infinite;
+}
+
+.hotspot-ring {
+  position: absolute;
+  inset: -8px;
+  border: 1px solid var(--color-white);
+  border-radius: var(--radius-full);
+  animation: hotspot-pulse 2s ease-out infinite;
+}

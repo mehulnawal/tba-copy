@@ -1,0 +1,170 @@
+# TBA – The Brilliance Atelier | Cursor Rules
+
+## Project Overview
+This is a luxury jewelry e-commerce platform called "TBA – The Brilliance Atelier".
+Monorepo structure with two folders:
+- `client/` → React + TypeScript + Vite + Tailwind (FRONTEND - already complete, do not touch unless asked)
+- `server/` → Node.js + Express + MongoDB with Mongoose (BACKEND - currently being built)
+
+---
+
+## Tech Stack (Server)
+
+- Runtime: Node.js
+- Framework: Express.js (v5)
+- Database: MongoDB with Mongoose (v9)
+- Auth: JWT — Access Token + Refresh Token strategy (separate secrets for user and admin)
+- File Uploads: Multer + Cloudinary
+- Password Hashing: bcryptjs
+- Environment: dotenv
+- Dev: nodemon
+
+---
+
+## Folder Structure (Server)
+
+```
+server/
+├── app.js                        # Express app setup, middleware, routes registration
+├── src/
+│   ├── server.js                 # DB connect + server listen
+│   ├── config/
+│   │   └── cloudinary.config.js  # Cloudinary setup
+│   ├── constants/                # App-level constants (roles, status enums, etc.)
+│   ├── controllers/              # Route handler logic
+│   ├── database/                 # MongoDB connection logic
+│   ├── middlewares/
+│   │   ├── auth.middleware.js     # User JWT verification
+│   │   ├── admin.middleware.js    # Admin JWT verification + RBAC
+│   │   └── upload.middleware.js   # Multer config for Cloudinary
+│   ├── models/                   # Mongoose models
+│   ├── routes/                   # Express routers
+│   ├── utils/                    # Helper functions (ApiResponse, ApiError, asyncHandler, token utils)
+│   └── validators/               # Request validation logic
+```
+
+---
+
+## B2C Backend Scope (Phase 1) — What to Build
+
+Build ONLY these 9 modules. Nothing outside this scope:
+
+1. **Auth** — User register, login, logout, refresh token, forgot password, reset password
+2. **User / Profile / Address** — Get profile, update profile, manage multiple addresses (add, update, delete, set default)
+3. **Wishlist** — Add to wishlist, remove from wishlist, get wishlist
+4. **Cart** — Add item, remove item, update quantity, get cart, clear cart
+5. **Checkout Preparation** — Get cart summary, apply coupon, select address, get order summary (NO payment gateway — stops here)
+6. **Coupons** — Admin: create, update, delete, list coupons. User: apply coupon (validate + calculate discount)
+7. **Banners** — Admin: upload, update, delete banners. User: get active banners
+8. **Announcement Bar** — Admin: create, update, delete announcements. User: get active announcement
+9. **Admin Auth + RBAC** — Admin login, logout, refresh token. Role-based middleware for admin routes.
+
+## OUT OF SCOPE (Do NOT build):
+- Razorpay or any payment gateway
+- Order processing after checkout prep
+- Reviews/Ratings
+- Vendor management
+- Email notifications
+- OTP verification
+
+---
+
+## Models Already Defined
+
+### User Model (`src/models/user.model.js`) — COMPLETE, DO NOT MODIFY
+- Fields: name, email, password (bcrypt, select:false), phone, role (user/admin/superAdmin/vendor), isBlocked, address (addressSchema), wishlist (ref: Product), resetPasswordToken, resetPasswordExpire
+- Methods: comparePassword(), getResetPasswordToken()
+- Pre-save hook: bcrypt password hashing (salt 12)
+- Address schema fields: fullName, phone, houseNo, area, landmark, city, state, pincode, country
+
+### All Other Models — EMPTY, need to be written
+
+---
+
+## Coding Conventions — STRICTLY FOLLOW
+
+### General
+- CommonJS only: `require()` and `module.exports` — NO ES modules (no import/export)
+- All async route handlers must be wrapped in `asyncHandler` utility
+- Always use `ApiResponse` for success responses and `ApiError` for error responses
+- No `console.log` in production code — use proper error handling
+- All controllers must have try-catch via asyncHandler
+
+### Naming
+- Files: `feature.type.js` → e.g., `auth.controller.js`, `user.routes.js`
+- Variables/functions: camelCase
+- Models/Classes: PascalCase
+- Constants: UPPER_SNAKE_CASE
+- Routes: kebab-case → `/api/v1/auth`, `/api/v1/user`, `/api/v1/admin`
+
+### Response Format — ALWAYS use this structure
+```js
+// Success
+res.status(200).json(new ApiResponse(200, data, "Success message"))
+
+// Error
+throw new ApiError(400, "Error message")
+```
+
+### JWT Strategy
+- User: Access Token (15m) + Refresh Token (7d) — stored in httpOnly cookies
+- Admin: Separate Access Token (15m) + Refresh Token (7d) — stored in httpOnly cookies
+- Secrets from env: JWT_ACCESS_SECRET, JWT_REFRESH_SECRET, JWT_ADMIN_ACCESS_SECRET, JWT_ADMIN_REFRESH_SECRET
+
+### Utils to build first (before anything else)
+1. `src/utils/ApiResponse.js` — Standard success response class
+2. `src/utils/ApiError.js` — Custom error class extending Error
+3. `src/utils/asyncHandler.js` — Async wrapper for controllers
+4. `src/utils/tokenUtils.js` — generateAccessToken, generateRefreshToken, generateAdminAccessToken, generateAdminRefreshToken
+
+---
+
+## Environment Variables Reference
+
+```
+PORT=8000
+NODE_ENV=development
+MONGODB_URI=...
+JWT_ACCESS_SECRET=...
+JWT_ACCESS_EXPIRY=15m
+JWT_REFRESH_SECRET=...
+JWT_REFRESH_EXPIRY=7d
+JWT_ADMIN_ACCESS_SECRET=...
+JWT_ADMIN_ACCESS_EXPIRY=15m
+JWT_ADMIN_REFRESH_SECRET=...
+JWT_ADMIN_REFRESH_EXPIRY=7d
+CLOUDINARY_CLOUD_NAME=...
+CLOUDINARY_API_KEY=...
+CLOUDINARY_API_SECRET=...
+CLIENT_URL=http://localhost:5173
+```
+
+---
+
+## API Route Prefix
+All routes: `/api/v1/`
+
+Examples:
+- `/api/v1/auth/register`
+- `/api/v1/auth/login`
+- `/api/v1/user/profile`
+- `/api/v1/cart`
+- `/api/v1/wishlist`
+- `/api/v1/admin/auth/login`
+- `/api/v1/admin/banners`
+- `/api/v1/admin/coupons`
+
+---
+
+## Important Rules for Cursor
+
+1. **Never touch `client/` folder** unless explicitly told to
+2. **Never add Razorpay** or any payment integration
+3. **Always write complete code** — no placeholders, no "add your logic here" comments
+4. **Always follow the folder structure** — controllers in controllers/, routes in routes/, etc.
+5. **User model is complete** — never rewrite or modify `user.model.js`
+6. **Build utils first** before any controller or route
+7. **Use httpOnly cookies** for storing tokens — never localStorage
+8. **Always validate request body** before processing in controllers
+9. **Admin and User are separate auth flows** — different middleware, different tokens
+10. **One file = one responsibility** — no mixing of route + controller logic in same file
