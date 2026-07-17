@@ -40,6 +40,7 @@ export function AuthModal({ isOpen, onClose }: LuxuryAuthModalProps) {
       script.async = true;
       document.head.appendChild(script);
     };
+    
     if (import.meta.env.VITE_GOOGLE_CLIENT_ID) loadScript("google-identity-services", "https://accounts.google.com/gsi/client");
     if (import.meta.env.VITE_FACEBOOK_APP_ID) loadScript("facebook-jssdk", "https://connect.facebook.net/en_US/sdk.js");
   }, []);
