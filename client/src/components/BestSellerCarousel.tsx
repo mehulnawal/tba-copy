@@ -171,7 +171,7 @@ export default function BestSellerCarousel({
                                             className="flex items-center gap-2 bg-[var(--color-teal)] hover:bg-[var(--color-teal-light)] text-white px-4 py-2.5 rounded-md font-secondary text-xs uppercase tracking-widest transition-all duration-300 ease-out border-none cursor-pointer focus:outline-none focus:ring-1 focus:ring-[var(--color-teal)]"
                                         >
                                             <ShoppingBag className="w-3.5 h-3.5 stroke-[1.75]" />
-                                            <span>Acquire</span>
+                                            <span>Add to Cart</span>
                                         </button>
                                     </div>
                                 </motion.div>

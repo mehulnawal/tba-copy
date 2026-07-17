@@ -52,16 +52,7 @@ export default function BrandPromise() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 max-w-5xl mx-auto">
-                        {/* Card 1 */}
-                        <div className="bg-[var(--color-white)] rounded-lg p-8 border border-[var(--color-border-subtle)] shadow-xs flex flex-col gap-4 reveal-section">
-                            <Shield size={36} className="text-[var(--color-teal)] shrink-0" />
-                            <h3 className="font-primary text-xl font-medium text-[var(--color-teal)]">
-                                BIS Hallmarked
-                            </h3>
-                            <p className="font-secondary text-sm text-[var(--color-text-secondary)] leading-relaxed">
-                                Every jewelry item carries raw certification and physical BIS Hallmark verifying gold purity, guaranteeing official government standards.
-                            </p>
-                        </div>
+
 
                         {/* Card 2 */}
                         <div className="bg-[var(--color-white)] rounded-lg p-8 border border-[var(--color-border-subtle)] shadow-xs flex flex-col gap-4 reveal-section">
@@ -82,17 +73,6 @@ export default function BrandPromise() {
                             </h3>
                             <p className="font-secondary text-sm text-[var(--color-text-secondary)] leading-relaxed">
                                 Engineered and finished by direct generational artisans pulling centuries of traditional jewelry expertise into every detail.
-                            </p>
-                        </div>
-
-                        {/* Card 4 */}
-                        <div className="bg-[var(--color-white)] rounded-lg p-8 border border-[var(--color-border-subtle)] shadow-xs flex flex-col gap-4 reveal-section">
-                            <Shield size={36} className="text-[var(--color-teal)] shrink-0" />
-                            <h3 className="font-primary text-xl font-medium text-[var(--color-teal)]">
-                                Live Gold Pricing
-                            </h3>
-                            <p className="font-secondary text-sm text-[var(--color-text-secondary)] leading-relaxed">
-                                Complete buying transparency. Items prices are calculated directly from market spot-prices, without hidden overhead.
                             </p>
                         </div>
                     </div>

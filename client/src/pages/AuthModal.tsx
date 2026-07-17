@@ -40,7 +40,7 @@ export function AuthModal({ isOpen, onClose }: LuxuryAuthModalProps) {
       script.async = true;
       document.head.appendChild(script);
     };
-    
+
     if (import.meta.env.VITE_GOOGLE_CLIENT_ID) loadScript("google-identity-services", "https://accounts.google.com/gsi/client");
     if (import.meta.env.VITE_FACEBOOK_APP_ID) loadScript("facebook-jssdk", "https://connect.facebook.net/en_US/sdk.js");
   }, []);
@@ -117,18 +117,22 @@ export function AuthModal({ isOpen, onClose }: LuxuryAuthModalProps) {
       return;
     }
     window.FB.init({ appId: import.meta.env.VITE_FACEBOOK_APP_ID, cookie: true, xfbml: false, version: "v22.0" });
-    window.FB.login(async (response) => {
-      const accessToken = response.authResponse?.accessToken;
-      if (!accessToken) return showToast("Facebook sign-in was cancelled or unavailable.", "error");
-      setIsSubmitting(true);
-      try {
-        setUser(await authApi.facebookLogin(accessToken));
-        showToast("Signed in with Facebook", "success");
-        onClose();
-        navigate("/");
-      } catch (error) {
-        showToast(error instanceof ApiRequestError ? error.message : "Facebook sign-in failed. Please try again.", "error");
-      } finally { setIsSubmitting(false); }
+
+    // Fixed: Passing a plain synchronous callback to Facebook SDK
+    window.FB.login((response) => {
+      (async () => {
+        const accessToken = response.authResponse?.accessToken;
+        if (!accessToken) return showToast("Facebook sign-in was cancelled or unavailable.", "error");
+        setIsSubmitting(true);
+        try {
+          setUser(await authApi.facebookLogin(accessToken));
+          showToast("Signed in with Facebook", "success");
+          onClose();
+          navigate("/");
+        } catch (error) {
+          showToast(error instanceof ApiRequestError ? error.message : "Facebook sign-in failed. Please try again.", "error");
+        } finally { setIsSubmitting(false); }
+      })();
     }, { scope: "public_profile,email" });
   };
 

@@ -115,7 +115,7 @@ const TESTIMONIALS: Testimonial[] = [
         review: "TBA's craftsmanship is unmatched. The 22K necklace for my daughter's wedding was breathtaking — every detail perfect."
     },
     {
-        id: "2", name: "Rajan Shah", location: "Surat", rating: 5, avatar: AVATAR_ASSETS.a2,
+        id: "2", name: "Rajan Shah", location: "Surat", rating: 4.5, avatar: AVATAR_ASSETS.a2,
         review: "Transparent pricing, BIS certified, delivered on time. TBA has completely changed how I buy gold jewelry."
     },
     {
