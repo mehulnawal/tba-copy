@@ -190,7 +190,6 @@ export default function HomePage() {
 
     // const lenis = useLenis();
 
-    const [isCartOpen, setIsCartOpen] = useState(false);
     const [isWishlistOpen, setIsWishlistOpen] = useState(false);
     const [showCheckoutSuccess, setShowCheckoutSuccess] = useState(false);
 
@@ -270,7 +269,6 @@ export default function HomePage() {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === "Escape") {
                 setIsPrimeModalOpen(false);
-                setIsCartOpen(false);
                 setIsWishlistOpen(false);
                 setShowCheckoutSuccess(false);
             }
@@ -280,9 +278,8 @@ export default function HomePage() {
     }, []);
 
     // Update body scroll blocking depending on modals status
-    // Update body scroll blocking depending on modals status
     useEffect(() => {
-        const shouldLock = isPrimeModalOpen || isCartOpen || isWishlistOpen || showCheckoutSuccess || isAuthOpen;
+        const shouldLock = isPrimeModalOpen || isWishlistOpen || showCheckoutSuccess || isAuthOpen;
 
         if (shouldLock) {
             // If you use Lenis scroll provider, uncomment the line below:
@@ -300,7 +297,7 @@ export default function HomePage() {
             document.body.style.overflow = "unset";
             document.body.classList.remove("modal-open");
         };
-    }, [isPrimeModalOpen, isCartOpen, isWishlistOpen, showCheckoutSuccess, isAuthOpen]);
+    }, [isPrimeModalOpen, isWishlistOpen, showCheckoutSuccess, isAuthOpen]);
 
     // Hero navigate handlers
     const nextHeroSlide = () => {
@@ -361,19 +358,10 @@ export default function HomePage() {
         try {
             await addToCartMutation.mutateAsync(productToCartPayload(product, price));
             showToast("Added to cart", "success");
-            setIsCartOpen(true);
         } catch (error) {
             const message = error instanceof ApiRequestError ? error.message : "Failed to add to cart";
             showToast(message, "error");
         }
-    };
-
-    const removeFromCart = async (itemId: string) => {
-        showToast("Manage cart from the cart page", "info");
-    };
-
-    const updateQuantity = async (itemId: string, delta: number) => {
-        showToast("Manage cart from the cart page", "info");
     };
 
     const toggleWishlist = async (product: Product) => {
@@ -403,28 +391,6 @@ export default function HomePage() {
         return apiWishlist?.some((item) => item.productId === productId) || false;
     };
 
-    const cartDrawerItems = useMemo(() => {
-        if (!apiCart?.items) return [];
-        return apiCart.items.map((item) => ({
-            product: {
-                id: item.productId,
-                name: item.name,
-                category: item.category,
-                karat: "",
-                image: item.image,
-                tags: [],
-            },
-            quantity: item.quantity,
-        }));
-    }, [apiCart]);
-
-    const cartSubtotal = cartDrawerItems.reduce((total, item) => {
-        return total + getProductPrice(item.product) * item.quantity;
-    }, 0);
-
-    const cartDiscount = 0;
-    const cartTotalAmount = Math.max(0, cartSubtotal - cartDiscount);
-
     // Prime look switching
     const handleLookChange = (index: number) => {
         setCurrentLookIndex(index);
@@ -433,12 +399,6 @@ export default function HomePage() {
     const openHotspotModal = (hotspot: PrimeHotspot) => {
         setSelectedHotspot(hotspot);
         setIsPrimeModalOpen(true);
-    };
-
-    // Checkout submission handler
-    const handleCheckoutProcess = () => {
-        setIsCartOpen(false);
-        setShowCheckoutSuccess(true);
     };
 
     return (
@@ -804,231 +764,11 @@ export default function HomePage() {
                 {/* Footer */}
                 <Footer onCategoryChange={setActiveCategory} />
 
-                {/* SECTION G: SEO STRUCTURAL DIRECTORY DIRECT LINK GROUPS */}
-                {/* <section className="bg-[var(--color-white)] border-t border-[var(--color-border-subtle)] pt-2" id="seo-links-directory">
-                    <div className="container max-w-5xl flex flex-col gap-8">
-
-
-                        <div className="flex flex-col gap-2 reveal-section">
-                            <h5 className="font-secondary font-semibold text-xs tracking-wider text-[var(--color-teal)] uppercase">
-                                Top Searches in Gold Jewelry
-                            </h5>
-                            <p className="font-secondary text-xs text-[var(--color-text-muted)] leading-relaxed">
-                                {["Gold Jewellery", "Gold Rings", "Gold Earrings", "Gold Necklaces", "Gold Pendants", "Gold Bangles", "Gold Bracelets", "Women Gold Rings", "Men's Gold Chains", "Dailywear Gold Earrings", "Dailywear Gold Bangles"].map((term, i, arr) => (
-                                    <span key={term}>
-                                        <a href="#featured-collection-section" className="text-[var(--color-teal)] hover:underline active:opacity-85" onClick={() => { setActiveCategory("All"); setSearchQuery(term); }}>{term}</a>
-                                        {i < arr.length - 1 && " | "}
-                                    </span>
-                                ))}
-                            </p>
-                        </div>
-
-                        <div className="flex flex-col gap-2 border-t border-[var(--color-border-subtle)] pt-6 reveal-section">
-                            <h5 className="font-secondary font-semibold text-xs tracking-wider text-[var(--color-teal)] uppercase">
-                                Top Searches in Diamond Jewelry
-                            </h5>
-                            <p className="font-secondary text-xs text-[var(--color-text-muted)] leading-relaxed">
-                                {["Diamond Jewellery", "Diamond Rings", "Diamond Earrings", "Diamond Pendants", "Diamond Necklaces", "Diamond Bangles", "Diamond Bracelets", "Women Diamond Rings", "Men's Diamond Bracelets"].map((term, i, arr) => (
-                                    <span key={term}>
-                                        <a href="#featured-collection-section" className="text-[var(--color-teal)] hover:underline active:opacity-85" onClick={() => { setActiveCategory("All"); setSearchQuery(term); }}>{term}</a>
-                                        {i < arr.length - 1 && " | "}
-                                    </span>
-                                ))}
-                            </p>
-                        </div>
-
-                        <div className="flex flex-col gap-2 border-t border-[var(--color-border-subtle)] pt-6 reveal-section">
-                            <h5 className="font-secondary font-semibold text-xs tracking-wider text-[var(--color-teal)] uppercase">
-                                Women's Jewelry Collection
-                            </h5>
-                            <p className="font-secondary text-xs text-[var(--color-text-muted)] leading-relaxed">
-                                {["Jewellery For Women", "Rings for Women", "Earrings for Women", "Bangles for Women", "Necklaces for Women", "Bracelets for Women", "Pendants for Women"].map((term, i, arr) => (
-                                    <span key={term}>
-                                        <a href="#featured-collection-section" className="text-[var(--color-teal)] hover:underline active:opacity-85" onClick={() => { setActiveCategory("All"); setSearchQuery(term); }}>{term}</a>
-                                        {i < arr.length - 1 && " | "}
-                                    </span>
-                                ))}
-                            </p>
-                        </div>
-
-                        <div className="flex flex-col gap-2 border-t border-[var(--color-border-subtle)] pt-6 reveal-section">
-                            <h5 className="font-secondary font-semibold text-xs tracking-wider text-[var(--color-teal)] uppercase">
-                                Bridal & Occasion
-                            </h5>
-                            <p className="font-secondary text-xs text-[var(--color-text-muted)] leading-relaxed">
-                                {["Bridal Jewellery", "Wedding Rings", "Engagement Rings", "Anniversary Gifts", "Festival Collection", "Gift Jewelry"].map((term, i, arr) => (
-                                    <span key={term}>
-                                        <a href="#featured-collection-section" className="text-[var(--color-teal)] hover:underline active:opacity-85" onClick={() => { setActiveCategory("All"); setSearchQuery(term); }}>{term}</a>
-                                        {i < arr.length - 1 && " | "}
-                                    </span>
-                                ))}
-                            </p>
-                        </div>
-
-                    </div>
-                </section> */}
-
             </main >
 
 
             {/* Floating buttons */}
             <FloatingButtons />
-
-            {/* Add to cart drawer */}
-            <AnimatePresence>
-                {isCartOpen && (
-                    <>
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setIsCartOpen(false)}
-                            className="fixed inset-0 bg-black/60 z-[var(--z-overlay)] cursor-pointer"
-                        />
-
-                        {/* Cart Drawer */}
-                        <motion.div
-                            initial={{ x: "100%" }}
-                            animate={{ x: 0 }}
-                            exit={{ x: "100%" }}
-                            transition={{ type: "spring", damping: 25, stiffness: 220 }}
-                            className="fixed top-0 right-0 bottom-0 w-full md:w-[450px] bg-white z-[var(--z-overlay)] flex flex-col border-l border-[var(--color-border-subtle)] shadow-xl"
-                            id="shopping-cart-drawer"
-                        >
-                            {/* Header */}
-                            <div className="p-6 border-b border-[var(--color-border-subtle)] flex justify-between items-center">
-                                <div className="flex items-center gap-2.5">
-                                    <ShoppingBag size={20} className="text-[var(--color-teal)]" />
-                                    <span className="font-primary font-bold text-xl text-[var(--color-teal)]">My Atelier Bag</span>
-                                    <span className="bg-[var(--color-cream-light)] text-[var(--color-teal)] text-xs font-mono font-bold px-2 py-0.5 rounded-sm">
-                                        {cartDrawerItems.reduce((sum, item) => sum + item.quantity, 0)} items
-                                    </span>
-                                </div>
-                                <button
-                                    onClick={() => setIsCartOpen(false)}
-                                    className="text-[var(--color-teal)] hover:text-red-500 cursor-pointer p-1.5 transition-colors border-none bg-transparent"
-                                >
-                                    <X size={20} />
-                                </button>
-                            </div>
-
-                            {/* Items Panel */}
-                            <div className="flex-1 overflow-y-auto p-4 md:p-6 no-scrollbar flex flex-col gap-4">
-                                {cartDrawerItems.length === 0 ? (
-                                    <div className="my-auto flex flex-col items-center gap-4 text-center py-10">
-                                        <BagIcon size={48} className="text-[var(--color-border)] stroke-[1.25px]" />
-                                        <p className="font-primary italic text-lg text-[var(--color-teal)]">Your bag has yet to hold brilliance</p>
-                                        <button
-                                            onClick={() => {
-                                                setIsCartOpen(false);
-                                                const collectionsSec = document.getElementById("featured-collection-section");
-                                                if (collectionsSec) collectionsSec.scrollIntoView({ behavior: "smooth" });
-                                            }}
-                                            className="bg-[var(--color-teal)] text-white hover:bg-[var(--color-cream)] hover:text-[var(--color-teal)] font-secondary text-[11px] font-bold tracking-widest uppercase py-3.5 px-8 rounded-sm cursor-pointer transition-colors border-none"
-                                        >
-                                            Browse Best Sellers
-                                        </button>
-                                    </div>
-                                ) : (
-                                    cartDrawerItems.map((item) => {
-                                        const priceEst = getProductPrice(item.product);
-                                        return (
-                                            <div
-                                                key={item.product.id}
-                                                className="flex gap-4 border border-[var(--color-border-subtle)] p-4 rounded-lg bg-[var(--color-bg-secondary)] shadow-2xs relative group"
-                                            >
-                                                {/* Image aspect */}
-                                                <div className="w-18 h-22 bg-zinc-200 rounded-sm overflow-hidden shrink-0">
-                                                    <img
-                                                        src={item.product.image}
-                                                        alt={item.product.name}
-                                                        className="w-full h-full object-cover object-center"
-                                                    />
-                                                </div>
-
-                                                {/* Title weights */}
-                                                <div className="flex-1 flex flex-col justify-between py-0.5">
-                                                    <div>
-                                                        <h5 className="font-primary text-sm font-semibold text-[var(--color-teal)]">{item.product.name}</h5>
-                                                        <span className="font-secondary text-[10px] text-[var(--color-text-muted)] block">
-                                                            {item.product.karat} Gold · {item.product.category}
-                                                        </span>
-                                                    </div>
-
-                                                    {/* Quantities switchers */}
-                                                    <div className="flex items-center justify-between mt-2">
-                                                        <div className="flex items-center gap-2 border border-[var(--color-border)] bg-white rounded-full p-1 scale-90 -ml-2">
-                                                            <button
-                                                                onClick={() => updateQuantity(item.product.id, -1)}
-                                                                className="w-5 h-5 rounded-full hover:bg-neutral-100 flex items-center justify-center cursor-pointer border-none bg-transparent"
-                                                            >
-                                                                <Minus size={10} />
-                                                            </button>
-                                                            <span className="font-mono text-xs font-bold text-[var(--color-teal)] px-1">{item.quantity}</span>
-                                                            <button
-                                                                onClick={() => updateQuantity(item.product.id, 1)}
-                                                                className="w-5 h-5 rounded-full hover:bg-neutral-100 flex items-center justify-center cursor-pointer border-none bg-transparent"
-                                                            >
-                                                                <Plus size={10} />
-                                                            </button>
-                                                        </div>
-
-                                                        <div className="font-mono text-xs font-bold text-[var(--color-teal)]">
-                                                            ₹{(priceEst * item.quantity).toLocaleString("en-IN")}
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                {/* Delete Action button */}
-                                                <button
-                                                    onClick={() => removeFromCart(item.product.id)}
-                                                    className="absolute top-2 right-2 text-[var(--color-text-muted)] hover:text-red-500 transition-colors p-1 bg-transparent border-none cursor-pointer"
-                                                    aria-label="Remove item"
-                                                >
-                                                    <Trash2 size={14} />
-                                                </button>
-                                            </div>
-                                        );
-                                    })
-                                )}
-                            </div>
-
-                            {/* Totals checkout Summary Panel (Only if items exist) */}
-                            {cartDrawerItems.length > 0 && (
-                                <div className="p-6 border-t border-[var(--color-border-subtle)] bg-[var(--color-bg-secondary)] flex flex-col gap-4">
-                                    <div className="flex flex-col gap-2 font-secondary text-xs text-[var(--color-text-secondary)]">
-                                        <div className="flex justify-between">
-                                            <span className="text-[var(--color-text-muted)]">Atelier subtotal:</span>
-                                            <span>₹{cartSubtotal.toLocaleString("en-IN")}</span>
-                                        </div>
-                                        {cartDiscount > 0 && (
-                                            <div className="flex justify-between text-emerald-600 font-semibold">
-                                                <span>VIP Campaign Discount (5% Off):</span>
-                                                <span>- ₹{cartDiscount.toLocaleString("en-IN")}</span>
-                                            </div>
-                                        )}
-                                        <div className="flex justify-between">
-                                            <span className="text-[var(--color-text-muted)]">Insured shipping:</span>
-                                            <span className="text-emerald-600 font-semibold">FREE</span>
-                                        </div>
-                                        <div className="flex justify-between border-t border-[var(--color-border-subtle)] pt-3 font-primary text-base text-[var(--color-teal)] font-bold">
-                                            <span>Grand Total:</span>
-                                            <span className="font-mono">₹{cartTotalAmount.toLocaleString("en-IN")}</span>
-                                        </div>
-                                    </div>
-
-                                    <button
-                                        onClick={handleCheckoutProcess}
-                                        className="w-full bg-[var(--color-teal)] hover:bg-[var(--color-cream)] text-white hover:text-[var(--color-teal)] font-secondary text-[11px] font-bold tracking-widest uppercase py-4 rounded-sm transition-all shadow-md cursor-pointer flex items-center justify-center gap-2 border-none"
-                                    >
-                                        Proceed To Atelier Checkout <ArrowRight size={14} />
-                                    </button>
-                                </div>
-                            )}
-                        </motion.div>
-                    </>
-                )}
-            </AnimatePresence>
 
             {/* Wishlist drawer */}
             <AnimatePresence>
@@ -1152,138 +892,25 @@ export default function HomePage() {
                 )}
             </AnimatePresence>
 
-            {/* DYNAMIC PRIME LOOK INTERACTIVE DIALOG MODAL (JOCKEY-STYLE DETAILS POPUP) */}
-            {/* <AnimatePresence>
-                {isPrimeModalOpen && selectedHotspot && (
-                    <>
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setIsPrimeModalOpen(false)}
-                            className="fixed inset-0 bg-black/60 z-[var(--z-modal)] cursor-pointer"
-                        />
-
-                        <motion.div
-                            initial={{ scale: 0.94, opacity: 0, x: "-50%", y: "-40%" }}
-                            animate={{ scale: 1, opacity: 1, x: "-50%", y: "-50%" }}
-                            exit={{ scale: 0.94, opacity: 0, x: "-50%", y: "-40%" }}
-                            transition={{ duration: 0.28, ease: [0.34, 1.56, 0.64, 1] }}
-                            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[var(--z-modal)] bg-white rounded-xl shadow-2xl p-6 md:p-8 w-[92%] max-w-[480px]"
-                            id="prime-lookbook-modal"
-                        >
-                            <div className="flex justify-between items-center mb-6 border-b border-[var(--color-border-subtle)] pb-4">
-                                <div className="flex items-center gap-2">
-                                    <Sparkles size={16} className="text-[var(--color-cream)]" />
-                                    <span className="font-secondary font-semibold text-xs tracking-wider uppercase text-[var(--color-text-muted)]">
-                                        Atelier Spotlight Look
-                                    </span>
-                                </div>
-                                <button
-                                    onClick={() => setIsPrimeModalOpen(false)}
-                                    className="text-[var(--color-teal)] hover:text-red-500 cursor-pointer p-1 transition-colors border-none bg-transparent"
-                                >
-                                    <X size={18} />
-                                </button>
-                            </div>
-
-                            <div className="flex gap-5">
-                                <div className="w-24 h-30 bg-neutral-100 rounded-lg overflow-hidden shrink-0 border border-[var(--color-border-subtle)]">
-                                    <img
-                                        src={selectedHotspot.product.image}
-                                        alt={selectedHotspot.product.name}
-                                        className="w-full h-full object-cover object-center"
-                                    />
-                                </div>
-
-                                <div className="flex flex-col justify-between py-1">
-                                    <div>
-                                        <h4 className="font-primary text-xl font-bold text-[var(--color-teal)] leading-snug">
-                                            {selectedHotspot.product.name}
-                                        </h4>
-                                        <span className="font-secondary text-[10px] md:text-xs text-[var(--color-text-muted)] block mt-1.5">
-                                            {selectedHotspot.product.karat} Certified Purity
-                                        </span>
-                                        <p className="font-secondary text-[10px] text-[var(--color-text-muted)] leading-relaxed mt-2.5 max-w-[200px]">
-                                            Handcrafted using certified gold conforming to global hallmark criteria
-                                        </p>
-                                    </div>
-
-                                    <div className="mt-4 flex flex-col gap-1.5">
-                                        <span className="font-mono text-base md:text-lg font-bold text-[var(--color-teal)] leading-none">
-                                            ₹{getProductPrice(selectedHotspot.product).toLocaleString("en-IN")}
-                                        </span>
-                                        <span className="text-[9px] font-secondary text-[var(--color-text-muted)] italic">
-                                            Making charges & tax levies aggregated
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="mt-8 flex gap-3">
-                                <button
-                                    onClick={() => {
-                                        const fullProduct = FEATURED_PRODUCTS.find((p) => p.id === selectedHotspot.product.id) || {
-                                            id: selectedHotspot.product.id,
-                                            name: selectedHotspot.product.name,
-                                            category: "Rings",
-                                            karat: selectedHotspot.product.karat,
-                                            image: selectedHotspot.product.image,
-                                            tags: ["NEW"]
-                                        };
-                                        addToCart(fullProduct);
-                                        setIsPrimeModalOpen(false);
-                                    }}
-                                    className="flex-1 bg-[var(--color-teal)] hover:bg-[var(--color-cream)] text-white hover:text-[var(--color-teal)] font-secondary text-xs uppercase tracking-widest font-bold py-3.5 px-4 rounded-sm transition-all cursor-pointer shadow-sm border-none flex items-center justify-center gap-2"
-                                >
-                                    <BagIcon size={14} /> Add To Bag
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        const fullProduct = FEATURED_PRODUCTS.find((p) => p.id === selectedHotspot.product.id) || {
-                                            id: selectedHotspot.product.id,
-                                            name: selectedHotspot.product.name,
-                                            category: "Rings",
-                                            karat: selectedHotspot.product.karat,
-                                            image: selectedHotspot.product.image,
-                                            tags: ["NEW"]
-                                        };
-                                        toggleWishlist(fullProduct);
-                                        setIsPrimeModalOpen(false);
-                                    }}
-                                    className="px-4 border border-[var(--color-border)] hover:bg-neutral-50 rounded-sm transition-all cursor-pointer bg-white"
-                                    aria-label="Wishlist"
-                                >
-                                    <Heart
-                                        size={16}
-                                        className={isProductInWishlist(selectedHotspot.product.id) ? "fill-red-500 text-red-500" : "text-[var(--color-teal)]"}
-                                    />
-                                </button>
-                            </div>
-
-                        </motion.div>
-                    </>
-                )}
-            </AnimatePresence> */}
-
             {/* DYNAMIC CHECKOUT SUCCESS POPUP MODAL */}
             <AnimatePresence>
                 {showCheckoutSuccess && (
-                    <>
+                    <div className="fixed inset-0 z-[var(--z-modal)] flex items-center justify-center">
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-black/60 z-[var(--z-modal)]"
+                            onClick={() => setShowCheckoutSuccess(false)}
+                            className="absolute inset-0 bg-black/60 cursor-pointer"
                         />
 
                         {/* Success Box Body */}
                         <motion.div
-                            initial={{ scale: 0.94, opacity: 0, x: "-50%", y: "-40%" }}
-                            animate={{ scale: 1, opacity: 1, x: "-50%", y: "-50%" }}
-                            exit={{ scale: 0.94, opacity: 0, x: "-50%", y: "-40%" }}
+                            initial={{ scale: 0.94, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.94, opacity: 0, y: 20 }}
                             transition={{ duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }}
-                            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[var(--z-modal)] bg-white rounded-xl shadow-2xl p-8 max-w-[420px] w-[90%] text-center flex flex-col items-center gap-4"
+                            className="relative bg-white rounded-xl shadow-2xl p-8 max-w-[420px] w-[90%] text-center flex flex-col items-center gap-4 z-10"
                             id="checkout-success-popup"
                         >
                             <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center mb-2">
@@ -1322,7 +949,7 @@ export default function HomePage() {
                                 Conclude Transaction
                             </button>
                         </motion.div>
-                    </>
+                    </div>
                 )}
             </AnimatePresence>
 

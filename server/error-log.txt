@@ -1,0 +1,7 @@
+
+> server@1.0.0 start
+> node src/server.js
+
+◇ injected env (27) from .env // tip: ⌘ suppress logs { quiet: true }
+◇ injected env (0) from .env // tip: ⌁ auth for agents [www.vestauth.com]
+Failed to start server: next is not a function

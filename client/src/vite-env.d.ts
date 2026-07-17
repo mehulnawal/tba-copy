@@ -29,3 +29,8 @@ declare module "*.jpeg" {
   const src: string;
   export default src;
 }
+
+interface Window {
+  google?: { accounts?: { id: { initialize: (config: { client_id: string; callback: (response: { credential?: string }) => void }) => void; prompt: () => void } } };
+  FB?: { init: (config: { appId: string; cookie: boolean; xfbml: boolean; version: string }) => void; login: (callback: (response: { authResponse?: { accessToken?: string } }) => void, options: { scope: string }) => void };
+}

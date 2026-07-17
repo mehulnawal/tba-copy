@@ -1,0 +1,361 @@
+Home Page 
+1. Home Page - Video create - banner 
+
+2. Whatsapp original logo 
+3. FAQ copy from jewell box 
+4. Life time exchange remove from entire website 
+5. why choose TBA section - add a point of Highly customization as per customer and remove      lifetime exchange point
+6. remove logo from banner images 
+7. animate the prime collection option  - Home Page - The animation would be - as someone clicks on the plus button one line will go from ring to the box in animated and the box will open in the right side
+8. announcement section - copy from JewellBox 
+9. increase the font size in live rate 
+10. change the stats section entirely
+11. change the photo in show location section 
+
+12. the logo and content is wrong in why choose us 
+
+Product Details page 
+1. Initially 25 product will be visible - each categories 5 products - without login
+   and if person login then only he can see all the products 
+2. Jewel box = copy - product details page & filter & sort options 
+3. share option on product details page
+4. Color order Yellow, White, Rose
+5. the certificate and hallmark will not come on product details page 
+
+Catalog Page 
+1. Carousel in product display - automatic in every product 
+2. Filter remove option of karat filtration complete 
+3. one each product all th karat option should be visible 
+
+Entire website - 
+1. no lagging on the website 
+2. each image should be load fast 
+3. Highlight in the website in the text 
+4. https://www.semrush.com/analytics/keywordoverview/?q=jewelbox&db=in - check this out and find similar websites which rank at top
+
+Backend - 
+1. if order is more than 10 products then the admin should be able to download the excel sheet of that order
+2. IP address access of customer 
+
+
+Backend Order:
+User Model + DB Connection + Server Setup
+Auth APIs (Signup, Login, Forgot/Reset Password, JWT + Refresh Token)
+JWT Middleware + Role-based Auth (User/Admin)
+User Profile + Address APIs
+Wishlist APIs
+Cart APIs
+Coupon APIs (Admin create/manage + User apply)
+Checkout Preparation
+Banner + Announcement APIs
+Admin User Management
+
+
+Meeting - 
+1. Check all the changes 
+2. Buy hosting 
+3. Razorpay Registration 
+4. Confirm Product Model
+5. Banner video creation 
+6. Category List 
+7. 5 Products from each Category 
+8. Coupon system - for example a coupon should be applied on all products or on a specific conditions only or on a specific product only 
+
+
+Razorpay Registration Required Documents
+
+1. If the Business is a Sole Proprietorship
+* GST Certificate
+* Shops & Establishments Certificate (Shop Act License)
+* Trade License
+* VAT Registration
+* TIN Registration
+* Sales Tax Registration
+
+Bank Account Proof (Any One Required)
+* Current Account Bank Statement (last 3 months)
+* Cancelled Cheque
+* First page of the settlement bank account statement/passbook
+
+Owner's Personal Documents (Required)
+* Owner's PAN Card
+* Any one Government-approved Identity & Address Proof:
+  * Aadhaar Card
+  * Voter ID Card
+  * Driving License
+  * Passport
+---
+
+2. If the Business is a Partnership Firm
+
+Business Documents (Required)
+* Registered Partnership Deed (Mandatory)
+* Partnership Firm PAN Card
+
+Additional Business Registration (Any One Required)
+* GST Certificate
+* Shops & Establishments Certificate (Shop Act License)
+* Trade License
+* VAT Registration
+* TIN Registration
+* Sales Tax Registration
+
+Partnership Firm Bank Account Proof (Any One Required)
+* Current Account Bank Statement (last 3 months)
+* Cancelled Cheque
+* First page of the settlement bank account statement/passbook
+
+Authorized Signatory / Partner Personal Documents (Required)
+* Authorized Signatory's PAN Card
+* Any one Government-approved Identity & Address Proof:
+  * Aadhaar Card
+  * Voter ID Card
+  * Driving License
+  * Passport
+
+Important:
+* The PAN Card and Identity/Address Proof should belong to the same Authorized Signatory.
+---
+
+## Quick Summary
+
+For Sole Proprietorship:
+* Business proof document
+* Business bank account proof
+* Owner's PAN Card
+* Owner's Identity & Address Proof
+
+For Partnership Firm:
+* Registered Partnership Deed
+* Firm PAN Card
+* Business registration proof
+* Partnership firm's bank account proof
+* Authorized Partner's PAN Card
+* Authorized Partner's Identity & Address Proof
+
+
+
+Product Model - 
+https://jewelbox.co.in/twisted-curtsy-padma-cut-diamond-ring/
+
+Basic Info:
+  name = "Twisted Curtsy Padma Cut Diamond Ring"
+  slug (unique) = (URL) twisted-curtsy-padma-cut-diamond-ring
+  sku (unique) = WRI201109YG10100
+  shortDescription =  
+  Grace meets grandeur in the Twisted Curtsy Padma Cut Diamond Ring, a striking solitaire piece that celebrates bold individuality. At its heart lies a rare Padma-cut lab-grown diamond, set in a graceful twist of precious metal that symbolises unity and movement. With its brilliance and sculptural form, this statement ring is ideal for milestone moments, engagements, or simply indulging in a showstopping piece of wearable art. A solitaire that doesn’t whisper, it shines, unapologetically.
+  categories: [String]   ← ["Rings", "Solitaire Rings", "Engagement Rings"]
+  tags: [String]         ← ["Anniversary", "Big Solitaires", "Engagement"]
+  collection: String     ← "Padma Signature Cut"
+  isActive
+  isFeatured
+
+Pricing:
+  basePrice (Number)
+  priceExcludesTax (Boolean)
+  priceBreakup: [{ label, amount }]
+
+Variants:
+  colors: [{ label, dot }]
+  defaultColor
+  metalOptions: [String]
+  defaultMetal
+  ringSizes: [Number]
+  defaultRingSize
+
+Weight & Purity:
+  weightGross = Total jewellery weight (gold + diamond + everything)
+  weightNet   = Sirf gold ka weight
+  purity      = Gold purity (e.g. "14Kt Gold Yellow")
+
+Diamonds:
+  diamondSummary: { totalWeight, totalCount }
+  diamonds: [{
+    shape → ref: DiamondShape
+    count, totalWeight, color, clarity, sizeRange
+  }]
+
+otherStones: [{      - if need to add other stones    
+  name
+  count
+  totalWeight
+}]
+
+Media:
+  media: [{
+    type (image | video)
+    url, alt         ← image only
+    youtubeId, thumbnail  ← video only
+  }]
+
+SEO:
+  metaTitle
+  metaDescription
+
+Timestamps: createdAt, updatedAt
+
+Ready To Ship:
+  readyToShip: [{
+    imageUrl, price, sku
+    metalWeight, diamondWeight
+    purity, ringSize
+  }]
+
+
+
+  Bracelet 
+
+IGI - IMP
+SGL
+GCI Certificate
+
+  
+
+Theek hai, poora scope final order me laga deta hu — teri logic sahi hai (jo already integrated hai use pehle test karo, phir jo backend hai par frontend nahi, phir jo dono missing hai).
+
+## PHASE 1 — Testing (jo already backend+frontend dono wired hai)
+
+Ye sab already connected hai, ab sirf end-to-end test karna hai (real use jaisa — signup se leke checkout summary tak):
+
+1. Auth — register, login, logout, refresh, forgot/reset password, Google login, Facebook login
+2. Profile management (update name/phone, change password)
+3. Address management (add/edit/delete/set default)
+4. Cart (add/update qty/remove/clear)
+5. Wishlist (add/remove)
+6. Banners (homepage display)
+7. Announcements (display)
+8. Coupon apply/remove (checkout ke andar)
+9. Checkout summary (cart+coupon+total calculation sahi aa raha hai ya nahi)
+
+Isme bugs milna normal hai — jaise edge cases (empty cart, invalid coupon, expired coupon, wrong OTP jaisi cheezein) miss ho sakti hai. Ye phase pehle isliye kyunki agar foundation (auth/cart) me hi bug hai, toh upar wala kuch bhi test karna waste hoga.
+
+## PHASE 2 — Backend complete, Frontend baaki
+
+1. **Admin Panel (poora)** — backend me banner/announcement/coupon/user-management CRUD sab bana hai (`admin.routes.js`, `admin.auth.controller.js`, `admin.user.controller.js`), par client folder me koi admin UI hai hi nahi. Ye bada gap hai — abhi client (Danyaal/jo bhi) content update nahi kar sakta bina developer ke.
+
+## PHASE 3 — Dono (backend + frontend) baaki — priority order me
+
+1. **Gold Pricing — security fix + proper backend routing** (sabse pehle, kyunki chhota kaam hai aur abhi live security bug hai — API key frontend me exposed hai). Backend me fetch+store+serve karna, frontend sirf stored value use kare.
+2. **Categories — hardcoded se schema me** (Product jaisa hi treatment, chhota schema + admin CRUD + frontend fetch)
+3. **Order model + Place Order API** (backend) — ye sabse critical hai, checkout ka core
+4. **Razorpay integration** (Order ke saath hi, payment success/failure handle karna)
+5. **OrderConfirmation page ko real order data se connect karna** (abhi pura hardcoded/mock hai — `TBA-8492041`, `Eleanor Vance` jaisa fake data hata ke actual order object use karna)
+6. **Order history + tracking view** (customer apna order dekh sake)
+7. **Production tracking stages** (admin update + customer status view — Order model ka extension)
+8. **Reviews** (submit + display + admin moderation)
+9. **OTP authentication** (agar rakhna hai — abhi tak implement hi nahi hua)
+10. **WhatsApp cart-reminder** (sabse aakhir, launch-blocking nahi hai)
+
+**Logic yahi hai**: Testing pehle taaki foundation pe bharosa ho, phir Admin Panel (kyunki bina iske content hi client khud manage nahi kar sakta — launch ke liye zaroori hai), phir Order→Razorpay→Tracking wala poora payment chain (business-critical), phir Reviews/OTP/WhatsApp (nice-to-have, launch ke baad bhi add ho sakte hai).
+
+Hosting purchase krna baki hai and Razorpay setup is left
+
+
+
+
+
+Testing checklist - 
+
+## PHASE 1 — Customer-facing testing
+### 1. Auth
+- [ ] Register — naya email/password se account banao
+- [ ] Register — **same email dobara** try karo → proper error aana chahiye ("already exists"), crash nahi
+- [ ] Register — **weak password** (8 se kam characters) try karo → validation error dikhna chahiye
+- [ ] Login — sahi credentials se
+- [ ] Login — **galat password** se → clear error message
+- [ ] Login — **non-existent email** se → clear error message
+- [ ] Logout — logout karo, phir refresh karo → logged out hi rehna chahiye
+- [ ] Refresh — login karke browser tab band kiye bina 15+ min wait karo (ya access token expire hone do), phir koi action karo → automatically refresh hoke kaam karna chahiye
+- [ ] Forgot Password — email daalo → email aana chahiye (App Password fix karne ke baad)
+- [ ] Reset Password — email wale link se naya password set karo → naye password se login ho
+- [ ] Google Login — abhi skip kar (frontend incomplete hai)
+- [ ] Facebook Login — abhi skip kar (frontend incomplete hai)
+
+### 2. Profile Management
+- [ ] Name update karo → save ho aur reflect ho
+- [ ] Phone update karo
+- [ ] Change Password — sahi current password se
+- [ ] Change Password — **galat current password** se → error aana chahiye
+
+### 3. Address Management
+- [ ] Naya address add karo (sab fields fill karke)
+- [ ] Address edit karo
+- [ ] Address delete karo
+- [ ] Ek se **zyada address add karke** "Set Default" try karo → sirf ek hi default rehna chahiye
+- [ ] Required field **khali chhod ke** submit karo → validation error aana chahiye
+
+### 4. Cart
+- [ ] Item add karo cart me
+- [ ] Quantity increase/decrease karo
+- [ ] Item remove karo
+- [ ] Poora cart clear karo
+- [ ] **Same item dobara add karo** → quantity update honi chahiye, duplicate entry nahi
+
+### 5. Wishlist
+- [ ] Item add karo wishlist me
+- [ ] Item remove karo
+- [ ] **Login kiye bina** wishlist use karne ki koshish karo → proper redirect/error aana chahiye
+
+### 6. Banners
+- [ ] Homepage pe active banners dikh rahe hai ya nahi (admin se add karne ke baad)
+
+### 7. Announcements
+- [ ] Homepage/top-bar pe active announcement dikh raha hai ya nahi
+
+### 8. Coupon (Admin se ek test coupon banane ke baad)
+- [ ] Valid coupon code apply karo → discount sahi calculate ho
+- [ ] **Invalid/wrong code** try karo → clear error
+- [ ] **Expired coupon** try karo (admin se past date wala banao) → error aana chahiye
+- [ ] **Minimum cart value se kam** amount pe apply karo (agar min-value set hai) → error aana chahiye
+- [ ] Coupon remove karo → total wapas normal ho jaye
+
+### 9. Checkout Summary
+- [ ] Cart total sahi aa raha hai (sab item price × quantity sum)
+- [ ] Coupon discount sahi subtract ho raha hai total se
+- [ ] **Cart khali karke** checkout page pe jao → crash na ho, proper "empty cart" message aaye
+
+---
+
+## PHASE 2 — Admin Panel testing
+
+### 1. Admin Auth
+- [ ] Admin login (jo `.env` me `ADMIN_EMAIL/PASSWORD` set kiya)
+- [ ] Admin logout
+- [ ] Galat admin password → error aana chahiye
+- [ ] **Normal customer account se `/admin` access karne ki koshish karo** → block hona chahiye (security check, zaroori hai)
+
+### 2. Banner Management
+- [ ] Naya banner create karo (title + image URL + link + order)
+- [ ] Banner edit karo
+- [ ] Banner delete karo
+- [ ] Activate/Deactivate toggle karo → homepage pe reflect ho
+- [ ] Reorder karo (agar option hai) → homepage pe order badle
+
+### 3. Announcement Management
+- [ ] Naya announcement create karo
+- [ ] Edit/Delete
+- [ ] Activate/Deactivate → homepage pe reflect ho
+
+### 4. Coupon Management
+- [ ] Naya coupon create karo (Percentage type)
+- [ ] Naya coupon create karo (Fixed amount type)
+- [ ] Edit coupon
+- [ ] Delete coupon
+- [ ] Expiry date wala coupon banao (test karne ke liye Phase 1 ke coupon test me use hoga)
+
+### 5. User Management
+- [ ] **Ye pehle confirm kar ki "Users" tab hai bhi ya nahi** — jaisa maine pehle bola, ye missing lag raha hai sidebar me. Agar nahi hai, ye item skip kar aur agle Codex prompt me add karwana
+- [ ] (Agar bana toh) User list dikhe
+- [ ] Block/Unblock kisi test user ko → us user ka login block ho jaye
+
+
+
+GST - 3%
+Making charges - 850 * gross weight 
+dimaond - 
+
+
+
+Changes - 
+1. If product is removed from Wishlist - the heart should be removed immediately from all pages on that product - curretnly it goes on relaod - it should be instanly 
+

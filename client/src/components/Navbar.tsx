@@ -35,7 +35,7 @@ export default function Navbar({
 
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
   const { data: cartData } = useCart(isAuthenticated);
   const { data: announcementData } = useAnnouncements();
 
@@ -70,8 +70,10 @@ export default function Navbar({
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
 
   const searchContainerRef = useRef<HTMLDivElement>(null);
+  const accountDropdownRef = useRef<HTMLDivElement>(null);
   const lenis = useLenis();
 
 
@@ -115,7 +117,7 @@ export default function Navbar({
     return () => ctx.revert();
   }, [isAnnouncementVisible]);
 
-  // ── Close search dropdown on outside click ────────────────────────────────
+  // ── Close dropdowns on outside click ──────────────────────────────────────
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (
@@ -123,6 +125,12 @@ export default function Navbar({
         !searchContainerRef.current.contains(e.target as Node)
       ) {
         setIsSearchFocused(false);
+      }
+      if (
+        accountDropdownRef.current &&
+        !accountDropdownRef.current.contains(e.target as Node)
+      ) {
+        setIsAccountDropdownOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -180,6 +188,20 @@ export default function Navbar({
           ?.scrollIntoView({ behavior: "smooth" });
       }, 100); // Small timeout gives the page a brief moment to process transitions
     }
+  };
+
+  const handleUserButtonClick = () => {
+    if (isAuthenticated) {
+      setIsAccountDropdownOpen((prev) => !prev);
+    } else {
+      handleAuthAction();
+    }
+  };
+
+  const handleLogoutAction = async () => {
+    setIsAccountDropdownOpen(false);
+    await logout();
+    navigate("/");
   };
 
 
@@ -441,12 +463,48 @@ export default function Navbar({
                   </span>
                 )}
               </button>
-              <button
-                onClick={() => (isAuthenticated ? navigate("/") : handleAuthAction())}
-                className="hover:text-[var(--color-text-muted)] transition-colors p-1.5 cursor-pointer bg-transparent border-none"
-              >
-                <User size={18} className="sm:w-[20px] sm:h-[20px]" />
-              </button>
+
+              {/* Account Dropdown Context Wrapper */}
+              <div ref={accountDropdownRef} className="relative flex items-center">
+                <button
+                  onClick={handleUserButtonClick}
+                  className="hover:text-[var(--color-text-muted)] transition-colors p-1.5 cursor-pointer bg-transparent border-none relative flex items-center"
+                >
+                  <User size={18} className="sm:w-[20px] sm:h-[20px]" />
+                  {isAuthenticated && (
+                    <span className="absolute bottom-1 right-1 w-1.5 h-1.5 bg-[var(--color-teal)] rounded-full border border-[var(--color-white)]" />
+                  )}
+                </button>
+
+                <AnimatePresence>
+                  {isAccountDropdownOpen && isAuthenticated && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 8 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute top-[115%] right-0 bg-[var(--color-white)] shadow-lg border border-[var(--color-border-subtle)] min-w-[160px] py-1.5 z-[var(--z-dropdown)] flex flex-col"
+                    >
+                      <button
+                        onClick={() => {
+                          setIsAccountDropdownOpen(false);
+                          navigate("/account");
+                        }}
+                        className="text-left px-4 py-2 hover:bg-[var(--color-bg-secondary)] text-xs uppercase tracking-wider font-secondary text-[var(--color-text)] transition-colors cursor-pointer bg-transparent border-none w-full"
+                      >
+                        My Account
+                      </button>
+
+                      <button
+                        onClick={handleLogoutAction}
+                        className="text-left px-4 py-2 hover:bg-[var(--color-bg-secondary)] text-xs uppercase tracking-wider font-secondary text-[var(--color-text-muted)] hover:text-[var(--color-teal)] transition-colors cursor-pointer bg-transparent border-none w-full border-t border-[var(--color-border-subtle)]"
+                      >
+                        Log Out
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
           </div>
         </div>
@@ -574,30 +632,6 @@ export default function Navbar({
                     </motion.button>
                   ))}
                 </nav>
-
-                {/* <div className="flex gap-5 mt-8 pt-6 border-t border-white/20">
-                  <button
-                    onClick={onAuthOpen} // <-- Opens AuthModal
-                    className="flex items-center gap-1.5 text-[var(--color-cream)] hover:text-white transition-colors text-xs font-secondary cursor-pointer bg-transparent border-none"
-                  >
-                    <Heart size={16} />
-                    <span>Wishlist</span>
-                  </button>
-                  <button
-                    onClick={onAuthOpen}
-                    className="flex items-center gap-1.5 text-[var(--color-cream)] hover:text-white transition-colors text-xs font-secondary cursor-pointer bg-transparent border-none"
-                  >
-                    <ShoppingBag size={16} />
-                    <span>Cart</span>
-                  </button>
-                  <button
-                    onClick={onAuthOpen}
-                    className="flex items-center gap-1.5 text-[var(--color-cream)] hover:text-white transition-colors text-xs font-secondary cursor-pointer bg-transparent border-none"
-                  >
-                    <User size={16} />
-                    <span>Account</span>
-                  </button>
-                </div> */}
               </div>
             </motion.div>
           </>

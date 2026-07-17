@@ -161,10 +161,10 @@ export default function CheckoutPage() {
 
     // Price Calculations
     const totalQuantityCount = summary.itemCount || items.reduce((acc, current) => acc + current.quantity, 0);
-    const subtotalSum = summary.subtotal || items.reduce((acc, current) => acc + (current.available ? current.price * current.quantity : 0), 0);
+    const subtotalSum = summary.subtotal;
     const calculatedShippingCost = summary.shippingFee ?? (subtotalSum > 25000 || subtotalSum === 0 ? 0 : 150);
     const calculatedTaxPlaceholder = 0;
-    const finalAggregatedTotal = summary.total || (subtotalSum - appliedDiscount + calculatedShippingCost + calculatedTaxPlaceholder);
+    const finalAggregatedTotal = summary.total;
 
     // Pincode validation simulator
     const executePincodeValidation = (e: React.FormEvent) => {
@@ -207,6 +207,19 @@ export default function CheckoutPage() {
 
     const resetCheckoutData = () => {
         window.location.reload();
+    };
+
+    const removeCoupon = async () => {
+        try {
+            const result = await checkoutApi.removeCoupon();
+            setSummary(result.summary);
+            setAppliedDiscount(0);
+            setCouponCode('');
+            setCouponStatus('idle');
+            showToast('Coupon removed', 'success');
+        } catch (error) {
+            showToast(error instanceof ApiRequestError ? error.message : 'Unable to remove coupon', 'error');
+        }
     };
 
     const handlePlaceOrder = () => {
@@ -573,15 +586,13 @@ export default function CheckoutPage() {
                                                     Apply
                                                 </button>
                                             </form>
-                                            <p className="font-secondary text-[8px] text-[var(--color-text-muted)] tracking-wider mt-1 opacity-75">
-                                                Try entering <span className="font-medium underline text-[var(--color-teal)]">JEWEL10</span> for ₹50,000 off or <span className="font-medium underline">GOLD</span> to test an expired code.
-                                            </p>
+                                            {couponStatus === 'valid' && <button type="button" onClick={removeCoupon} className="mt-1 text-[10px] underline text-[var(--color-teal)]">Remove coupon</button>}
 
                                             {/* Coupon Feedback Alerts */}
                                             <AnimatePresence mode="wait">
                                                 {couponStatus === 'valid' && (
                                                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="mt-2 text-[10px] text-emerald-800 font-secondary flex items-center gap-1.5 bg-emerald-50 p-1.5 border border-emerald-100 rounded-xs">
-                                                        <Sparkles className="w-3 h-3 text-emerald-700" /> Code Applied: ₹50,000 discount has been added to your order.
+                                                        <Sparkles className="w-3 h-3 text-emerald-700" /> Code applied. Your order total has been updated.
                                                     </motion.div>
                                                 )}
                                                 {couponStatus === 'invalid' && (

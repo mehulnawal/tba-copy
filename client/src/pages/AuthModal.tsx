@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { X, Mail, Lock, User, ArrowRight } from "lucide-react";
+import { X, Mail, Lock, User, ArrowRight, Eye, EyeOff } from "lucide-react"; // Imported Eye and EyeOff icons
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
@@ -16,7 +16,7 @@ type AuthMode = "login" | "register" | "forgot";
 
 export function AuthModal({ isOpen, onClose }: LuxuryAuthModalProps) {
   const navigate = useNavigate();
-  const { login, register } = useAuth();
+  const { login, register, setUser } = useAuth();
   const { showToast } = useToast();
 
   const [authMode, setAuthMode] = useState<AuthMode>("login");
@@ -24,6 +24,25 @@ export function AuthModal({ isOpen, onClose }: LuxuryAuthModalProps) {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false); // Visibility state for password
+
+  // Reset password visibility when switching between login, register, or forgot
+  useEffect(() => {
+    setShowPassword(false);
+  }, [authMode]);
+
+  useEffect(() => {
+    const loadScript = (id: string, src: string) => {
+      if (document.getElementById(id)) return;
+      const script = document.createElement("script");
+      script.id = id;
+      script.src = src;
+      script.async = true;
+      document.head.appendChild(script);
+    };
+    if (import.meta.env.VITE_GOOGLE_CLIENT_ID) loadScript("google-identity-services", "https://accounts.google.com/gsi/client");
+    if (import.meta.env.VITE_FACEBOOK_APP_ID) loadScript("facebook-jssdk", "https://connect.facebook.net/en_US/sdk.js");
+  }, []);
 
   if (!isOpen) return null;
 
@@ -34,7 +53,7 @@ export function AuthModal({ isOpen, onClose }: LuxuryAuthModalProps) {
     try {
       if (authMode === "forgot") {
         await authApi.forgotPassword(email);
-        showToast("If an account exists, a reset link has been sent", "success");
+        showToast("If an account exists, a secure reset link has been sent", "success");
         setAuthMode("login");
         return;
       }
@@ -65,7 +84,26 @@ export function AuthModal({ isOpen, onClose }: LuxuryAuthModalProps) {
       showToast("Google login is not configured yet", "info");
       return;
     }
-    showToast("Connect Google OAuth credentials in environment variables", "info");
+    if (!window.google?.accounts?.id) {
+      showToast("Google sign-in is still loading. Please try again.", "info");
+      return;
+    }
+    window.google.accounts.id.initialize({
+      client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+      callback: async ({ credential }) => {
+        if (!credential) return showToast("Google did not return an ID token.", "error");
+        setIsSubmitting(true);
+        try {
+          setUser(await authApi.googleLogin(credential));
+          showToast("Signed in with Google", "success");
+          onClose();
+          navigate("/");
+        } catch (error) {
+          showToast(error instanceof ApiRequestError ? error.message : "Google sign-in failed. Please try again.", "error");
+        } finally { setIsSubmitting(false); }
+      },
+    });
+    window.google.accounts.id.prompt();
   };
 
   const handleFacebookAuth = () => {
@@ -73,7 +111,24 @@ export function AuthModal({ isOpen, onClose }: LuxuryAuthModalProps) {
       showToast("Facebook login is not configured yet", "info");
       return;
     }
-    showToast("Connect Facebook OAuth credentials in environment variables", "info");
+    if (!window.FB) {
+      showToast("Facebook sign-in is still loading. Please try again.", "info");
+      return;
+    }
+    window.FB.init({ appId: import.meta.env.VITE_FACEBOOK_APP_ID, cookie: true, xfbml: false, version: "v22.0" });
+    window.FB.login(async (response) => {
+      const accessToken = response.authResponse?.accessToken;
+      if (!accessToken) return showToast("Facebook sign-in was cancelled or unavailable.", "error");
+      setIsSubmitting(true);
+      try {
+        setUser(await authApi.facebookLogin(accessToken));
+        showToast("Signed in with Facebook", "success");
+        onClose();
+        navigate("/");
+      } catch (error) {
+        showToast(error instanceof ApiRequestError ? error.message : "Facebook sign-in failed. Please try again.", "error");
+      } finally { setIsSubmitting(false); }
+    }, { scope: "public_profile,email" });
   };
 
   return (
@@ -200,16 +255,23 @@ export function AuthModal({ isOpen, onClose }: LuxuryAuthModalProps) {
               <label className="font-secondary text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] font-medium block">
                 Password
               </label>
-              <div className="relative">
+              <div className="relative flex items-center">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-muted)]" />
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-[var(--color-bg-secondary)] border border-[var(--color-border)] py-2.5 pl-10 pr-4 font-secondary text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)]/50 focus:outline-none focus:border-[var(--color-teal)] transition-colors"
+                  className="w-full bg-[var(--color-bg-secondary)] border border-[var(--color-border)] py-2.5 pl-10 pr-12 font-secondary text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)]/50 focus:outline-none focus:border-[var(--color-teal)] transition-colors"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 text-[var(--color-text-muted)] hover:text-[var(--color-teal)] transition-colors p-1 cursor-pointer focus:outline-none"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
             </div>
           )}

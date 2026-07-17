@@ -137,7 +137,13 @@ const getOrderSummary = asyncHandler(async (req, res) => {
         (acc, item) => acc + item.price * item.quantity,
         0,
       );
-      discount = calculateCouponDiscount(coupon, subtotal);
+      try {
+        discount = calculateCouponDiscount(coupon, subtotal);
+      } catch {
+        cart.appliedCoupon = null;
+        coupon = null;
+        await cart.save();
+      }
     }
   }
 

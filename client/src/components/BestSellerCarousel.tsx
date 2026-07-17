@@ -2,7 +2,7 @@ import useEmblaCarousel from 'embla-carousel-react';
 import { useCallback, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Heart, ShoppingBag } from 'lucide-react';
+import { Heart, ShoppingBag, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface Props {
     filteredProducts: any[];
@@ -53,8 +53,29 @@ export default function BestSellerCarousel({
         [emblaApi]
     );
 
+    const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
+    const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
+
     return (
-        <div className="w-full">
+        <div className="relative w-full">
+
+            {/* Navigation Buttons */}
+            <button
+                onClick={scrollPrev}
+                className="hidden lg:flex absolute left-[-20px] top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full bg-white shadow-lg border border-[var(--color-border-subtle)] items-center justify-center text-[var(--color-teal)] hover:bg-[var(--color-teal)] hover:text-white transition-all cursor-pointer"
+                aria-label="Previous products"
+            >
+                <ChevronLeft className="w-5 h-5" />
+            </button>
+
+            <button
+                onClick={scrollNext}
+                className="hidden lg:flex absolute right-[-20px] top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full bg-white shadow-lg border border-[var(--color-border-subtle)] items-center justify-center text-[var(--color-teal)] hover:bg-[var(--color-teal)] hover:text-white transition-all cursor-pointer"
+                aria-label="Next products"
+            >
+                <ChevronRight className="w-5 h-5" />
+            </button>
+
             {/* Embla Viewport */}
             <div className="overflow-hidden" ref={emblaRef}>
                 <div className="flex gap-x-6 touch-pan-y">

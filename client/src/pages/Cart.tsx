@@ -10,7 +10,7 @@ import { useToast } from '../context/ToastContext';
 import { ApiRequestError } from '../api/client';
 
 /* ==========================================================================
-   MOCK CART DATA
+   INTERFACE CONFIGURATIONS
    ========================================================================== */
 interface CartItem {
     id: string;
@@ -24,7 +24,7 @@ interface CartItem {
 }
 
 /* ==========================================================================
-   ANIMATION CONFIGURATIONS (Subtle, Cinematic, Luxury-Focused)
+   ANIMATION CONFIGURATIONS
    ========================================================================== */
 const containerVariants = {
     hidden: { opacity: 0 },
@@ -104,9 +104,16 @@ export default function CartPage() {
     const resolvedShippingFee = shippingFee || (subtotal > 25000 || subtotal === 0 ? 0 : 150);
     const estimatedTotal = subtotal - appliedDiscount + resolvedShippingFee;
 
+    // Updated updateQuantity: Quantity 1 hone par remove chalega
     const updateQuantity = async (id: string, delta: number) => {
         const item = cart.find((entry) => entry.id === id);
         if (!item) return;
+
+        // Agar quantity 1 hai aur minus daba rahe hain toh item delete kar do[cite: 6]
+        if (item.quantity === 1 && delta === -1) {
+            await handleRemoveItem(id);
+            return;
+        }
 
         const targetQty = item.quantity + delta;
         if (targetQty < 1) return;
@@ -147,7 +154,6 @@ export default function CartPage() {
         }
     };
 
-    // Static Pincode Validation Simulator
     const handleCheckPincode = (e: React.FormEvent) => {
         e.preventDefault();
         if (!pincode.trim()) return;
@@ -172,9 +178,7 @@ export default function CartPage() {
     const [searchQuery, setSearchQuery] = useState("");
 
     return (
-
         <>
-
             <Navbar
                 onSearchChange={setSearchQuery}
                 activeCategory={activeCategory}
@@ -207,9 +211,6 @@ export default function CartPage() {
 
                     <AnimatePresence mode="wait">
                         {isPageLoading ? (
-                            /* ==========================================================================
-                               SKELETON SHIMMER LOADING FRAMEWORK (Native Design System Integrator)
-                               ========================================================================== */
                             <motion.div
                                 key="loading-skeleton"
                                 variants={containerVariants}
@@ -235,9 +236,6 @@ export default function CartPage() {
                                 </div>
                             </motion.div>
                         ) : cart.length > 0 ? (
-                            /* ==========================================================================
-                               ACTIVE SHOPPING VAULT MATRIX OVERVIEW
-                               ========================================================================== */
                             <motion.div
                                 key="active-cart"
                                 variants={containerVariants}
@@ -302,7 +300,7 @@ export default function CartPage() {
                                                                 <div className="flex items-center border border-[var(--color-border-subtle)] bg-[var(--color-bg-secondary)]">
                                                                     <button
                                                                         type="button"
-                                                                        disabled={item.quantity <= 1 || !item.inStock}
+                                                                        disabled={!item.inStock} // Updated: Item quantity check removed
                                                                         onClick={() => updateQuantity(item.id, -1)}
                                                                         className="p-1.5 text-[var(--color-text-muted)] hover:text-[var(--color-text)] disabled:opacity-30 transition-colors cursor-pointer"
                                                                         aria-label="Reduce units"
@@ -336,7 +334,7 @@ export default function CartPage() {
                                                         <div className="flex items-center border border-[var(--color-border-subtle)] bg-[var(--color-bg-secondary)] shadow-xs">
                                                             <button
                                                                 type="button"
-                                                                disabled={item.quantity <= 1 || !item.inStock}
+                                                                disabled={!item.inStock} // Updated: Item quantity check removed
                                                                 onClick={() => updateQuantity(item.id, -1)}
                                                                 className="p-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] disabled:opacity-30 transition-colors cursor-pointer focus:outline-none"
                                                                 aria-label="Decrement item quantity"
@@ -382,16 +380,13 @@ export default function CartPage() {
                                     </div>
                                 </div>
 
-                                {/* ==========================================================================
-                                ORDER SUMMARY LEDGER SECTION (Right Column Sticky)
-                                ========================================================================== */}
+                                {/* Order Summary Ledger Section */}
                                 <div className="lg:col-span-4 lg:sticky lg:top-8 space-y-6">
                                     <div className="bg-[var(--color-bg-secondary)] border border-[var(--color-border)] p-6 shadow-sm">
                                         <h2 className="font-primary text-xl tracking-wide text-[var(--color-text)] mb-6 font-light pb-2 border-b border-[var(--color-border-subtle)]">
                                             Dossier Summary
                                         </h2>
 
-                                        {/* Financial Flow Line Records */}
                                         <div className="space-y-4 font-secondary text-xs tracking-wide">
                                             <div className="flex justify-between text-[var(--color-text-muted)]">
                                                 <span>Subtotal Selection</span>
@@ -415,7 +410,6 @@ export default function CartPage() {
                                             </div>
                                         </div>
 
-                                        {/* Desktop Checkout Interface Button */}
                                         <button
                                             onClick={() => navigate('/checkout')}
                                             className="w-full mt-6 bg-[var(--color-teal)] text-[var(--color-cream)] font-secondary tracking-[0.2em] text-xs uppercase py-4 px-6 border border-transparent hover:bg-[var(--color-teal-dark)] transition-all duration-300 ease-out focus:outline-none focus:ring-1 focus:ring-[var(--color-teal)] flex items-center justify-center gap-2 cursor-pointer shadow-xs"
@@ -431,9 +425,6 @@ export default function CartPage() {
                                 </div>
                             </motion.div>
                         ) : (
-                            /* ==========================================================================
-                               REFINED CINEMATIC EMPTY VAULT RESPONSE STATE
-                               ========================================================================== */
                             <motion.div
                                 key="empty-cart"
                                 initial={{ opacity: 0, y: 15 }}
@@ -461,12 +452,9 @@ export default function CartPage() {
                             </motion.div>
                         )}
                     </AnimatePresence>
-
                 </div>
 
-                {/* ==========================================================================
-               COMPACT MOBILE STICKY CHECKOUT BAR (Optimized Viewports Interface Overlay)
-               ========================================================================== */}
+                {/* Mobile Sticky Checkout Bar */}
                 {cart.length > 0 && !isPageLoading && (
                     <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-[var(--color-bg)]/95 backdrop-blur-md border-t border-[var(--color-border)] z-[200] p-4 flex items-center justify-between gap-4 shadow-[0_-4px_16px_rgba(28,59,72,0.08)]">
                         <div className="flex flex-col">
@@ -474,7 +462,7 @@ export default function CartPage() {
                                 Est. Total ({totalItemsCount})
                             </span>
                             <span className="font-display text-base font-semibold text-[var(--color-teal)]">
-                                ${estimatedTotal.toLocaleString()}
+                                ₹{estimatedTotal.toLocaleString()}
                             </span>
                         </div>
                         <button
@@ -488,7 +476,6 @@ export default function CartPage() {
             </main>
 
             <Footer onCategoryChange={setActiveCategory} />
-
         </>
     );
 }

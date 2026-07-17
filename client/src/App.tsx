@@ -20,6 +20,12 @@ import { AuthModal } from "./pages/AuthModal";
 import CheckoutPage from "./pages/Checkout";
 import NotFoundPage from "./pages/404Page";
 import OrderConfirmation from "./pages/OrderConfirmation";
+import AdminApp from "./admin/AdminApp";
+import ResetPassword from "./pages/ResetPassword";
+import Account from "./pages/Account";
+
+// Agar aapne Account page bana liya hai, toh use aise import karein:
+// import AccountPage from "./pages/AccountPage"; 
 
 const IS_COMING_SOON = false;
 
@@ -39,6 +45,8 @@ export default function App() {
           <ToastContainer />
           <BrowserRouter>
             <Routes>
+              <Route path="/admin/*" element={<AdminApp />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route
                 path="/"
                 element={
@@ -66,6 +74,15 @@ export default function App() {
                 element={
                   <ProtectedRoute>
                     <CartPage />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/account"
+                element={
+                  <ProtectedRoute>
+                    <Account />
                   </ProtectedRoute>
                 }
               />
