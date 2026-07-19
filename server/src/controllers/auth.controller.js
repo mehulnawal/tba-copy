@@ -14,7 +14,7 @@ const {
   clearCookieOptions,
 } = require("../utils/cookieUtils");
 const { sendEmail } = require("../utils/emailUtils");
-const { verifyGoogleToken } = require("../utils/oauthUtils");
+const { verifyGoogleAccessToken } = require("../utils/oauthUtils");
 const { verifyFacebookToken } = require("../utils/facebookOAuthUtils");
 const { ROLES } = require("../constants/roles");
 
@@ -65,9 +65,15 @@ const register = asyncHandler(async (req, res) => {
 
   setAuthCookies(res, user._id);
 
-  res.status(201).json(
-    new ApiResponse(201, formatUserResponse(user), "Account created successfully"),
-  );
+  res
+    .status(201)
+    .json(
+      new ApiResponse(
+        201,
+        formatUserResponse(user),
+        "Account created successfully",
+      ),
+    );
 });
 
 const login = asyncHandler(async (req, res) => {
@@ -77,7 +83,9 @@ const login = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Email and password are required");
   }
 
-  const user = await User.findOne({ email: email.toLowerCase() }).select("+password");
+  const user = await User.findOne({ email: email.toLowerCase() }).select(
+    "+password",
+  );
 
   if (!user || !(await user.comparePassword(password))) {
     throw new ApiError(401, "Invalid email or password");
@@ -93,9 +101,11 @@ const login = asyncHandler(async (req, res) => {
 
   setAuthCookies(res, user._id);
 
-  res.status(200).json(
-    new ApiResponse(200, formatUserResponse(user), "Logged in successfully"),
-  );
+  res
+    .status(200)
+    .json(
+      new ApiResponse(200, formatUserResponse(user), "Logged in successfully"),
+    );
 });
 
 const logout = asyncHandler(async (req, res) => {
@@ -125,15 +135,27 @@ const refreshToken = asyncHandler(async (req, res) => {
 
   setAuthCookies(res, user._id);
 
-  res.status(200).json(
-    new ApiResponse(200, formatUserResponse(user), "Session refreshed successfully"),
-  );
+  res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        formatUserResponse(user),
+        "Session refreshed successfully",
+      ),
+    );
 });
 
 const getMe = asyncHandler(async (req, res) => {
-  res.status(200).json(
-    new ApiResponse(200, formatUserResponse(req.user), "User fetched successfully"),
-  );
+  res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        formatUserResponse(req.user),
+        "User fetched successfully",
+      ),
+    );
 });
 
 const forgotPassword = asyncHandler(async (req, res) => {
@@ -146,13 +168,15 @@ const forgotPassword = asyncHandler(async (req, res) => {
   const user = await User.findOne({ email: email.toLowerCase() });
 
   if (!user) {
-    res.status(200).json(
-      new ApiResponse(
-        200,
-        null,
-        "If an account exists with this email, a reset link has been sent",
-      ),
-    );
+    res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          null,
+          "If an account exists with this email, a reset link has been sent",
+        ),
+      );
     return;
   }
 
@@ -177,16 +201,21 @@ const forgotPassword = asyncHandler(async (req, res) => {
     user.resetPasswordToken = null;
     user.resetPasswordExpire = null;
     await user.save({ validateBeforeSave: false });
-    throw new ApiError(503, "Unable to send reset email. Please try again later.");
+    throw new ApiError(
+      503,
+      "Unable to send reset email. Please try again later.",
+    );
   }
 
-  res.status(200).json(
-    new ApiResponse(
-      200,
-      null,
-      "If an account exists with this email, a reset link has been sent",
-    ),
-  );
+  res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        null,
+        "If an account exists with this email, a reset link has been sent",
+      ),
+    );
 });
 
 const resetPassword = asyncHandler(async (req, res) => {
@@ -218,23 +247,28 @@ const resetPassword = asyncHandler(async (req, res) => {
 
   setAuthCookies(res, user._id);
 
-  res.status(200).json(
-    new ApiResponse(200, formatUserResponse(user), "Password reset successfully"),
-  );
+  res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        formatUserResponse(user),
+        "Password reset successfully",
+      ),
+    );
 });
 
 const googleLogin = asyncHandler(async (req, res) => {
-  const { idToken } = req.body;
-
-  if (!idToken) {
-    throw new ApiError(400, "Google ID token is required");
+  const { accessToken } = req.body;
+  if (!accessToken) {
+    throw new ApiError(400, "Google access token is required");
   }
 
   if (!process.env.GOOGLE_CLIENT_ID) {
     throw new ApiError(503, "Google login is not configured yet");
   }
 
-  const profile = await verifyGoogleToken(idToken);
+  const profile = await verifyGoogleAccessToken(accessToken);
 
   if (!profile?.email) {
     throw new ApiError(401, "Unable to verify Google account");
@@ -257,9 +291,11 @@ const googleLogin = asyncHandler(async (req, res) => {
 
   setAuthCookies(res, user._id);
 
-  res.status(200).json(
-    new ApiResponse(200, formatUserResponse(user), "Google login successful"),
-  );
+  res
+    .status(200)
+    .json(
+      new ApiResponse(200, formatUserResponse(user), "Google login successful"),
+    );
 });
 
 const facebookLogin = asyncHandler(async (req, res) => {
@@ -276,7 +312,10 @@ const facebookLogin = asyncHandler(async (req, res) => {
   const profile = await verifyFacebookToken(accessToken);
 
   if (!profile?.email) {
-    throw new ApiError(401, "Unable to verify Facebook account. Email permission required.");
+    throw new ApiError(
+      401,
+      "Unable to verify Facebook account. Email permission required.",
+    );
   }
 
   let user = await User.findOne({ email: profile.email.toLowerCase() });
@@ -296,9 +335,15 @@ const facebookLogin = asyncHandler(async (req, res) => {
 
   setAuthCookies(res, user._id);
 
-  res.status(200).json(
-    new ApiResponse(200, formatUserResponse(user), "Facebook login successful"),
-  );
+  res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        formatUserResponse(user),
+        "Facebook login successful",
+      ),
+    );
 });
 
 module.exports = {

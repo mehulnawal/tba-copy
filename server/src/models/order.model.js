@@ -1,0 +1,3 @@
+const mongoose=require("mongoose");
+const item=new mongoose.Schema({productSku:String,title:String,image:String,karat:String,color:String,size:String,quantity:Number,priceSnapshot:{makingCharge:Number,totalCost:Number,gst:Number,finalPrice:Number}},{_id:false});
+const schema=new mongoose.Schema({customer:{type:mongoose.Schema.Types.ObjectId,ref:"User",required:true,index:true},items:[item],coupon:{code:String,discount:Number},amount:{type:Number,required:true},razorpayOrderId:{type:String,index:true},razorpayPaymentId:String,paymentStatus:{type:String,enum:["pending","paid","failed"],default:"pending"},orderStatus:{type:String,enum:["pending","confirmed","failed"],default:"pending"}},{timestamps:true});module.exports=mongoose.model("Order",schema);

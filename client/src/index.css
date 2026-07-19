@@ -375,3 +375,18 @@ main .section-padding {
 .admin-row small { display: block; color: var(--color-text-muted); }
 .admin-nav { padding: .55rem .7rem; font-size: .8rem; color: var(--color-text-muted); }
 .admin-nav.active { color: var(--color-teal); background: var(--color-bg-secondary); font-weight: 600; }
+
+/* Admin workspace: clear hierarchy, comfortable controls, and distinct destructive actions. */
+.admin-form { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; padding: 1.5rem; border-radius: .5rem; box-shadow: 0 1px 2px rgb(0 0 0 / .04); }
+.admin-form > b { font-size: 1rem; color: var(--color-teal); letter-spacing: .02em; }
+.admin-form label { display: grid; gap: .35rem; font-size: .78rem; font-weight: 600; color: var(--color-text-muted); }
+.admin-input { min-height: 2.75rem; padding: .75rem .85rem; border-radius: .3rem; font-size: .9rem; line-height: 1.25; }
+.admin-input:focus { outline: 2px solid color-mix(in srgb, var(--color-teal) 35%, transparent); outline-offset: 1px; border-color: var(--color-teal); }
+.admin-input[type="file"] { padding: .55rem; overflow: visible; }
+.admin-button { min-height: 2.75rem; border-radius: .3rem; font-weight: 700; box-shadow: 0 1px 2px rgb(0 0 0 / .12); }
+.admin-button:hover { filter: brightness(.94); }
+.admin-row { gap: .9rem; padding: 1rem; border-radius: .4rem; background: var(--color-bg-secondary); }
+.admin-row button { min-height: 2.35rem; padding: .45rem .75rem; border-radius: .25rem; font-weight: 600; }
+.admin-row button.text-red-700 { color: #fff; background: #b42318; border-color: #b42318; }
+.admin-row button.text-emerald-700 { color: #fff; background: #087443; border-color: #087443; }
+.admin-nav { border-radius: .3rem; padding: .7rem .8rem; }

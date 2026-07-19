@@ -12,11 +12,7 @@ export interface WishlistItem {
 
 export interface WishlistProductPayload {
   productId: string;
-  slug: string;
-  name: string;
-  category?: string;
-  image: string;
-  price: number;
+  karat?: string;
 }
 
 export const wishlistApi = {

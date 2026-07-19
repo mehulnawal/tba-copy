@@ -33,14 +33,11 @@ export const authApi = {
       body: JSON.stringify(payload),
     }),
 
-  logout: () =>
-    apiRequest<null>("/auth/logout", { method: "POST" }),
+  logout: () => apiRequest<null>("/auth/logout", { method: "POST" }),
 
-  refresh: () =>
-    apiRequest<AuthUser>("/auth/refresh", { method: "POST" }),
+  refresh: () => apiRequest<AuthUser>("/auth/refresh", { method: "POST" }),
 
-  getMe: () =>
-    apiRequest<AuthUser>("/auth/me"),
+  getMe: () => apiRequest<AuthUser>("/auth/me"),
 
   forgotPassword: (email: string) =>
     apiRequest<null>("/auth/forgot-password", {
@@ -54,10 +51,10 @@ export const authApi = {
       body: JSON.stringify({ token, password }),
     }),
 
-  googleLogin: (idToken: string) =>
+  googleLogin: (accessToken: string) =>
     apiRequest<AuthUser>("/auth/google", {
       method: "POST",
-      body: JSON.stringify({ idToken }),
+      body: JSON.stringify({ accessToken }),
     }),
 
   facebookLogin: (accessToken: string) =>

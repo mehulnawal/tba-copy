@@ -27,10 +27,7 @@ const getCartSummary = asyncHandler(async (req, res) => {
     });
     if (coupon) {
       try {
-        discount = calculateCouponDiscount(
-          coupon,
-          cart.items.reduce((acc, item) => acc + item.price * item.quantity, 0),
-        );
+        discount = calculateCouponDiscount(coupon, cart.items.reduce((acc, item) => acc + item.price * item.quantity, 0), cart.items);
       } catch {
         cart.appliedCoupon = null;
         await cart.save();
@@ -67,7 +64,7 @@ const applyCoupon = asyncHandler(async (req, res) => {
     0,
   );
 
-  const discount = calculateCouponDiscount(coupon, subtotal);
+  const discount = calculateCouponDiscount(coupon, subtotal, cart.items);
   cart.appliedCoupon = coupon.code;
   await cart.save();
 
@@ -138,7 +135,7 @@ const getOrderSummary = asyncHandler(async (req, res) => {
         0,
       );
       try {
-        discount = calculateCouponDiscount(coupon, subtotal);
+        discount = calculateCouponDiscount(coupon, subtotal, cart.items);
       } catch {
         cart.appliedCoupon = null;
         coupon = null;

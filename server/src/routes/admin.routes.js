@@ -39,6 +39,7 @@ const {
 } = require("../middlewares/admin.middleware");
 const upload = require("../middlewares/upload.middleware");
 const { authLimiter } = require("../middlewares/rateLimiter.middleware");
+const { adminList, moderate, remove: removeReview } = require("../controllers/review.controller");
 
 const router = express.Router();
 
@@ -67,6 +68,10 @@ router.get("/coupons", listCoupons);
 router.post("/coupons", createCoupon);
 router.patch("/coupons/:couponId", updateCoupon);
 router.delete("/coupons/:couponId", deleteCoupon);
+
+router.get("/reviews", adminList);
+router.patch("/reviews/:reviewId", moderate);
+router.delete("/reviews/:reviewId", removeReview);
 
 router.get("/users", requireSuperAdmin, listUsers);
 router.patch("/users/:userId/block", requireSuperAdmin, blockUser);

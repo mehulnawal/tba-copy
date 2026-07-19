@@ -15,6 +15,10 @@ const couponRoutes = require("./src/routes/coupon.routes");
 const bannerRoutes = require("./src/routes/banner.routes");
 const announcementRoutes = require("./src/routes/announcement.routes");
 const adminRoutes = require("./src/routes/admin.routes");
+const goldRateRoutes = require("./src/routes/goldRate.routes");
+const productRoutes = require("./src/routes/product.routes");
+const reviewRoutes = require("./src/routes/review.routes");
+const orderRoutes = require("./src/routes/order.routes");
 const errorHandler = require("./src/middlewares/error.middleware");
 const { apiLimiter } = require("./src/middlewares/rateLimiter.middleware");
 const ApiError = require("./src/utils/ApiError");
@@ -56,6 +60,10 @@ app.use("/api/v1/coupons", couponRoutes);
 app.use("/api/v1/banners", bannerRoutes);
 app.use("/api/v1/announcements", announcementRoutes);
 app.use("/api/v1/admin", adminRoutes);
+app.use("/api/v1/gold-rates", goldRateRoutes);
+app.use("/api/v1/products", productRoutes);
+app.use("/api/v1/reviews", reviewRoutes);
+app.use("/api/v1/orders", orderRoutes);
 
 app.use((req, res, next) => {
   next(new ApiError(404, `Route ${req.originalUrl} not found`));

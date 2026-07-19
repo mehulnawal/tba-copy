@@ -347,7 +347,108 @@ Testing checklist -
 - [ ] **Ye pehle confirm kar ki "Users" tab hai bhi ya nahi** — jaisa maine pehle bola, ye missing lag raha hai sidebar me. Agar nahi hai, ye item skip kar aur agle Codex prompt me add karwana
 - [ ] (Agar bana toh) User list dikhe
 - [ ] Block/Unblock kisi test user ko → us user ka login block ho jaye
+## PHASE 3 — New Features Testing (Catalog, Pricing, Orders, Payments)
 
+### 1. Product Catalog
+- [ ] Catalog page load hote hi products dikhe (`product.json` se)
+- [ ] Product card pe sahi image, title, category, "From ₹..." price dikhe
+- [ ] Product detail page khulne pe sahi Title, Description, images dikhe
+- [ ] Karat selector (9K/14K/18K) — switch karte hi price, making charge, GST, gross/net weight sab live update ho
+- [ ] Color option select karo (agar product me hai)
+- [ ] Size option select karo (agar product me hai)
+- [ ] Ek product jisme colors/size_options nahi hain — check karo wo dropdown crash na kare, bas na dikhe
+
+### 2. Search, Filter & Sort
+- [ ] Search box me product name type karo → matching results aaye
+- [ ] Search me kuch aisa type karo jo exist na kare → "No products available" jaisa clean message aaye, crash nahi
+- [ ] Category dropdown se filter karo → sirf us category ke products dikhe
+- [ ] Sort: Price low-to-high → sahi order me aaye
+- [ ] Sort: Price high-to-low → sahi order me aaye
+- [ ] Sort: Newest → sahi order me aaye
+- [ ] Sort: Best sellers → `Is_Best_Seller: true` wale products upar aaye
+- [ ] Search + Category + Sort **ek saath** use karo → sab combine ho ke sahi result aaye
+
+### 3. Gold Rate / Pricing Security
+- [ ] Browser DevTools → Network tab khol ke product page load karo → koi gold-rate API key kahin bhi request/response me na dikhe
+- [ ] `/gold-rates` internal endpoint hi call ho raha ho, third-party API URL frontend se direct call na ho
+
+### 4. Cart & Wishlist (karat-specific)
+- [ ] Same product **alag karat** me do baar add karo (e.g. 9K aur 14K) → do alag cart entries banni chahiye (duplicate merge nahi)
+- [ ] Same product **same karat/color/size** dobara add karo → quantity badhni chahiye, duplicate entry nahi
+- [ ] Cart me price sahi karat ke hisaab se dikhe (cart me displayed price product page wale se match kare)
+
+### 5. Coupons — Scope Logic
+- [ ] `scope: all` wala coupon — **har** product page pe dikhe + checkout pe apply ho
+- [ ] `scope: category` wala coupon — sirf us category ke product page pe dikhe; checkout pe **sirf jab cart me us category ka item ho** tabhi apply ho
+- [ ] Wahi category-coupon **cart me us category ka item na ho** tab apply try karo → clear rejection message aana chahiye (silently 0 discount nahi)
+- [ ] `scope: product` wala coupon — sirf us specific product ke page pe dikhe; checkout pe sirf jab wahi product cart me ho
+- [ ] Expired coupon apply karo → reject ho, clear message
+- [ ] Usage limit khatam ho chuka coupon apply karo → reject ho
+- [ ] Minimum cart value se kam amount pe apply karo → reject ho
+- [ ] **Checkout page pe jo discount dikh raha hai, wahi amount Razorpay me actually charge ho raha hai ya nahi — yeh number-by-number match kar** (isme abhi ek known bug tha jo Codex ko fix karne bola hai — dobara verify karna zaroori hai)
+- [ ] Ek coupon 2 baar consecutively use karo (agar usageLimit=1 hai) → doosri baar reject ho (usedCount sahi se badh raha hai check kar)
+
+### 6. Checkout & Order Placement
+- [ ] Cart me items ke saath checkout page kholo → subtotal, discount, shipping, total sahi calculate ho
+- [ ] ₹25,000 se **upar** ka cart → shipping ₹0 aana chahiye
+- [ ] ₹25,000 se **neeche** ka cart → shipping fee lagni chahiye
+- [ ] Khali cart le ke checkout URL directly kholo → crash na ho, "cart is empty" jaisa message aaye
+
+### 7. Razorpay Payment
+- [ ] Test mode me "Pay securely" click karo → Razorpay popup khule
+- [ ] Test card se **successful** payment karo → order `confirmed` ho, OrderConfirmation page pe redirect ho
+- [ ] Payment **fail** karo (Razorpay test failure card se) → clear error dikhe, retry ka option mile
+- [ ] Payment popup **beech me band** kar do (bina complete kiye) → order `pending` hi rahe, `failed` na ho jaye
+- [ ] Failed/abandoned payment ke baad **dobara try karo** → naya duplicate pending order na bane, wahi purana reuse ho
+- [ ] Ek hi order ko **do baar verify** karne ki koshish karo (jaise page refresh kar ke) → dobara "confirmed" set na ho ya error na aaye (idempotency check)
+
+### 8. Order Confirmation Page
+- [ ] Payment success ke baad real order ID, real items (title, image, karat, quantity, price) dikhe — koi fake/hardcoded data nahi
+- [ ] Total sahi dikhe (discount + shipping included hone ke baad ka final amount)
+- [ ] "For order tracking, contact us at [number]" wala static note dikhe
+
+### 9. Order History Page
+- [ ] Login karke apne saare past orders dekho → list aaye
+- [ ] Har order ka status (`confirmed`/`failed`/`pending`) sahi dikhe
+- [ ] Order pe click karke detail dekho → same data jo confirmation page pe tha
+- [ ] Doosre account se login karo → sirf **apne** orders dikhe, doosron ke nahi
+- [ ] Koi cancel/return button na dikhe (yeh scope me nahi hai, confirm kar ki accidentally add nahi hua)
+
+### 10. Reviews
+- [ ] Product page pe review submit karo (rating + text) → "submitted for moderation" jaisa message aaye
+- [ ] Submit karte hi wo turant product page pe **public** na dikhe (moderation pending state)
+- [ ] Same product pe **dobara** review submit karne ki koshish karo → reject ho ("already reviewed")
+- [ ] Rating without login try karo → login required error aaye
+- [ ] Admin panel se review **approve** karo → ab wo product page pe dikhe
+- [ ] Admin panel se review **reject/delete** karo → wo kahin na dikhe
+- [ ] Multiple reviews ek product pe (alag users se) → sab dikhen, average rating sahi calculate ho (agar average dikhaya ja raha hai)
+
+### 11. Google & Facebook Login (ab active hai, skip mat kar)
+- [ ] Google button se sign in karo → account ban/login ho jaye
+- [ ] Facebook button se sign in karo → account ban/login ho jaye
+- [ ] Google se pehli baar sign in karne wale email se agar already normal account bana hai → dono link ho jaye ya clear error aaye (duplicate account na bane)
+
+---
+
+## PHASE 3 — Admin Panel (jab Codex banayega)
+
+### Coupon Scope UI
+- [ ] Naya coupon banate waqt "Applies to: All / Category / Specific Product" dropdown dikhe
+- [ ] "Category" select karne pe category-picker aaye (dynamic list se)
+- [ ] "Product" select karne pe product-picker aaye (dynamic list se, search karke dhoondh sake)
+- [ ] Bana hua scoped coupon list me sahi scope ke saath dikhe
+
+### Banner — 3 Slot Redesign
+- [ ] Sirf 3 fixed slots dikhein, har ek me sirf upload button + order — koi "Image URL" text field na ho
+- [ ] Teeno slot fill karke homepage pe sahi order me dikhein
+
+### Reviews Moderation
+- [ ] Pending reviews ki list dikhe
+- [ ] Approve/Reject/Delete teeno buttons kaam karein
+
+### Order Management (agar admin side banaya)
+- [ ] Admin sabhi orders dekh sake (customer-wise nahi, sabke)
+- [ ] Payment status aur order status sahi dikhein
 
 
 GST - 3%
@@ -359,3 +460,54 @@ dimaond -
 Changes - 
 1. If product is removed from Wishlist - the heart should be removed immediately from all pages on that product - curretnly it goes on relaod - it should be instanly 
 
+
+
+
+require("dotenv").config();
+
+const app = require("../app");
+const connectDB = require("./database/connectDB");
+const User = require("./models/user.model");
+const { ROLES } = require("./constants/roles");
+
+const seedAdmin = async () => {
+  const { ADMIN_NAME, ADMIN_EMAIL, ADMIN_PASSWORD } = process.env;
+  if (!ADMIN_EMAIL || !ADMIN_PASSWORD || ADMIN_PASSWORD === "CHANGE_ME") return;
+
+  let admin = await User.findOne({ email: ADMIN_EMAIL.toLowerCase() }).select(
+    "+password",
+  );
+  if (!admin) {
+    await User.create({
+      name: ADMIN_NAME || "Admin",
+      email: ADMIN_EMAIL,
+      password: ADMIN_PASSWORD,
+      role: ROLES.ADMIN,
+    });
+    return;
+  }
+  const passwordMatches = await admin.comparePassword(ADMIN_PASSWORD);
+  if (!passwordMatches) {
+    admin.password = ADMIN_PASSWORD; // pre-save hook hash kar dega
+    await admin.save();
+  }
+};
+
+const startServer = async () => {
+  await connectDB();
+  await seedAdmin();
+
+  const PORT = process.env.PORT || 8000;
+
+  app.listen(PORT, () => {
+    process.stdout.write(`TBA server running on port ${PORT}\n`);
+  });
+};
+
+startServer().catch((error) => {
+  process.stderr.write(`Failed to start server: ${error.message}\n`);
+  process.exit(1);
+});
+
+
+Yeh update kr diay 

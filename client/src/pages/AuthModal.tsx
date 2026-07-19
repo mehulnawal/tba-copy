@@ -81,30 +81,33 @@ export function AuthModal({ isOpen, onClose }: LuxuryAuthModalProps) {
   };
 
   const handleGoogleAuth = () => {
-    if (!import.meta.env.VITE_GOOGLE_CLIENT_ID) {
-      showToast("Google login is not configured yet", "info");
+    if (!window.google?.accounts?.oauth2) {
+      showToast("Google client loading...", "info");
       return;
     }
-    if (!window.google?.accounts?.id) {
-      showToast("Google sign-in is still loading. Please try again.", "info");
-      return;
-    }
-    window.google.accounts.id.initialize({
+
+    const client = window.google.accounts.oauth2.initTokenClient({
       client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-      callback: async ({ credential }) => {
-        if (!credential) return showToast("Google did not return an ID token.", "error");
-        setIsSubmitting(true);
-        try {
-          setUser(await authApi.googleLogin(credential));
-          showToast("Signed in with Google", "success");
-          onClose();
-          navigate("/");
-        } catch (error) {
-          showToast(error instanceof ApiRequestError ? error.message : "Google sign-in failed. Please try again.", "error");
-        } finally { setIsSubmitting(false); }
+      scope: 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email',
+      callback: async (tokenResponse) => {
+        if (tokenResponse && tokenResponse.access_token) {
+          setIsSubmitting(true);
+          try {
+            // Yahan apne backend api ko call karein access_token ke sath
+            setUser(await authApi.googleLogin(tokenResponse.access_token));
+            showToast("Signed in with Google", "success");
+            onClose();
+            navigate("/");
+          } catch (error) {
+            showToast("Google login failed", "error");
+          } finally {
+            setIsSubmitting(false);
+          }
+        }
       },
     });
-    window.google.accounts.id.prompt();
+
+    client.requestAccessToken(); // Yeh hamesha live popup window kholega bina One Tap origin issue ke
   };
 
   const handleFacebookAuth = () => {

@@ -20,6 +20,7 @@ import { AuthModal } from "./pages/AuthModal";
 import CheckoutPage from "./pages/Checkout";
 import NotFoundPage from "./pages/404Page";
 import OrderConfirmation from "./pages/OrderConfirmation";
+import OrderHistory from "./pages/OrderHistory";
 import AdminApp from "./admin/AdminApp";
 import ResetPassword from "./pages/ResetPassword";
 import Account from "./pages/Account";
@@ -106,6 +107,7 @@ export default function App() {
               />
 
               <Route path="/orderConfirmation" element={<OrderConfirmation />} />
+              <Route path="/orders" element={<ProtectedRoute><OrderHistory /></ProtectedRoute>} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </BrowserRouter>

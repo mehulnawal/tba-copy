@@ -1,0 +1,1 @@
+const router=require("express").Router();const {list,create}=require("../controllers/review.controller");const {authenticate}=require("../middlewares/auth.middleware");router.get("/:productId",list);router.post("/:productId",authenticate,create);module.exports=router;

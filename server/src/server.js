@@ -4,33 +4,36 @@ const app = require("../app");
 const connectDB = require("./database/connectDB");
 const User = require("./models/user.model");
 const { ROLES } = require("./constants/roles");
+const { importCatalog } = require("./services/catalog.service");
 
 const seedAdmin = async () => {
   const { ADMIN_NAME, ADMIN_EMAIL, ADMIN_PASSWORD } = process.env;
 
-  if (!ADMIN_EMAIL || !ADMIN_PASSWORD || ADMIN_PASSWORD === "CHANGE_ME") {
+  if (!ADMIN_EMAIL || !ADMIN_PASSWORD || ADMIN_PASSWORD === "CHANGE_ME") return;
+
+  let admin = await User.findOne({ email: ADMIN_EMAIL.toLowerCase() }).select(
+    "+password",
+  );
+  if (!admin) {
+    await User.create({
+      name: ADMIN_NAME || "Admin",
+      email: ADMIN_EMAIL,
+      password: ADMIN_PASSWORD,
+      role: ROLES.ADMIN,
+    });
     return;
   }
-
-  const existingAdmin = await User.findOne({
-    email: ADMIN_EMAIL.toLowerCase(),
-  });
-
-  if (existingAdmin) {
-    return;
+  const passwordMatches = await admin.comparePassword(ADMIN_PASSWORD);
+  if (!passwordMatches) {
+    admin.password = ADMIN_PASSWORD; // pre-save hook hash kar dega
+    await admin.save();
   }
-
-  await User.create({
-    name: ADMIN_NAME || "Admin",
-    email: ADMIN_EMAIL,
-    password: ADMIN_PASSWORD,
-    role: ROLES.ADMIN,
-  });
 };
 
 const startServer = async () => {
   await connectDB();
   await seedAdmin();
+  await importCatalog();
 
   const PORT = process.env.PORT || 8000;
 
