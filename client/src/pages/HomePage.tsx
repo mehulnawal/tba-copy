@@ -545,6 +545,7 @@ export default function HomePage() {
                                     (apiWishlist || []).map((item) => {
                                         const mappedProduct: Product = {
                                             id: item.productId,
+                                            SKU: item.productId,   // wishlist/cart mein productId already SKU hi store hota hai
                                             name: item.name,
                                             category: item.category,
                                             karat: item.karat || "18kt",

@@ -33,7 +33,7 @@ export function adaptApiProductToUI(apiProduct: ApiProduct): Product {
   if (apiProduct.Is_Best_Seller) tags.push("BESTSELLER");
   if (apiProduct.Is_New_Product) tags.push("NEW");
   const defaultPriceObj =
-    apiProduct.prices?.find((p) => p.karat ===productToCartPayload "18kt") ||
+    apiProduct.prices?.find((p) => p.karat === "18kt") ||
     apiProduct.prices?.[0];
   const derivedKarat = defaultPriceObj ? defaultPriceObj.karat : "18kt";
 
@@ -54,7 +54,7 @@ export const productToCartPayload = (
   price: number,
   options?: { karat?: string; color?: string; size?: string },
 ) => ({
-  productId: product.SKU,
+  productId: product.id,
   slug: product.slug || slugFromName(product.name),
   name: product.name,
   category: product.category,
@@ -72,7 +72,7 @@ export const productToWishlistPayload = (
   price: number,
   options?: { karat?: string; color?: string; size?: string },
 ) => ({
-  productId: product.SKU,
+  productId: product.id,
   slug: product.slug || slugFromName(product.name),
   name: product.name,
   category: product.category,

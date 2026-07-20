@@ -50,13 +50,12 @@ type Product = {
     [key: string]: any;
 };
 
-// FIX 1: Correct color hex code for White gold finish
 function getSwatchHexColor(colorName: string): string {
     const normalized = colorName.toLowerCase();
     if (normalized.includes("rose") || normalized.includes("pink")) return "#E0A899";
     if (normalized.includes("yellow") || normalized.includes("gold")) return "#E5C158";
-    if (normalized.includes("white") || normalized.includes("silver") || normalized.includes("platinum")) return "#E2E8F0"; // Silver-white color
-    return "#CBD5E1";
+    if (normalized.includes("white") || normalized.includes("silver") || normalized.includes("platinum")) return "#FFFFF";
+    return "#FFF";
 }
 
 function formatFinishLabel(colorName: string): string {
