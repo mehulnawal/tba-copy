@@ -25,6 +25,7 @@ export interface GoldRates {
 
 export interface Product {
   id: string;
+  SKU: string;
   name: string;
   category: string;
   karat: string;
