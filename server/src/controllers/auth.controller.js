@@ -189,18 +189,15 @@ const forgotPassword = asyncHandler(async (req, res) => {
     await sendEmail({
       to: user.email,
       subject: "TBA Password Reset Request",
-      html: `
-        <p>Hello ${user.name},</p>
-        <p>You requested a password reset. Click the link below to reset your password:</p>
-        <a href="${resetUrl}">${resetUrl}</a>
-        <p>This link expires in 15 minutes.</p>
-        <p>If you did not request this, please ignore this email.</p>
-      `,
+      html: `...`,
     });
-  } catch {
+  } catch (error) {
+    console.error("EMAIL ERROR:", error);
+
     user.resetPasswordToken = null;
     user.resetPasswordExpire = null;
     await user.save({ validateBeforeSave: false });
+
     throw new ApiError(
       503,
       "Unable to send reset email. Please try again later.",

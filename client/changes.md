@@ -291,13 +291,13 @@ Changes -
 ## PHASE 1 — Customer-facing testing
 
 ### 1. Auth
-- [ ] Register — naya email/password se account banao
-- [ ] Register — **same email dobara** try karo → proper error aana chahiye ("already exists"), crash nahi
-- [ ] Register — **weak password** (8 se kam characters) try karo → validation error dikhna chahiye
-- [ ] Login — sahi credentials se
-- [ ] Login — **galat password** se → clear error message
-- [ ] Login — **non-existent email** se → clear error message
-- [ ] Logout — logout karo, phir refresh karo → logged out hi rehna chahiye
+- [✔] Register — naya email/password se account banao
+- [✔] Register — **same email dobara** try karo → proper error aana chahiye ("already exists"), crash nahi
+- [✔] Register — **weak password** (8 se kam characters) try karo → validation error dikhna chahiye
+- [✔] Login — sahi credentials se
+- [✔] Login — **galat password** se → clear error message
+- [✔] Login — **non-existent email** se → clear error message
+- [✔] Logout — logout karo, phir refresh karo → logged out hi rehna chahiye
 - [ ] Refresh — login karke browser tab band kiye bina 15+ min wait karo (ya access token expire hone do), phir koi action karo → automatically refresh hoke kaam karna chahiye
 - [ ] Forgot Password — email daalo → email aana chahiye (App Password fix karne ke baad)
 - [ ] Reset Password — email wale link se naya password set karo → naye password se login ho
