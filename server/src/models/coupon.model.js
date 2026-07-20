@@ -1,2 +1,63 @@
-const mongoose=require("mongoose");const {DISCOUNT_TYPES}=require("../constants/coupon.constants");
-const couponSchema=new mongoose.Schema({code:{type:String,required:true,unique:true,uppercase:true,trim:true},discountType:{type:String,enum:Object.values(DISCOUNT_TYPES),required:true},discountValue:{type:Number,required:true,min:0},minimumCartValue:{type:Number,default:0,min:0},expiryDate:{type:Date,required:true},usageLimit:{type:Number,default:null},usedCount:{type:Number,default:0},activeStatus:{type:Boolean,default:true},scope:{type:String,enum:["all","category","product"],default:"all"},scopeCategory:{type:String,default:null},scopeProduct:{type:String,default:null},createdBy:{type:mongoose.Schema.Types.ObjectId,ref:"User",default:null}},{timestamps:true});module.exports=mongoose.model("Coupon",couponSchema);
+const mongoose = require("mongoose");
+const { DISCOUNT_TYPES } = require("../constants/coupon.constants");
+
+const couponSchema = new mongoose.Schema(
+  {
+    code: {
+      type: String,
+      required: true,
+      unique: true,
+      uppercase: true,
+      trim: true,
+    },
+
+    discountType: {
+      type: String,
+      enum: Object.values(DISCOUNT_TYPES),
+      required: true,
+    },
+
+    discountValue: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+
+    minimumCartValue: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    expiryDate: {
+      type: Date,
+      required: true,
+    },
+
+    usageLimit: {
+      type: Number,
+      default: null,
+    },
+
+    usedCount: {
+      type: Number,
+      default: 0,
+    },
+
+    activeStatus: {
+      type: Boolean,
+      default: true,
+    },
+
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+  },
+  {
+    timestamps: true,
+  },
+);
+
+module.exports = mongoose.model("Coupon", couponSchema);

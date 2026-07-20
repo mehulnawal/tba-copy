@@ -6,7 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import { Eye, EyeOff } from "lucide-react"; // Imported eye icons for password toggle
+import { Eye, EyeOff } from "lucide-react";
 
 interface Address {
     _id: string;
@@ -140,7 +140,7 @@ export default function Account() {
         confirmNewPassword: "",
     });
 
-    // Visibility States for all 3 password fields[cite: 7]
+    // Visibility States for all 3 password fields
     const [showCurrentPassword, setShowCurrentPassword] = useState(false);
     const [showNewPassword, setShowNewPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -247,7 +247,7 @@ export default function Account() {
     };
 
     const [activeCategory, setActiveCategory] = useState<string>("All");
-    const [searchQuery, setSearchQuery] = useState("");
+    const [, setSearchQuery] = useState("");
 
     return (
         <>
@@ -260,7 +260,7 @@ export default function Account() {
             <div className="min-h-screen bg-[var(--color-bg)] py-16 px-4 md:px-8">
                 <div className="container max-w-5xl mx-auto">
                     {/* Page Header */}
-                    <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-[var(--color-cream)] pb-6 mb-12">
+                    <div className="flex flex-col sm:flex-row sm:items-end justify-between border-b border-[var(--color-cream)] pb-6 mb-12">
                         <div>
                             <span className="section-label">Your Sanctuary</span>
                             <h1 className="text-3xl md:text-4xl font-primary uppercase tracking-wide text-[var(--color-teal)]">
@@ -269,19 +269,19 @@ export default function Account() {
                         </div>
                         <button
                             onClick={handleLogoutClick}
-                            className="mt-4 md:mt-0 self-start text-xs uppercase tracking-widest text-[var(--color-teal)] hover:text-[var(--color-teal-light)] transition duration-300 underline underline-offset-4"
+                            className="mt-4 sm:mt-0 self-start sm:self-auto text-xs uppercase tracking-widest text-[var(--color-teal)] hover:text-[var(--color-teal-light)] transition duration-300 underline underline-offset-4"
                         >
                             Log Out
                         </button>
                     </div>
 
                     {/* Tab Navigation */}
-                    <div className="flex space-x-8 mb-10 border-b border-[var(--color-border-subtle)] pb-2">
+                    <div className="flex flex-wrap gap-8 mb-10 border-b border-[var(--color-border-subtle)] pb-2">
                         <button
                             onClick={() => setActiveTab("profile")}
                             className={`font-secondary pb-2 text-sm uppercase tracking-widest transition-all duration-300 relative ${activeTab === "profile"
-                                ? "text-[var(--color-teal)] font-medium"
-                                : "text-[var(--color-text-muted)] hover:text-[var(--color-teal)]"
+                                    ? "text-[var(--color-teal)] font-medium"
+                                    : "text-[var(--color-text-muted)] hover:text-[var(--color-teal)]"
                                 }`}
                         >
                             Personal Details
@@ -292,14 +292,20 @@ export default function Account() {
                         <button
                             onClick={() => setActiveTab("addresses")}
                             className={`font-secondary pb-2 text-sm uppercase tracking-widest transition-all duration-300 relative ${activeTab === "addresses"
-                                ? "text-[var(--color-teal)] font-medium"
-                                : "text-[var(--color-text-muted)] hover:text-[var(--color-teal)]"
+                                    ? "text-[var(--color-teal)] font-medium"
+                                    : "text-[var(--color-text-muted)] hover:text-[var(--color-teal)]"
                                 }`}
                         >
                             Address Book
                             {activeTab === "addresses" && (
                                 <span className="absolute bottom-0 left-0 w-full h-[2px] bg-[var(--color-teal)]" />
                             )}
+                        </button>
+                        <button
+                            onClick={() => navigate("/orders")}
+                            className="font-secondary pb-2 text-sm uppercase tracking-widest transition-all duration-300 relative text-[var(--color-text-muted)] hover:text-[var(--color-teal)]"
+                        >
+                            My Orders
                         </button>
                     </div>
 
@@ -373,7 +379,6 @@ export default function Account() {
                                     Security
                                 </h3>
                                 <form onSubmit={handlePasswordSubmit} className="space-y-4">
-                                    {/* Field 1: Current Password[cite: 7] */}
                                     <div>
                                         <label className="block text-xs uppercase tracking-wider text-[var(--color-text-muted)] mb-1">
                                             Current Password
@@ -398,7 +403,6 @@ export default function Account() {
                                         </div>
                                     </div>
 
-                                    {/* Field 2: New Password[cite: 7] */}
                                     <div>
                                         <label className="block text-xs uppercase tracking-wider text-[var(--color-text-muted)] mb-1">
                                             New Password
@@ -423,7 +427,6 @@ export default function Account() {
                                         </div>
                                     </div>
 
-                                    {/* Field 3: Confirm New Password[cite: 7] */}
                                     <div>
                                         <label className="block text-xs uppercase tracking-wider text-[var(--color-text-muted)] mb-1">
                                             Confirm New Password
@@ -495,8 +498,8 @@ export default function Account() {
                                         <div
                                             key={address._id}
                                             className={`p-6 border transition-all duration-300 flex flex-col justify-between ${address.isDefault
-                                                ? "border-[var(--color-teal)] bg-[var(--color-bg-secondary)] shadow-cream"
-                                                : "border-[var(--color-cream)] bg-transparent"
+                                                    ? "border-[var(--color-teal)] bg-[var(--color-bg-secondary)] shadow-cream"
+                                                    : "border-[var(--color-cream)] bg-transparent"
                                                 }`}
                                         >
                                             <div>
@@ -582,7 +585,7 @@ export default function Account() {
                                         />
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div>
                                             <label className="block text-xs uppercase tracking-wider text-[var(--color-text-muted)] mb-1">
                                                 Phone Number <span className="text-[var(--color-error)]">*</span>
@@ -611,7 +614,7 @@ export default function Account() {
 
                                     <div>
                                         <label className="block text-xs uppercase tracking-wider text-[var(--color-text-muted)] mb-1">
-                                            Area / Street / Village <span className="text(--color-error)">*</span>
+                                            Area / Street / Village <span className="text-[var(--color-error)]">*</span>
                                         </label>
                                         <input
                                             type="text"
@@ -634,7 +637,7 @@ export default function Account() {
                                         />
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div>
                                             <label className="block text-xs uppercase tracking-wider text-[var(--color-text-muted)] mb-1">
                                                 City <span className="text-[var(--color-error)]">*</span>
@@ -661,7 +664,7 @@ export default function Account() {
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div>
                                             <label className="block text-xs uppercase tracking-wider text-[var(--color-text-muted)] mb-1">
                                                 Pincode / ZIP <span className="text-[var(--color-error)]">*</span>

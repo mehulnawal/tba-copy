@@ -9,7 +9,9 @@ export interface CartItem {
   image: string;
   price: number;
   quantity: number;
-  inStock: boolean;
+  karat: "9kt" | "14kt" | "18kt";
+  color?: string;
+  size?: string;
 }
 
 export interface Cart {
@@ -20,13 +22,10 @@ export interface Cart {
 
 export interface CartProductPayload {
   productId: string;
-  slug: string;
-  name: string;
-  category?: string;
-  image: string;
-  price: number;
+  karat?: "9kt" | "14kt" | "18kt";
+  color?: string;
+  size?: string;
   quantity?: number;
-  inStock?: boolean;
 }
 
 export const cartApi = {

@@ -1,1 +1,13 @@
-const express=require("express");const {validateCoupon,listEligibleForProduct}=require("../controllers/coupon.controller");const router=express.Router();router.get("/eligible/:productId",listEligibleForProduct);router.post("/validate",validateCoupon);module.exports=router;
+const express = require("express");
+const {
+  validateCoupon,
+  listPublicCoupons,
+} = require("../controllers/coupon.controller");
+
+const router = express.Router();
+
+router.get("/", listPublicCoupons);
+
+router.post("/validate", validateCoupon);
+
+module.exports = router;

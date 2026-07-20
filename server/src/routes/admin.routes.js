@@ -39,7 +39,22 @@ const {
 } = require("../middlewares/admin.middleware");
 const upload = require("../middlewares/upload.middleware");
 const { authLimiter } = require("../middlewares/rateLimiter.middleware");
-const { adminList, moderate, remove: removeReview } = require("../controllers/review.controller");
+const { listOrders } = require("../controllers/admin.order.controller");
+const {
+  listAdmin,
+  create: createCategory,
+  update: updateCategory,
+  remove: deleteCategory,
+} = require("../controllers/category.controller");
+const {
+  get: getMetalRates,
+  update: updateMetalRates,
+} = require("../controllers/metalRate.controller");
+const {
+  adminList,
+  moderate,
+  remove: removeReview,
+} = require("../controllers/review.controller");
 
 const router = express.Router();
 
@@ -62,19 +77,29 @@ router.post("/announcements", createAnnouncement);
 router.patch("/announcements/:announcementId", updateAnnouncement);
 router.delete("/announcements/:announcementId", deleteAnnouncement);
 router.patch("/announcements/:announcementId/activate", activateAnnouncement);
-router.patch("/announcements/:announcementId/deactivate", deactivateAnnouncement);
+router.patch(
+  "/announcements/:announcementId/deactivate",
+  deactivateAnnouncement,
+);
 
 router.get("/coupons", listCoupons);
 router.post("/coupons", createCoupon);
 router.patch("/coupons/:couponId", updateCoupon);
 router.delete("/coupons/:couponId", deleteCoupon);
 
+router.get("/orders", listOrders);
+router.get("/categories", listAdmin);
+router.post("/categories", createCategory);
+router.patch("/categories/:categoryId", updateCategory);
+router.delete("/categories/:categoryId", deleteCategory);
+router.get("/metal-rates", getMetalRates);
+router.put("/metal-rates", updateMetalRates);
 router.get("/reviews", adminList);
 router.patch("/reviews/:reviewId", moderate);
 router.delete("/reviews/:reviewId", removeReview);
 
-router.get("/users", requireSuperAdmin, listUsers);
-router.patch("/users/:userId/block", requireSuperAdmin, blockUser);
-router.patch("/users/:userId/unblock", requireSuperAdmin, unblockUser);
+router.get("/users", listUsers);
+router.patch("/users/:userId/block", blockUser);
+router.patch("/users/:userId/unblock", unblockUser);
 
 module.exports = router;

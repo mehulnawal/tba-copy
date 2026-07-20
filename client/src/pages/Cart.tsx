@@ -20,7 +20,6 @@ interface CartItem {
     image: string;
     quantity: number;
     price: number;
-    inStock: boolean;
 }
 
 /* ==========================================================================
@@ -70,7 +69,6 @@ export default function CartPage() {
                 image: item.image,
                 quantity: item.quantity,
                 price: item.price,
-                inStock: item.inStock,
             })),
         [cartData],
     );
@@ -100,7 +98,7 @@ export default function CartPage() {
 
     // Structural Math & Value Aggregation
     const totalItemsCount = cart.reduce((acc, item) => acc + item.quantity, 0);
-    const subtotal = cart.reduce((acc, item) => acc + (item.inStock ? item.price * item.quantity : 0), 0);
+    const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
     const resolvedShippingFee = shippingFee || (subtotal > 25000 || subtotal === 0 ? 0 : 150);
     const estimatedTotal = subtotal - appliedDiscount + resolvedShippingFee;
 
@@ -258,7 +256,7 @@ export default function CartPage() {
                                                     key={item.id}
                                                     variants={itemVariants}
                                                     layout
-                                                    className={`grid grid-cols-1 sm:grid-cols-12 gap-4 sm:gap-2 py-6 items-center px-2 transition-opacity duration-300 ${!item.inStock ? 'opacity-65' : 'opacity-100'
+                                                    className={`grid grid-cols-1 sm:grid-cols-12 gap-4 sm:gap-2 py-6 items-center px-2 transition-opacity duration-300 ${false ? 'opacity-65' : 'opacity-100'
                                                         }`}
                                                 >
                                                     {/* Image & Main Editorial Descriptors */}
@@ -272,7 +270,7 @@ export default function CartPage() {
                                                                 alt={item.name}
                                                                 className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
                                                             />
-                                                            {!item.inStock && (
+                                                            {false && (
                                                                 <div className="absolute inset-0 bg-[var(--color-bg)]/80 backdrop-blur-xs flex items-center justify-center p-1 text-center">
                                                                     <span className="font-secondary text-[8px] tracking-[0.2em] uppercase text-red-800 font-medium">
                                                                         Waitlisted
@@ -300,7 +298,7 @@ export default function CartPage() {
                                                                 <div className="flex items-center border border-[var(--color-border-subtle)] bg-[var(--color-bg-secondary)]">
                                                                     <button
                                                                         type="button"
-                                                                        disabled={!item.inStock} // Updated: Item quantity check removed
+                                                                        disabled={false} // Updated: Item quantity check removed
                                                                         onClick={() => updateQuantity(item.id, -1)}
                                                                         className="p-1.5 text-[var(--color-text-muted)] hover:text-[var(--color-text)] disabled:opacity-30 transition-colors cursor-pointer"
                                                                         aria-label="Reduce units"
@@ -310,7 +308,7 @@ export default function CartPage() {
                                                                     <span className="w-6 text-center font-display text-xs">{item.quantity}</span>
                                                                     <button
                                                                         type="button"
-                                                                        disabled={!item.inStock}
+                                                                        disabled={false}
                                                                         onClick={() => updateQuantity(item.id, 1)}
                                                                         className="p-1.5 text-[var(--color-text-muted)] hover:text-[var(--color-text)] disabled:opacity-30 transition-colors cursor-pointer"
                                                                         aria-label="Add units"
@@ -334,7 +332,7 @@ export default function CartPage() {
                                                         <div className="flex items-center border border-[var(--color-border-subtle)] bg-[var(--color-bg-secondary)] shadow-xs">
                                                             <button
                                                                 type="button"
-                                                                disabled={!item.inStock} // Updated: Item quantity check removed
+                                                                disabled={false} // Updated: Item quantity check removed
                                                                 onClick={() => updateQuantity(item.id, -1)}
                                                                 className="p-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] disabled:opacity-30 transition-colors cursor-pointer focus:outline-none"
                                                                 aria-label="Decrement item quantity"
@@ -344,7 +342,7 @@ export default function CartPage() {
                                                             <span className="w-8 text-center font-display text-xs select-none">{item.quantity}</span>
                                                             <button
                                                                 type="button"
-                                                                disabled={!item.inStock}
+                                                                disabled={false}
                                                                 onClick={() => updateQuantity(item.id, 1)}
                                                                 className="p-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] disabled:opacity-30 transition-colors cursor-pointer focus:outline-none"
                                                                 aria-label="Increment item quantity"
@@ -372,7 +370,7 @@ export default function CartPage() {
 
                                                     {/* Line Matrix Total Value Presentation */}
                                                     <div className="hidden sm:col-span-3 sm:block text-right font-display text-sm tracking-wide text-[var(--color-text)] font-medium">
-                                                        {item.inStock ? `₹${(item.price * item.quantity).toLocaleString()}` : '—'}
+                                                        {true ? `₹${(item.price * item.quantity).toLocaleString()}` : '—'}
                                                     </div>
                                                 </motion.div>
                                             ))}

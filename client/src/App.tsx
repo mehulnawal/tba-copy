@@ -91,7 +91,7 @@ export default function App() {
               <Route
                 path="/auth"
                 element={
-                  <div className="min-h-screen bg-[#121212] flex items-center justify-center">
+                  <div className="min-h-screen bg-[var(--color-bg)] flex items-center justify-center">
                     <AuthModal isOpen={true} onClose={() => { window.location.href = "/"; }} />
                   </div>
                 }

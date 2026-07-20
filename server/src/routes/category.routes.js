@@ -1,0 +1,1 @@
+const router=require("express").Router();const {listPublic}=require("../controllers/category.controller");router.get("/",listPublic);module.exports=router;

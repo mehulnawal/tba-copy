@@ -254,183 +254,6 @@ Hosting purchase krna baki hai and Razorpay setup is left
 
 
 
-Testing checklist - 
-
-## PHASE 1 — Customer-facing testing
-### 1. Auth
-- [ ] Register — naya email/password se account banao
-- [ ] Register — **same email dobara** try karo → proper error aana chahiye ("already exists"), crash nahi
-- [ ] Register — **weak password** (8 se kam characters) try karo → validation error dikhna chahiye
-- [ ] Login — sahi credentials se
-- [ ] Login — **galat password** se → clear error message
-- [ ] Login — **non-existent email** se → clear error message
-- [ ] Logout — logout karo, phir refresh karo → logged out hi rehna chahiye
-- [ ] Refresh — login karke browser tab band kiye bina 15+ min wait karo (ya access token expire hone do), phir koi action karo → automatically refresh hoke kaam karna chahiye
-- [ ] Forgot Password — email daalo → email aana chahiye (App Password fix karne ke baad)
-- [ ] Reset Password — email wale link se naya password set karo → naye password se login ho
-- [ ] Google Login — abhi skip kar (frontend incomplete hai)
-- [ ] Facebook Login — abhi skip kar (frontend incomplete hai)
-
-### 2. Profile Management
-- [ ] Name update karo → save ho aur reflect ho
-- [ ] Phone update karo
-- [ ] Change Password — sahi current password se
-- [ ] Change Password — **galat current password** se → error aana chahiye
-
-### 3. Address Management
-- [ ] Naya address add karo (sab fields fill karke)
-- [ ] Address edit karo
-- [ ] Address delete karo
-- [ ] Ek se **zyada address add karke** "Set Default" try karo → sirf ek hi default rehna chahiye
-- [ ] Required field **khali chhod ke** submit karo → validation error aana chahiye
-
-### 4. Cart
-- [ ] Item add karo cart me
-- [ ] Quantity increase/decrease karo
-- [ ] Item remove karo
-- [ ] Poora cart clear karo
-- [ ] **Same item dobara add karo** → quantity update honi chahiye, duplicate entry nahi
-
-### 5. Wishlist
-- [ ] Item add karo wishlist me
-- [ ] Item remove karo
-- [ ] **Login kiye bina** wishlist use karne ki koshish karo → proper redirect/error aana chahiye
-
-### 6. Banners
-- [ ] Homepage pe active banners dikh rahe hai ya nahi (admin se add karne ke baad)
-
-### 7. Announcements
-- [ ] Homepage/top-bar pe active announcement dikh raha hai ya nahi
-
-### 8. Coupon (Admin se ek test coupon banane ke baad)
-- [ ] Valid coupon code apply karo → discount sahi calculate ho
-- [ ] **Invalid/wrong code** try karo → clear error
-- [ ] **Expired coupon** try karo (admin se past date wala banao) → error aana chahiye
-- [ ] **Minimum cart value se kam** amount pe apply karo (agar min-value set hai) → error aana chahiye
-- [ ] Coupon remove karo → total wapas normal ho jaye
-
-### 9. Checkout Summary
-- [ ] Cart total sahi aa raha hai (sab item price × quantity sum)
-- [ ] Coupon discount sahi subtract ho raha hai total se
-- [ ] **Cart khali karke** checkout page pe jao → crash na ho, proper "empty cart" message aaye
-
----
-
-## PHASE 2 — Admin Panel testing
-
-### 1. Admin Auth
-- [ ] Admin login (jo `.env` me `ADMIN_EMAIL/PASSWORD` set kiya)
-- [ ] Admin logout
-- [ ] Galat admin password → error aana chahiye
-- [ ] **Normal customer account se `/admin` access karne ki koshish karo** → block hona chahiye (security check, zaroori hai)
-
-### 2. Banner Management
-- [ ] Naya banner create karo (title + image URL + link + order)
-- [ ] Banner edit karo
-- [ ] Banner delete karo
-- [ ] Activate/Deactivate toggle karo → homepage pe reflect ho
-- [ ] Reorder karo (agar option hai) → homepage pe order badle
-
-### 3. Announcement Management
-- [ ] Naya announcement create karo
-- [ ] Edit/Delete
-- [ ] Activate/Deactivate → homepage pe reflect ho
-
-### 4. Coupon Management
-- [ ] Naya coupon create karo (Percentage type)
-- [ ] Naya coupon create karo (Fixed amount type)
-- [ ] Edit coupon
-- [ ] Delete coupon
-- [ ] Expiry date wala coupon banao (test karne ke liye Phase 1 ke coupon test me use hoga)
-
-### 5. User Management
-- [ ] **Ye pehle confirm kar ki "Users" tab hai bhi ya nahi** — jaisa maine pehle bola, ye missing lag raha hai sidebar me. Agar nahi hai, ye item skip kar aur agle Codex prompt me add karwana
-- [ ] (Agar bana toh) User list dikhe
-- [ ] Block/Unblock kisi test user ko → us user ka login block ho jaye
-## PHASE 3 — New Features Testing (Catalog, Pricing, Orders, Payments)
-
-### 1. Product Catalog
-- [ ] Catalog page load hote hi products dikhe (`product.json` se)
-- [ ] Product card pe sahi image, title, category, "From ₹..." price dikhe
-- [ ] Product detail page khulne pe sahi Title, Description, images dikhe
-- [ ] Karat selector (9K/14K/18K) — switch karte hi price, making charge, GST, gross/net weight sab live update ho
-- [ ] Color option select karo (agar product me hai)
-- [ ] Size option select karo (agar product me hai)
-- [ ] Ek product jisme colors/size_options nahi hain — check karo wo dropdown crash na kare, bas na dikhe
-
-### 2. Search, Filter & Sort
-- [ ] Search box me product name type karo → matching results aaye
-- [ ] Search me kuch aisa type karo jo exist na kare → "No products available" jaisa clean message aaye, crash nahi
-- [ ] Category dropdown se filter karo → sirf us category ke products dikhe
-- [ ] Sort: Price low-to-high → sahi order me aaye
-- [ ] Sort: Price high-to-low → sahi order me aaye
-- [ ] Sort: Newest → sahi order me aaye
-- [ ] Sort: Best sellers → `Is_Best_Seller: true` wale products upar aaye
-- [ ] Search + Category + Sort **ek saath** use karo → sab combine ho ke sahi result aaye
-
-### 3. Gold Rate / Pricing Security
-- [ ] Browser DevTools → Network tab khol ke product page load karo → koi gold-rate API key kahin bhi request/response me na dikhe
-- [ ] `/gold-rates` internal endpoint hi call ho raha ho, third-party API URL frontend se direct call na ho
-
-### 4. Cart & Wishlist (karat-specific)
-- [ ] Same product **alag karat** me do baar add karo (e.g. 9K aur 14K) → do alag cart entries banni chahiye (duplicate merge nahi)
-- [ ] Same product **same karat/color/size** dobara add karo → quantity badhni chahiye, duplicate entry nahi
-- [ ] Cart me price sahi karat ke hisaab se dikhe (cart me displayed price product page wale se match kare)
-
-### 5. Coupons — Scope Logic
-- [ ] `scope: all` wala coupon — **har** product page pe dikhe + checkout pe apply ho
-- [ ] `scope: category` wala coupon — sirf us category ke product page pe dikhe; checkout pe **sirf jab cart me us category ka item ho** tabhi apply ho
-- [ ] Wahi category-coupon **cart me us category ka item na ho** tab apply try karo → clear rejection message aana chahiye (silently 0 discount nahi)
-- [ ] `scope: product` wala coupon — sirf us specific product ke page pe dikhe; checkout pe sirf jab wahi product cart me ho
-- [ ] Expired coupon apply karo → reject ho, clear message
-- [ ] Usage limit khatam ho chuka coupon apply karo → reject ho
-- [ ] Minimum cart value se kam amount pe apply karo → reject ho
-- [ ] **Checkout page pe jo discount dikh raha hai, wahi amount Razorpay me actually charge ho raha hai ya nahi — yeh number-by-number match kar** (isme abhi ek known bug tha jo Codex ko fix karne bola hai — dobara verify karna zaroori hai)
-- [ ] Ek coupon 2 baar consecutively use karo (agar usageLimit=1 hai) → doosri baar reject ho (usedCount sahi se badh raha hai check kar)
-
-### 6. Checkout & Order Placement
-- [ ] Cart me items ke saath checkout page kholo → subtotal, discount, shipping, total sahi calculate ho
-- [ ] ₹25,000 se **upar** ka cart → shipping ₹0 aana chahiye
-- [ ] ₹25,000 se **neeche** ka cart → shipping fee lagni chahiye
-- [ ] Khali cart le ke checkout URL directly kholo → crash na ho, "cart is empty" jaisa message aaye
-
-### 7. Razorpay Payment
-- [ ] Test mode me "Pay securely" click karo → Razorpay popup khule
-- [ ] Test card se **successful** payment karo → order `confirmed` ho, OrderConfirmation page pe redirect ho
-- [ ] Payment **fail** karo (Razorpay test failure card se) → clear error dikhe, retry ka option mile
-- [ ] Payment popup **beech me band** kar do (bina complete kiye) → order `pending` hi rahe, `failed` na ho jaye
-- [ ] Failed/abandoned payment ke baad **dobara try karo** → naya duplicate pending order na bane, wahi purana reuse ho
-- [ ] Ek hi order ko **do baar verify** karne ki koshish karo (jaise page refresh kar ke) → dobara "confirmed" set na ho ya error na aaye (idempotency check)
-
-### 8. Order Confirmation Page
-- [ ] Payment success ke baad real order ID, real items (title, image, karat, quantity, price) dikhe — koi fake/hardcoded data nahi
-- [ ] Total sahi dikhe (discount + shipping included hone ke baad ka final amount)
-- [ ] "For order tracking, contact us at [number]" wala static note dikhe
-
-### 9. Order History Page
-- [ ] Login karke apne saare past orders dekho → list aaye
-- [ ] Har order ka status (`confirmed`/`failed`/`pending`) sahi dikhe
-- [ ] Order pe click karke detail dekho → same data jo confirmation page pe tha
-- [ ] Doosre account se login karo → sirf **apne** orders dikhe, doosron ke nahi
-- [ ] Koi cancel/return button na dikhe (yeh scope me nahi hai, confirm kar ki accidentally add nahi hua)
-
-### 10. Reviews
-- [ ] Product page pe review submit karo (rating + text) → "submitted for moderation" jaisa message aaye
-- [ ] Submit karte hi wo turant product page pe **public** na dikhe (moderation pending state)
-- [ ] Same product pe **dobara** review submit karne ki koshish karo → reject ho ("already reviewed")
-- [ ] Rating without login try karo → login required error aaye
-- [ ] Admin panel se review **approve** karo → ab wo product page pe dikhe
-- [ ] Admin panel se review **reject/delete** karo → wo kahin na dikhe
-- [ ] Multiple reviews ek product pe (alag users se) → sab dikhen, average rating sahi calculate ho (agar average dikhaya ja raha hai)
-
-### 11. Google & Facebook Login (ab active hai, skip mat kar)
-- [ ] Google button se sign in karo → account ban/login ho jaye
-- [ ] Facebook button se sign in karo → account ban/login ho jaye
-- [ ] Google se pehli baar sign in karne wale email se agar already normal account bana hai → dono link ho jaye ya clear error aaye (duplicate account na bane)
-
----
-
-## PHASE 3 — Admin Panel (jab Codex banayega)
 
 ### Coupon Scope UI
 - [ ] Naya coupon banate waqt "Applies to: All / Category / Specific Product" dropdown dikhe
@@ -461,53 +284,195 @@ Changes -
 1. If product is removed from Wishlist - the heart should be removed immediately from all pages on that product - curretnly it goes on relaod - it should be instanly 
 
 
+# TBA — The Brilliance Atelier — Full Testing Checklist (Phase 1, 2 & 3)
+
+---
+
+## PHASE 1 — Customer-facing testing
+
+### 1. Auth
+- [ ] Register — naya email/password se account banao
+- [ ] Register — **same email dobara** try karo → proper error aana chahiye ("already exists"), crash nahi
+- [ ] Register — **weak password** (8 se kam characters) try karo → validation error dikhna chahiye
+- [ ] Login — sahi credentials se
+- [ ] Login — **galat password** se → clear error message
+- [ ] Login — **non-existent email** se → clear error message
+- [ ] Logout — logout karo, phir refresh karo → logged out hi rehna chahiye
+- [ ] Refresh — login karke browser tab band kiye bina 15+ min wait karo (ya access token expire hone do), phir koi action karo → automatically refresh hoke kaam karna chahiye
+- [ ] Forgot Password — email daalo → email aana chahiye (App Password fix karne ke baad)
+- [ ] Reset Password — email wale link se naya password set karo → naye password se login ho
+- [ ] Google Login — sign in karo → account ban/login ho jaye
+- [ ] Facebook Login — sign in karo → account ban/login ho jaye
+- [ ] Google se pehli baar sign in karne wale email se agar already normal (email/password) account bana hai → dono link ho jaye ya clear error aaye, duplicate account na bane
+
+### 2. Profile Management
+- [ ] Name update karo → save ho aur reflect ho
+- [ ] Phone update karo
+- [ ] Change Password — sahi current password se
+- [ ] Change Password — **galat current password** se → error aana chahiye
+
+### 3. Address Management
+- [ ] Naya address add karo (sab fields fill karke)
+- [ ] Address edit karo
+- [ ] Address delete karo
+- [ ] Ek se **zyada address add karke** "Set Default" try karo → sirf ek hi default rehna chahiye
+- [ ] Required field **khali chhod ke** submit karo → validation error aana chahiye
+
+### 4. Cart
+- [ ] Item add karo cart me
+- [ ] Quantity increase/decrease karo
+- [ ] Item remove karo
+- [ ] Poora cart clear karo
+- [ ] **Same item, same karat/color/size, dobara add karo** → quantity update honi chahiye, duplicate entry nahi
+- [ ] **Same product, alag karat** me do baar add karo (e.g. 9K aur 14K) → do alag cart entries banni chahiye
+- [ ] Cart me price sahi karat ke hisaab se dikhe (product page wale se match kare)
+
+### 5. Wishlist
+- [ ] Item add karo wishlist me
+- [ ] Item remove karo
+- [ ] **Login kiye bina** wishlist use karne ki koshish karo → proper redirect/error aana chahiye
+
+### 6. Banners
+- [ ] Homepage pe active banners dikh rahe hai ya nahi (admin se add karne ke baad)
+
+### 7. Announcements
+- [ ] Homepage/top-bar pe active announcement dikh raha hai ya nahi
+
+### 8. Product Catalog
+- [ ] Catalog page load hote hi products dikhe (`product.json` se)
+- [ ] Product card pe sahi image, title, category, "From ₹..." price dikhe
+- [ ] Product detail page khulne pe sahi Title, Description, images dikhe
+- [ ] Karat selector (9K/14K/18K) — switch karte hi price, making charge, GST, gross/net weight sab live update ho
+- [ ] Color option select karo (agar product me hai)
+- [ ] Size option select karo (agar product me hai)
+- [ ] Ek product jisme colors/size_options nahi hain — check karo dropdown crash na kare, bas na dikhe
+
+### 9. Search, Filter & Sort
+- [ ] Search box me product name type karo → matching results aaye
+- [ ] Search me kuch aisa type karo jo exist na kare → "No products available" jaisa clean message aaye, crash nahi
+- [ ] Category dropdown se filter karo → sirf us category ke products dikhe
+- [ ] Sort: Price low-to-high → sahi order me aaye
+- [ ] Sort: Price high-to-low → sahi order me aaye
+- [ ] Sort: Newest → sahi order me aaye
+- [ ] Sort: Best sellers → `Is_Best_Seller: true` wale products upar aaye
+- [ ] Search + Category + Sort **ek saath** use karo → sab combine ho ke sahi result aaye
+
+### 10. Gold Rate / Pricing Security
+- [ ] Browser DevTools → Network tab khol ke product page load karo → koi gold-rate API key kahin bhi request/response me na dikhe
+- [ ] `/gold-rates` internal endpoint hi call ho raha ho, third-party API URL frontend se direct call na ho
+
+### 11. Coupon (Admin se ek test coupon banane ke baad)
+- [ ] Valid coupon code apply karo → discount sahi calculate ho
+- [ ] **Invalid/wrong code** try karo → clear error
+- [ ] **Expired coupon** try karo (admin se past date wala banao) → error aana chahiye
+- [ ] **Minimum cart value se kam** amount pe apply karo (agar min-value set hai) → error aana chahiye
+- [ ] Coupon remove karo → total wapas normal ho jaye
+- [ ] `scope: all` wala coupon — **har** product page pe dikhe + checkout pe apply ho
+- [ ] `scope: category` wala coupon — sirf us category ke product page pe dikhe; checkout pe **sirf jab cart me us category ka item ho** tabhi apply ho
+- [ ] Wahi category-coupon **cart me us category ka item na ho** tab apply try karo → clear rejection message aana chahiye (silently 0 discount nahi)
+- [ ] `scope: product` wala coupon — sirf us specific product ke page pe dikhe; checkout pe sirf jab wahi product cart me ho
+- [ ] Usage limit khatam ho chuka coupon apply karo → reject ho
+- [ ] Ek coupon 2 baar consecutively use karo (agar usageLimit=1 hai) → doosri baar reject ho (usedCount sahi se badh raha hai check kar)
+- [ ] **Checkout page pe jo discount dikh raha hai, wahi amount Razorpay me actually charge ho raha hai ya nahi — number-by-number match kar** (known bug tha, dobara verify zaroori)
+
+### 12. Checkout Summary
+- [ ] Cart total sahi aa raha hai (sab item price × quantity sum)
+- [ ] Coupon discount sahi subtract ho raha hai total se
+- [ ] ₹25,000 se **upar** ka cart → shipping ₹0 aana chahiye
+- [ ] ₹25,000 se **neeche** ka cart → shipping fee lagni chahiye
+- [ ] **Cart khali karke** checkout page pe jao → crash na ho, proper "empty cart" message aaye
+
+### 13. Razorpay Payment
+- [ ] Test mode me "Pay securely" click karo → Razorpay popup khule
+- [ ] Test card se **successful** payment karo → order `confirmed` ho, OrderConfirmation page pe redirect ho
+- [ ] Payment **fail** karo (Razorpay test failure card se) → clear error dikhe, retry ka option mile
+- [ ] Payment popup **beech me band** kar do (bina complete kiye) → order `pending` hi rahe, `failed` na ho jaye
+- [ ] Failed/abandoned payment ke baad **dobara try karo** → naya duplicate pending order na bane, wahi purana reuse ho
+- [ ] Order verify **do baar** trigger karo (jaise page refresh) → dobara "confirmed" set na ho ya error na aaye (idempotency check)
+
+### 14. Order Confirmation Page
+- [ ] Payment success ke baad real order ID, real items (title, image, karat, quantity, price) dikhe — koi fake/hardcoded data nahi
+- [ ] Total sahi dikhe (discount + shipping included hone ke baad ka final amount)
+- [ ] "For order tracking, contact us at [number]" wala static note dikhe
+
+### 15. Order History Page
+- [ ] Login karke apne saare past orders dekho → list aaye
+- [ ] Har order ka status (`confirmed`/`failed`/`pending`) sahi dikhe
+- [ ] Order pe click karke detail dekho → same data jo confirmation page pe tha
+- [ ] Doosre account se login karo → sirf **apne** orders dikhe, doosron ke nahi
+- [ ] **Security check:** ek order ka confirmation/detail URL directly copy karke doosre logged-in customer se kholne ki koshish karo → block/404 hona chahiye, doosre ka order data leak nahi hona chahiye
+- [ ] Koi cancel/return button na dikhe (yeh scope me nahi hai, confirm kar accidentally add nahi hua)
+
+### 16. Reviews
+- [ ] Product page pe review submit karo (rating + text) → "submitted for moderation" jaisa message aaye
+- [ ] Submit karte hi wo turant product page pe **public** na dikhe (moderation pending state)
+- [ ] Same product pe **dobara** review submit karne ki koshish karo → reject ho ("already reviewed")
+- [ ] Rating without login try karo → login required error aaye
+- [ ] Admin panel se review **approve** karo → ab wo product page pe dikhe
+- [ ] Admin panel se review **reject/delete** karo → wo kahin na dikhe
+- [ ] Multiple reviews ek product pe (alag users se) → sab dikhen, average rating sahi calculate ho (agar dikhaya ja raha hai)
+
+---
+
+## PHASE 2 — Admin Panel testing
+
+### 1. Admin Auth
+- [ ] Admin login (jo `.env` me `ADMIN_EMAIL/PASSWORD` set kiya)
+- [ ] Admin logout
+- [ ] Galat admin password → error aana chahiye
+- [ ] **Normal customer account se `/admin` access karne ki koshish karo** → block hona chahiye (security check, zaroori hai)
+- [ ] **`.env` me `ADMIN_PASSWORD` change karo, server restart karo** → **naye** password se login ho jaana chahiye, purana wala fail ho (seed-sync bug fix verify)
+
+### 2. Banner Management
+- [ ] Sirf **3 fixed slots** dikhein, har ek me sirf upload button + order — koi "Image URL" text field na ho
+- [ ] Teeno slot fill karke homepage pe sahi order me dikhein
+- [ ] Banner edit karo
+- [ ] Banner delete karo
+- [ ] Activate/Deactivate toggle karo → homepage pe reflect ho
+
+### 3. Announcement Management
+- [ ] Naya announcement create karo
+- [ ] Edit/Delete
+- [ ] Activate/Deactivate → homepage pe **turant** reflect ho (off karte hi gayab ho jaye)
+
+### 4. Coupon Management
+- [ ] Naya coupon create karo (Percentage type)
+- [ ] Naya coupon create karo (Fixed amount type)
+- [ ] "Applies to: All / Category / Specific Product" dropdown dikhe
+- [ ] "Category" select karne pe category-picker aaye (dynamic list se, `product.json` ki categories)
+- [ ] "Product" select karne pe product-picker aaye (dynamic list se, search karke dhoondh sake)
+- [ ] Bana hua scoped coupon list me sahi scope ke saath dikhe
+- [ ] Edit coupon
+- [ ] Delete coupon
+- [ ] Expiry date wala coupon banao (Phase 1 ke coupon test me use hoga)
+
+### 5. User Management
+- [ ] "Users" tab confirm kar sidebar me hai ya nahi
+- [ ] (Agar hai) User list dikhe
+- [ ] Block/Unblock kisi test user ko → us user ka login block ho jaye
+
+### 6. Reviews Moderation
+- [ ] Pending reviews ki list dikhe
+- [ ] Approve/Reject/Delete teeno buttons kaam karein
+
+### 7. Order Overview (agar admin side banaya hai)
+- [ ] Admin sabhi orders dekh sake (sabke, customer-wise nahi)
+- [ ] Payment status aur order status sahi dikhein
+
+### 8. General Admin UI/UX sanity
+- [ ] Har form field ka label clearly samajh aaye — koi truncated text jaise "Choose File N...n" na ho
+- [ ] Buttons ka visual hierarchy clear ho — Save vs Delete ka color/weight alag dikhe
+- [ ] Koi bhi form submit karte waqt clear success/error feedback mile (kuch na kuch dikhna chahiye)
+
+---
+
+## Not yet in scope — build hone ke baad alag checklist banegi
+- WhatsApp cart-reminder
 
 
-require("dotenv").config();
-
-const app = require("../app");
-const connectDB = require("./database/connectDB");
-const User = require("./models/user.model");
-const { ROLES } = require("./constants/roles");
-
-const seedAdmin = async () => {
-  const { ADMIN_NAME, ADMIN_EMAIL, ADMIN_PASSWORD } = process.env;
-  if (!ADMIN_EMAIL || !ADMIN_PASSWORD || ADMIN_PASSWORD === "CHANGE_ME") return;
-
-  let admin = await User.findOne({ email: ADMIN_EMAIL.toLowerCase() }).select(
-    "+password",
-  );
-  if (!admin) {
-    await User.create({
-      name: ADMIN_NAME || "Admin",
-      email: ADMIN_EMAIL,
-      password: ADMIN_PASSWORD,
-      role: ROLES.ADMIN,
-    });
-    return;
-  }
-  const passwordMatches = await admin.comparePassword(ADMIN_PASSWORD);
-  if (!passwordMatches) {
-    admin.password = ADMIN_PASSWORD; // pre-save hook hash kar dega
-    await admin.save();
-  }
-};
-
-const startServer = async () => {
-  await connectDB();
-  await seedAdmin();
-
-  const PORT = process.env.PORT || 8000;
-
-  app.listen(PORT, () => {
-    process.stdout.write(`TBA server running on port ${PORT}\n`);
-  });
-};
-
-startServer().catch((error) => {
-  process.stderr.write(`Failed to start server: ${error.message}\n`);
-  process.exit(1);
-});
-
-
-Yeh update kr diay 
+Cart 
+customer review UI, Edit or delete it 
+no approval 
+admin should able to login user panel and admin panel at same time 
+whatsapp reminders 
+Admin UI + no product are showign in frontend ?

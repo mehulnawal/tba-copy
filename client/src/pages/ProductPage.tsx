@@ -73,11 +73,11 @@ export default function ProductPage() {
         setLoading(true);
         Promise.all([
             apiRequest<Product[]>(`/products?${query}`),
-            apiRequest<string[]>("/products/categories")
+            apiRequest<{ _id: string; name: string }[]>("/products/categories")
         ])
             .then(([p, c]) => {
                 setProducts(p);
-                setCategories(c);
+                setCategories(c.map((category) => category.name));
             })
             .catch((err) => console.error("Error loading jewelry catalog data:", err))
             .finally(() => setLoading(false));
@@ -124,7 +124,12 @@ export default function ProductPage() {
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-gray-900 antialiased">
-            <Navbar onSearchChange={() => { }} activeCategory="All" onCategoryChange={() => { }} />
+
+            <Navbar
+                onSearchChange={(v) => changeParam("search", v || null)}
+                activeCategory={params.get("category") || "All"}
+                onCategoryChange={(cat) => changeParam("category", cat === "All" ? null : cat)}
+            />
 
             <main className="flex-grow mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 py-8">
                 <div className="border-b border-gray-200 pb-5 sm:flex sm:items-center sm:justify-between">

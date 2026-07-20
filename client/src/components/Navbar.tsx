@@ -59,10 +59,10 @@ export default function Navbar({
 
   const handleCategoryClick = (category: string) => {
     if (location.pathname === "/products") {
-      // If already on the products page, change state instantly
       onCategoryChange(category);
     } else {
-      navigate(`/products?category=${encodeURIComponent(category)}`);
+      // "All" ka matlab hai filter hata do, na ki category=All bhejo
+      navigate(category === "All" ? "/products" : `/products?category=${encodeURIComponent(category)}`);
     }
   };
 

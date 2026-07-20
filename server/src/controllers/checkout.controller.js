@@ -27,7 +27,11 @@ const getCartSummary = asyncHandler(async (req, res) => {
     });
     if (coupon) {
       try {
-        discount = calculateCouponDiscount(coupon, cart.items.reduce((acc, item) => acc + item.price * item.quantity, 0), cart.items);
+        const subtotal = cart.items.reduce(
+          (acc, item) => acc + item.price * item.quantity,
+          0,
+        );
+        discount = calculateCouponDiscount(coupon, subtotal);
       } catch {
         cart.appliedCoupon = null;
         await cart.save();
@@ -37,13 +41,15 @@ const getCartSummary = asyncHandler(async (req, res) => {
 
   const summary = calculateCartSummary(cart.items, discount);
 
-  res.status(200).json(
-    new ApiResponse(
-      200,
-      { cart, summary },
-      "Cart summary fetched successfully",
-    ),
-  );
+  res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { cart, summary },
+        "Cart summary fetched successfully",
+      ),
+    );
 });
 
 const applyCoupon = asyncHandler(async (req, res) => {
@@ -64,7 +70,7 @@ const applyCoupon = asyncHandler(async (req, res) => {
     0,
   );
 
-  const discount = calculateCouponDiscount(coupon, subtotal, cart.items);
+  const discount = calculateCouponDiscount(coupon, subtotal);
   cart.appliedCoupon = coupon.code;
   await cart.save();
 
@@ -94,9 +100,11 @@ const removeCoupon = asyncHandler(async (req, res) => {
 
   const summary = calculateCartSummary(cart.items, 0);
 
-  res.status(200).json(
-    new ApiResponse(200, { cart, summary }, "Coupon removed successfully"),
-  );
+  res
+    .status(200)
+    .json(
+      new ApiResponse(200, { cart, summary }, "Coupon removed successfully"),
+    );
 });
 
 const getOrderSummary = asyncHandler(async (req, res) => {
@@ -135,7 +143,7 @@ const getOrderSummary = asyncHandler(async (req, res) => {
         0,
       );
       try {
-        discount = calculateCouponDiscount(coupon, subtotal, cart.items);
+        discount = calculateCouponDiscount(coupon, subtotal);
       } catch {
         cart.appliedCoupon = null;
         coupon = null;

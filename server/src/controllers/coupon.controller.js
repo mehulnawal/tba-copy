@@ -35,24 +35,27 @@ const validateCoupon = asyncHandler(async (req, res) => {
   );
 });
 
-const listEligibleForProduct = asyncHandler(async (req, res) => {
-  const product = await require("../models/product.model").findOne({
-    $or: [{ SKU: req.params.productId }, { slug: req.params.productId }],
-  });
-  if (!product) throw new ApiError(404, "Product not found");
-  const coupons = await Coupon.find({
-    activeStatus: true,
-    expiryDate: { $gt: new Date() },
-    $or: [
-      { scope: "all" },
-      { scope: "category", scopeCategory: product.data.Category },
-      { scope: "product", scopeProduct: product.SKU },
-    ],
-  });
-  res.json(new ApiResponse(200, coupons, "Eligible coupons fetched"));
-});
+// const listEligibleForProduct = asyncHandler(async (req, res) => {
+//   const product = await require("../models/product.model").findOne({
+//     $or: [{ SKU: req.params.productId }, { slug: req.params.productId }],
+//   });
+//   if (!product) throw new ApiError(404, "Product not found");
+//   const coupons = await Coupon.find({
+//     activeStatus: true,
+//     expiryDate: { $gt: new Date() },
+//     $or: [
+//       { scope: "all" },
+//       { scope: "category", scopeCategory: product.data.Category },
+//       { scope: "product", scopeProduct: product.SKU },
+//     ],
+//   });
+//   res.json(new ApiResponse(200, coupons, "Eligible coupons fetched"));
+// });
 
 const createCoupon = asyncHandler(async (req, res) => {
+  console.log("createCoupon called");
+  console.log(req.body);
+
   const {
     code,
     discountType,
@@ -71,14 +74,7 @@ const createCoupon = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Invalid discount type");
   }
 
-  if (
-    !["all", "category", "product"].includes(scope) ||
-    (scope === "category" && !scopeCategory) ||
-    (scope === "product" && !scopeProduct)
-  ) {
-    throw new ApiError(400, "Valid coupon scope target is required");
-  }
-
+  console.log("before create");
   const coupon = await Coupon.create({
     code: code.toUpperCase(),
     discountType,
@@ -87,11 +83,10 @@ const createCoupon = asyncHandler(async (req, res) => {
     expiryDate,
     usageLimit: usageLimit ?? null,
     activeStatus: activeStatus !== undefined ? activeStatus : true,
-    scope,
-    scopeCategory: scope === "category" ? scopeCategory : null,
-    scopeProduct: scope === "product" ? scopeProduct : null,
     createdBy: req.admin._id,
   });
+
+  console.log("before create");
 
   res
     .status(201)
@@ -113,9 +108,6 @@ const updateCoupon = asyncHandler(async (req, res) => {
     "expiryDate",
     "usageLimit",
     "activeStatus",
-    "scope",
-    "scopeCategory",
-    "scopeProduct",
   ];
 
   fields.forEach((field) => {
@@ -156,11 +148,32 @@ const listCoupons = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, coupons, "Coupons fetched successfully"));
 });
 
+const listPublicCoupons = asyncHandler(async (req, res) => {
+  const coupons = await Coupon.find({
+    activeStatus: true,
+    expiryDate: { $gt: new Date() },
+    $or: [
+      { usageLimit: null },
+      { $expr: { $lt: ["$usedCount", "$usageLimit"] } },
+    ],
+  })
+    .select(
+      "code discountType discountValue minimumCartValue expiryDate usageLimit usedCount",
+    )
+    .sort({ createdAt: -1 });
+
+  res
+    .status(200)
+    .json(
+      new ApiResponse(200, coupons, "Available coupons fetched successfully"),
+    );
+});
+
 module.exports = {
   validateCoupon,
+  listPublicCoupons,
   createCoupon,
   updateCoupon,
   deleteCoupon,
   listCoupons,
-  listEligibleForProduct,
 };

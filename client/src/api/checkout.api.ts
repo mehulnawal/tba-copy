@@ -26,8 +26,20 @@ export interface OrderSummaryResponse {
   summary: CartSummary;
 }
 
+export interface Coupon {
+  code: string;
+  discountType: string;
+  discountValue: number;
+  minimumCartValue: number;
+  expiryDate: string;
+  usageLimit: number | null;
+  usedCount: number;
+}
+
 export const checkoutApi = {
   getSummary: () => apiRequest<CheckoutSummaryResponse>("/checkout/summary"),
+
+  getCoupons: () => apiRequest<Coupon[]>("/coupons"),
 
   applyCoupon: (code: string) =>
     apiRequest<CheckoutSummaryResponse & { coupon?: { code: string } }>(

@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const Product = require("../models/product.model");
+const Category = require("../models/category.model");
 const { calculatePrice } = require("../utils/priceCalculator");
 const productFile = path.resolve(__dirname, "../../../product.json");
 const slugify = (value) => String(value || "").toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -18,6 +19,7 @@ const toProductResponse = (doc) => {
 const importCatalog = async () => {
   const products = readCatalogFile();
   for (const product of products) {
+    await Category.updateOne({ name: product.Category }, { $setOnInsert: { name: product.Category, displayOrder: 0, isActive: true } }, { upsert: true });
     if (!product.SKU || !product.Title || !product.Category) throw new Error("Each product requires SKU, Title, and Category");
     await Product.updateOne({ SKU: product.SKU }, { $set: { SKU: product.SKU, slug: slugify(product.Title), data: product } }, { upsert: true });
   }

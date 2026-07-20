@@ -3,6 +3,7 @@ const ApiError = require("../utils/ApiError");
 const ApiResponse = require("../utils/ApiResponse");
 const asyncHandler = require("../utils/asyncHandler");
 const { toProductResponse } = require("../services/catalog.service");
+const Category = require("../models/category.model");
 const listProducts = asyncHandler(async (req, res) => {
   const { search = "", category, minPrice, maxPrice, sort } = req.query;
   const docs = await Product.find();
@@ -17,11 +18,7 @@ const listProducts = asyncHandler(async (req, res) => {
   if (sort === "best-sellers") products.sort((a, b) => Number(b.Is_Best_Seller) - Number(a.Is_Best_Seller));
   res.status(200).json(new ApiResponse(200, products, "Products fetched successfully"));
 });
-const getCategories = asyncHandler(async (req, res) => {
-  const docs = await Product.find().select("data.Category");
-  const categories = [...new Set(docs.map((doc) => doc.data.Category).filter(Boolean))].sort();
-  res.status(200).json(new ApiResponse(200, categories, "Categories fetched successfully"));
-});
+const getCategories = asyncHandler(async (req, res) => { const categories = await Category.find({ isActive: true }).sort({ displayOrder: 1, name: 1 }); res.status(200).json(new ApiResponse(200, categories, "Categories fetched successfully")); });
 const getProduct = asyncHandler(async (req, res) => {
   const doc = await Product.findOne({ $or: [{ slug: req.params.identifier }, { SKU: req.params.identifier }] });
   if (!doc) throw new ApiError(404, "Product not found");
