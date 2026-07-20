@@ -327,12 +327,13 @@ Changes -
 - [✔] **Same item, same karat/color/size, dobara add karo** → quantity update honi chahiye, duplicate entry nahi
 - [✔] **Same product, alag karat** me do baar add karo (e.g. 9K aur 14K) → do alag cart entries banni chahiye
 - [✔] Cart me price sahi karat ke hisaab se dikhe (product page wale se match kare)
-- in proudct the purity is not showing 
+- [ ] in proudct the purity is not showing 
 
 ### 5. Wishlist
-- [ ] Item add karo wishlist me
-- [ ] Item remove karo
-- [ ] **Login kiye bina** wishlist use karne ki koshish karo → proper redirect/error aana chahiye
+- [✔] Item add karo wishlist me
+- [✔] Item remove karo
+- [✔] **Login kiye bina** wishlist use karne ki koshish karo → proper redirect/error aana chahiye
+- [ ] in proudct the purity is not showing 
 
 ### 6. Banners
 - [ ] Homepage pe active banners dikh rahe hai ya nahi (admin se add karne ke baad)
@@ -341,13 +342,14 @@ Changes -
 - [ ] Homepage/top-bar pe active announcement dikh raha hai ya nahi
 
 ### 8. Product Catalog
-- [ ] Catalog page load hote hi products dikhe (`product.json` se)
-- [ ] Product card pe sahi image, title, category, "From ₹..." price dikhe
-- [ ] Product detail page khulne pe sahi Title, Description, images dikhe
-- [ ] Karat selector (9K/14K/18K) — switch karte hi price, making charge, GST, gross/net weight sab live update ho
-- [ ] Color option select karo (agar product me hai)
-- [ ] Size option select karo (agar product me hai)
-- [ ] Ek product jisme colors/size_options nahi hain — check karo dropdown crash na kare, bas na dikhe
+- [✔] Catalog page load hote hi products dikhe (`product.json` se)
+- [✔] Product card pe sahi image, title, category, "From ₹..." price dikhe
+- [✔] Product detail page khulne pe sahi Title, Description, images dikhe
+- [✔] Karat selector (9K/14K/18K) — switch karte hi price, making charge, GST, gross/net weight sab live update ho
+- [✔] Color option select karo (agar product me hai)
+- [✔] Size option select karo (agar product me hai)
+- [✔] Ek product jisme colors/size_options nahi hain — check karo dropdown crash na kare, bas na dikhe
+- [ ] the white and yellow color are coming same
 
 ### 9. Search, Filter & Sort
 - [ ] Search box me product name type karo → matching results aaye

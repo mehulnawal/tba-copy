@@ -101,16 +101,29 @@ export default function ProductPage() {
         setParams(next);
     };
 
-    const handleWishlistToggle = async (productId: string) => {
+    const handleWishlistToggle = async (product: Product) => {
         if (!isLoggedIn) {
             alert("Please login to manage your wishlist items.");
             return;
         }
         try {
-            await apiRequest("/wishlist/toggle", { method: "POST", body: JSON.stringify({ productId }) });
-            alert("Product saved to wishlist.");
+            const currentWishlist = await apiRequest<{ productId: string }[]>("/wishlist");
+            const alreadySaved = currentWishlist.some((item) => item.productId === product.SKU);
+
+            if (alreadySaved) {
+                await apiRequest(`/wishlist/${product.SKU}`, { method: "DELETE" });
+                alert("Removed from wishlist.");
+            } else {
+                const priceObj = product.prices.find((p) => p.karat === "14kt") || product.prices[0];
+                await apiRequest("/wishlist", {
+                    method: "POST",
+                    body: JSON.stringify({ productId: product.SKU, karat: priceObj?.karat || "14kt" }),
+                });
+                alert("Product saved to wishlist.");
+            }
         } catch (err) {
             console.error(err);
+            alert("Could not update wishlist.");
         }
     };
 
@@ -268,7 +281,7 @@ export default function ProductPage() {
                                         key={product.id}
                                         product={product}
                                         defaultKarat={selectedKaratFilter}
-                                        onWishlistToggle={handleWishlistToggle}
+                                        onClick={() => onWishlistToggle(product)}
                                     />
                                 ))}
                             </div>
@@ -353,7 +366,7 @@ function FilterSection({ title, children }: { title: string; children: React.Rea
     );
 }
 
-function ProductCard({ product, defaultKarat, onWishlistToggle }: { product: Product; defaultKarat: "9kt" | "14kt" | "18kt"; onWishlistToggle: (id: string) => void }) {
+function ProductCard({ product, defaultKarat, onWishlistToggle }: { product: Product; defaultKarat: "9kt" | "14kt" | "18kt"; onWishlistToggle: (product: Product) => void }) {
     const [activeKarat, setActiveKarat] = useState<"9kt" | "14kt" | "18kt">(defaultKarat);
     const [currentImgIndex, setCurrentImgIndex] = useState(0);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
