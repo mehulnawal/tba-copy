@@ -54,7 +54,7 @@ export const productToCartPayload = (
   price: number,
   options?: { karat?: string; color?: string; size?: string },
 ) => ({
-  productId: product.id,
+  productId: product.SKU,
   slug: product.slug || slugFromName(product.name),
   name: product.name,
   category: product.category,
@@ -72,7 +72,7 @@ export const productToWishlistPayload = (
   price: number,
   options?: { karat?: string; color?: string; size?: string },
 ) => ({
-  productId: product.id,
+  productId: product.SKU
   slug: product.slug || slugFromName(product.name),
   name: product.name,
   category: product.category,
