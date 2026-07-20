@@ -301,22 +301,23 @@ Changes -
 - [ ] Refresh — login karke browser tab band kiye bina 15+ min wait karo (ya access token expire hone do), phir koi action karo → automatically refresh hoke kaam karna chahiye
 - [ ] Forgot Password — email daalo → email aana chahiye (App Password fix karne ke baad)
 - [ ] Reset Password — email wale link se naya password set karo → naye password se login ho
-- [ ] Google Login — sign in karo → account ban/login ho jaye
+- [✔] Google Login — sign in karo → account ban/login ho jaye
 - [ ] Facebook Login — sign in karo → account ban/login ho jaye
-- [ ] Google se pehli baar sign in karne wale email se agar already normal (email/password) account bana hai → dono link ho jaye ya clear error aaye, duplicate account na bane
+- [✔] Google se pehli baar sign in karne wale email se agar already normal (email/password) account bana hai → dono link ho jaye ya clear error aaye, duplicate account na bane
 
 ### 2. Profile Management
-- [ ] Name update karo → save ho aur reflect ho
-- [ ] Phone update karo
-- [ ] Change Password — sahi current password se
-- [ ] Change Password — **galat current password** se → error aana chahiye
+- [✔] Name update karo → save ho aur reflect ho
+- [✔] Phone update karo
+- [✔] Change Password — sahi current password se
+- [✔] Change Password — **galat current password** se → error aana chahiye
 
 ### 3. Address Management
-- [ ] Naya address add karo (sab fields fill karke)
-- [ ] Address edit karo
-- [ ] Address delete karo
-- [ ] Ek se **zyada address add karke** "Set Default" try karo → sirf ek hi default rehna chahiye
-- [ ] Required field **khali chhod ke** submit karo → validation error aana chahiye
+- [ ]  Address backend me save nhi ho raha hai 
+- [✔] Naya address add karo (sab fields fill karke)
+- [✔] Address edit karo
+- [✔] Address delete karo
+- [✔] Ek se **zyada address add karke** "Set Default" try karo → sirf ek hi default rehna chahiye
+- [✔] Required field **khali chhod ke** submit karo → validation error aana chahiye
 
 ### 4. Cart
 - [ ] Item add karo cart me
