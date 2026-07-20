@@ -320,13 +320,14 @@ Changes -
 - [✔] Required field **khali chhod ke** submit karo → validation error aana chahiye
 
 ### 4. Cart
-- [ ] Item add karo cart me
-- [ ] Quantity increase/decrease karo
-- [ ] Item remove karo
-- [ ] Poora cart clear karo
-- [ ] **Same item, same karat/color/size, dobara add karo** → quantity update honi chahiye, duplicate entry nahi
-- [ ] **Same product, alag karat** me do baar add karo (e.g. 9K aur 14K) → do alag cart entries banni chahiye
-- [ ] Cart me price sahi karat ke hisaab se dikhe (product page wale se match kare)
+- [✔] Item add karo cart me
+- [✔] Quantity increase/decrease karo
+- [✔] Item remove karo
+- [✔] Poora cart clear karo
+- [✔] **Same item, same karat/color/size, dobara add karo** → quantity update honi chahiye, duplicate entry nahi
+- [✔] **Same product, alag karat** me do baar add karo (e.g. 9K aur 14K) → do alag cart entries banni chahiye
+- [✔] Cart me price sahi karat ke hisaab se dikhe (product page wale se match kare)
+- in proudct the purity is not showing 
 
 ### 5. Wishlist
 - [ ] Item add karo wishlist me

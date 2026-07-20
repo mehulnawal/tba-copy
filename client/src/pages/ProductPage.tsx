@@ -3,6 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { apiRequest } from "../api/client";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import { useAuth } from "../context/AuthContext";
 
 // --- TypeScript Interfaces ---
 interface Price {
@@ -60,12 +61,7 @@ export default function ProductPage() {
     const [isSortMobileOpen, setIsSortMobileOpen] = useState(false);
 
     // FIX #1: Hybrid Dynamic Auth Check (Checks most common storage names)
-    const isLoggedIn = !!(
-        localStorage.getItem("token") ||
-        localStorage.getItem("user") ||
-        localStorage.getItem("accessToken") ||
-        document.cookie.includes("token")
-    );
+    const { isAuthenticated: isLoggedIn } = useAuth();
 
     const query = params.toString();
 
