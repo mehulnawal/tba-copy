@@ -72,7 +72,7 @@ export const productToWishlistPayload = (
   price: number,
   options?: { karat?: string; color?: string; size?: string },
 ) => ({
-  productId: product.SKU
+  productId: product.SKU,
   slug: product.slug || slugFromName(product.name),
   name: product.name,
   category: product.category,
