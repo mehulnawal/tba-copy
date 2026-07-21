@@ -1,7 +1,7 @@
 const cloudinary = require("../config/cloudinary.config");
 const ApiError = require("./ApiError");
 
-const uploadToCloudinary = (file, folder = "tba-banners") =>
+const uploadToCloudinary = (file, folder = "tba-banners", transformations = {}) =>
   new Promise((resolve, reject) => {
     if (!file?.buffer) {
       reject(new ApiError(400, "No file provided"));
@@ -12,6 +12,7 @@ const uploadToCloudinary = (file, folder = "tba-banners") =>
       {
         folder,
         resource_type: "image",
+        ...transformations,
       },
       (error, result) => {
         if (error) {

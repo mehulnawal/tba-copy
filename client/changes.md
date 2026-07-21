@@ -304,6 +304,7 @@ Changes -
 - [✔] Google Login — sign in karo → account ban/login ho jaye
 - [ ] Facebook Login — sign in karo → account ban/login ho jaye
 - [✔] Google se pehli baar sign in karne wale email se agar already normal (email/password) account bana hai → dono link ho jaye ya clear error aaye, duplicate account na bane
+- [✔] if User block from Admin - he should not able to login
 
 ### 2. Profile Management
 - [✔] Name update karo → save ho aur reflect ho
@@ -336,10 +337,10 @@ Changes -
 - [ ] in proudct the purity is not showing 
 
 ### 6. Banners
-- [ ] Homepage pe active banners dikh rahe hai ya nahi (admin se add karne ke baad)
+- [✔] Homepage pe active banners dikh rahe hai ya nahi (admin se add karne ke baad)
 
 ### 7. Announcements
-- [ ] Homepage/top-bar pe active announcement dikh raha hai ya nahi
+- [✔] Homepage/top-bar pe active announcement dikh raha hai ya nahi
 
 ### 8. Product Catalog
 - [✔] Catalog page load hote hi products dikhe (`product.json` se)
@@ -352,39 +353,37 @@ Changes -
 - [ ] the white and yellow color are coming same
 
 ### 9. Search, Filter & Sort
-- [ ] Search box me product name type karo → matching results aaye
-- [ ] Search me kuch aisa type karo jo exist na kare → "No products available" jaisa clean message aaye, crash nahi
-- [ ] Category dropdown se filter karo → sirf us category ke products dikhe
-- [ ] Sort: Price low-to-high → sahi order me aaye
-- [ ] Sort: Price high-to-low → sahi order me aaye
-- [ ] Sort: Newest → sahi order me aaye
-- [ ] Sort: Best sellers → `Is_Best_Seller: true` wale products upar aaye
-- [ ] Search + Category + Sort **ek saath** use karo → sab combine ho ke sahi result aaye
-
+- [✔] Search box me product name type karo → matching results aaye
+- [✔] Search me kuch aisa type karo jo exist na kare → "No products available" jaisa clean message aaye, crash nahi
+- [✔] Category dropdown se filter karo → sirf us category ke products dikhe
+- [✔] Sort: Price low-to-high → sahi order me aaye
+- [✔] Sort: Price high-to-low → sahi order me aaye
+- [✔] Sort: Newest → sahi order me aaye
+- [✔] Sort: Best sellers → `Is_Best_Seller: true` wale products upar aaye
+- [✔] Search + Category + Sort **ek saath** use karo → sab combine ho ke sahi result aaye
+- [ ] now there is a problem - in if i filtering on basis of price range(50k above) - and if I have sleected 9k but still it will show that product as its 18k is above 50k - which is wrong
+ 
 ### 10. Gold Rate / Pricing Security
 - [ ] Browser DevTools → Network tab khol ke product page load karo → koi gold-rate API key kahin bhi request/response me na dikhe
 - [ ] `/gold-rates` internal endpoint hi call ho raha ho, third-party API URL frontend se direct call na ho
 
 ### 11. Coupon (Admin se ek test coupon banane ke baad)
-- [ ] Valid coupon code apply karo → discount sahi calculate ho
-- [ ] **Invalid/wrong code** try karo → clear error
-- [ ] **Expired coupon** try karo (admin se past date wala banao) → error aana chahiye
-- [ ] **Minimum cart value se kam** amount pe apply karo (agar min-value set hai) → error aana chahiye
-- [ ] Coupon remove karo → total wapas normal ho jaye
-- [ ] `scope: all` wala coupon — **har** product page pe dikhe + checkout pe apply ho
-- [ ] `scope: category` wala coupon — sirf us category ke product page pe dikhe; checkout pe **sirf jab cart me us category ka item ho** tabhi apply ho
-- [ ] Wahi category-coupon **cart me us category ka item na ho** tab apply try karo → clear rejection message aana chahiye (silently 0 discount nahi)
-- [ ] `scope: product` wala coupon — sirf us specific product ke page pe dikhe; checkout pe sirf jab wahi product cart me ho
+- [✔] Valid coupon code apply karo → discount sahi calculate ho
+- [✔] **Invalid/wrong code** try karo → clear error
+- [✔] **Expired coupon** try karo (admin se past date wala banao) → error aana chahiye
+- [✔] **Minimum cart value se kam** amount pe apply karo (agar min-value set hai) → error aana chahiye
+- [✔] Coupon remove karo → total wapas normal ho jaye**sirf jab cart me us category ka item ho** tabhi apply horejection message aana chahiye (silently 0 discount nahi)jab wahi product cart me ho
 - [ ] Usage limit khatam ho chuka coupon apply karo → reject ho
 - [ ] Ek coupon 2 baar consecutively use karo (agar usageLimit=1 hai) → doosri baar reject ho (usedCount sahi se badh raha hai check kar)
 - [ ] **Checkout page pe jo discount dikh raha hai, wahi amount Razorpay me actually charge ho raha hai ya nahi — number-by-number match kar** (known bug tha, dobara verify zaroori)
 
 ### 12. Checkout Summary
-- [ ] Cart total sahi aa raha hai (sab item price × quantity sum)
-- [ ] Coupon discount sahi subtract ho raha hai total se
-- [ ] ₹25,000 se **upar** ka cart → shipping ₹0 aana chahiye
-- [ ] ₹25,000 se **neeche** ka cart → shipping fee lagni chahiye
-- [ ] **Cart khali karke** checkout page pe jao → crash na ho, proper "empty cart" message aaye
+- [✔] Cart total sahi aa raha hai (sab item price × quantity sum)
+- [✔] Coupon discount sahi subtract ho raha hai total se
+- [✔] ₹25,000 se **upar** ka cart → shipping ₹0 aana chahiye
+- [✔] ₹25,000 se **neeche** ka cart → shipping fee lagni chahiye
+- [✔] **Cart khali karke** checkout page pe jao → crash na ho, proper "empty cart" message aaye
+- [ ] no option to go to product - by clicking from cart
 
 ### 13. Razorpay Payment
 - [ ] Test mode me "Pay securely" click karo → Razorpay popup khule
@@ -408,11 +407,10 @@ Changes -
 - [ ] Koi cancel/return button na dikhe (yeh scope me nahi hai, confirm kar accidentally add nahi hua)
 
 ### 16. Reviews
-- [ ] Product page pe review submit karo (rating + text) → "submitted for moderation" jaisa message aaye
-- [ ] Submit karte hi wo turant product page pe **public** na dikhe (moderation pending state)
-- [ ] Same product pe **dobara** review submit karne ki koshish karo → reject ho ("already reviewed")
-- [ ] Rating without login try karo → login required error aaye
-- [ ] Admin panel se review **approve** karo → ab wo product page pe dikhe
+- [✔] Product page pe review submit karo (rating + text) → "submitted for moderation" jaisa message aaye
+- [✔] Submit karte hi wo turant product page pe **public** na dikhe (moderation pending state)
+- [✔] Same product pe **dobara** review submit karne ki koshish karo → reject ho ("already reviewed")
+- [✔] Rating without login try karo → login required error aaye
 - [ ] Admin panel se review **reject/delete** karo → wo kahin na dikhe
 - [ ] Multiple reviews ek product pe (alag users se) → sab dikhen, average rating sahi calculate ho (agar dikhaya ja raha hai)
 
@@ -421,62 +419,58 @@ Changes -
 ## PHASE 2 — Admin Panel testing
 
 ### 1. Admin Auth
-- [ ] Admin login (jo `.env` me `ADMIN_EMAIL/PASSWORD` set kiya)
-- [ ] Admin logout
-- [ ] Galat admin password → error aana chahiye
-- [ ] **Normal customer account se `/admin` access karne ki koshish karo** → block hona chahiye (security check, zaroori hai)
-- [ ] **`.env` me `ADMIN_PASSWORD` change karo, server restart karo** → **naye** password se login ho jaana chahiye, purana wala fail ho (seed-sync bug fix verify)
+- [✔] Admin login (jo `.env` me `ADMIN_EMAIL/PASSWORD` set kiya)
+- [✔] Admin logout
+- [✔] Galat admin password → error aana chahiye
+- [✔] **Normal customer account se `/admin` access karne ki koshish karo** → block hona chahiye (security check, zaroori hai)
+- [✔] **`.env` me `ADMIN_PASSWORD` change karo, server restart karo** → **naye** password se login ho jaana chahiye, purana wala fail ho (seed-sync bug fix verify)
 
 ### 2. Banner Management
-- [ ] Sirf **3 fixed slots** dikhein, har ek me sirf upload button + order — koi "Image URL" text field na ho
-- [ ] Teeno slot fill karke homepage pe sahi order me dikhein
-- [ ] Banner edit karo
-- [ ] Banner delete karo
-- [ ] Activate/Deactivate toggle karo → homepage pe reflect ho
+- [✔] Sirf **3 fixed slots** dikhein, har ek me sirf upload button + order — koi "Image URL" text field na ho
+- [✔] Teeno slot fill karke homepage pe sahi order me dikhein
+- [✔] Banner edit karo
+- [✔] Banner delete karo
+- [✔] Activate/Deactivate toggle karo → homepage pe reflect ho
 
 ### 3. Announcement Management
-- [ ] Naya announcement create karo
-- [ ] Edit/Delete
-- [ ] Activate/Deactivate → homepage pe **turant** reflect ho (off karte hi gayab ho jaye)
+- [✔] Naya announcement create karo
+- [✔] Edit/Delete
+- [✔] Activate/Deactivate → homepage pe **turant** reflect ho (off karte hi gayab ho jaye)
 
 ### 4. Coupon Management
-- [ ] Naya coupon create karo (Percentage type)
-- [ ] Naya coupon create karo (Fixed amount type)
-- [ ] "Applies to: All / Category / Specific Product" dropdown dikhe
-- [ ] "Category" select karne pe category-picker aaye (dynamic list se, `product.json` ki categories)
-- [ ] "Product" select karne pe product-picker aaye (dynamic list se, search karke dhoondh sake)
-- [ ] Bana hua scoped coupon list me sahi scope ke saath dikhe
-- [ ] Edit coupon
-- [ ] Delete coupon
-- [ ] Expiry date wala coupon banao (Phase 1 ke coupon test me use hoga)
+- [✔] Naya coupon create karo (Percentage type)
+- [✔] Naya coupon create karo (Fixed amount type)
+- [✔] Edit coupon
+- [✔] Delete coupon
+- [✔] Expiry date wala coupon banao (Phase 1 ke coupon test me use hoga)
 
 ### 5. User Management
-- [ ] "Users" tab confirm kar sidebar me hai ya nahi
-- [ ] (Agar hai) User list dikhe
-- [ ] Block/Unblock kisi test user ko → us user ka login block ho jaye
+- [✔] "Users" tab confirm kar sidebar me hai ya nahi
+- [✔] (Agar hai) User list dikhe
+- [✔] Block/Unblock kisi test user ko → us user ka login block ho jaye
 
 ### 6. Reviews Moderation
-- [ ] Pending reviews ki list dikhe
-- [ ] Approve/Reject/Delete teeno buttons kaam karein
+- [ ] Reviews should be shown in admin panel
 
 ### 7. Order Overview (agar admin side banaya hai)
 - [ ] Admin sabhi orders dekh sake (sabke, customer-wise nahi)
 - [ ] Payment status aur order status sahi dikhein
 
 ### 8. General Admin UI/UX sanity
-- [ ] Har form field ka label clearly samajh aaye — koi truncated text jaise "Choose File N...n" na ho
-- [ ] Buttons ka visual hierarchy clear ho — Save vs Delete ka color/weight alag dikhe
-- [ ] Koi bhi form submit karte waqt clear success/error feedback mile (kuch na kuch dikhna chahiye)
-
+- [✔] Har form field ka label clearly samajh aaye — koi truncated text jaise "Choose File N...n" na ho
+- [✔] Buttons ka visual hierarchy clear ho — Save vs Delete ka color/weight alag dikhe
+- [✔] Koi bhi form submit karte waqt clear success/error feedback mile (kuch na kuch dikhna chahiye)
+- [ ] Still it will need some improvemnets 
 ---
 
-## Not yet in scope — build hone ke baad alag checklist banegi
+## Not tested or not in scope
+
+- Categories - centeralise (Gold, Silver) ✔
+- Metal rates centeralise 
+- Reponsiveness of catalog page - everything
+- Certificate update
+- Update in FAQ
 - WhatsApp cart-reminder
+- Razorpay
 
 
-Cart 
-customer review UI, Edit or delete it 
-no approval 
-admin should able to login user panel and admin panel at same time 
-whatsapp reminders 
-Admin UI + no product are showign in frontend ?

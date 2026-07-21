@@ -4,31 +4,7 @@ import { apiRequest } from "../api/client";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { useAuth } from "../context/AuthContext";
-
-// --- TypeScript Interfaces ---
-interface Price {
-    karat: "9kt" | "14kt" | "18kt";
-    finalPrice: number;
-    makingCharge?: number;
-    gst?: number;
-}
-
-interface Product {
-    id: string;
-    slug: string;
-    Title: string;
-    Description: string;
-    Category: string;
-    Is_Best_Seller?: boolean;
-    Is_New_Product?: boolean;
-    "image_link-1"?: string;
-    "image_link-2"?: string;
-    "image_link-3"?: string;
-    colors?: string[];
-    size_options?: string[];
-    prices: Price[];
-    [key: string]: any;
-}
+import type { Category, Product } from "../types";
 
 const PRICE_BUCKETS = [
     { label: "Under ₹20,000", min: "0", max: "20000" },
@@ -54,7 +30,7 @@ const SORT_OPTIONS = [
 export default function ProductPage() {
     const [params, setParams] = useSearchParams();
     const [products, setProducts] = useState<Product[]>([]);
-    const [categories, setCategories] = useState<string[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedKaratFilter, setSelectedKaratFilter] = useState<"9kt" | "14kt" | "18kt">("9kt");
     const [isFilterMobileOpen, setIsFilterMobileOpen] = useState(false);
@@ -69,16 +45,29 @@ export default function ProductPage() {
         setLoading(true);
         Promise.all([
             apiRequest<Product[]>(`/products?${query}`),
-            apiRequest<{ _id: string; name: string }[]>("/products/categories")
+            apiRequest<Category[]>("/products/categories")
         ])
             .then(([p, c]) => {
                 setProducts(p);
-                setCategories(c.map((category) => category.name));
+                setCategories(c);
             })
             .catch((err) => console.error("Error loading jewelry catalog data:", err))
             .finally(() => setLoading(false));
     }, [query]);
 
+    const categoryId = (category: string | { _id: string; name?: string }) => typeof category === "string" ? category : category._id;
+    const parentId = (category: Category) => category.parent ? categoryId(category.parent) : null;
+    const selectCategory = (category: Category | null) => {
+        const next = new URLSearchParams(params);
+        next.delete("category");
+        if (!category) { next.delete("mainCategory"); next.delete("subCategory"); }
+        else if (category.parent) { next.set("mainCategory", parentId(category) || ""); next.set("subCategory", category._id); }
+        else { next.set("mainCategory", category._id); next.delete("subCategory"); }
+        setParams(next);
+    };
+    const selectedMainCategory = params.get("mainCategory");
+    const selectedSubCategory = params.get("subCategory");
+    const activeCategoryName = categories.find((category) => category._id === (selectedSubCategory || selectedMainCategory))?.name || "All";
     const changeParam = (key: string, value: string | null) => {
         const next = new URLSearchParams(params);
         if (value) {
@@ -127,9 +116,8 @@ export default function ProductPage() {
         }
     };
 
-    const clearFilters = () => {
-        setParams(new URLSearchParams());
-    };
+    const filteredProducts = products.filter((product) => (!selectedMainCategory || categoryId(product.mainCategory) === selectedMainCategory) && (!selectedSubCategory || categoryId(product.subCategory) === selectedSubCategory));
+    const clearFilters = () => { setParams(new URLSearchParams()); };
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-gray-900 antialiased">
@@ -172,18 +160,18 @@ export default function ProductPage() {
                         <FilterSection title="Category">
                             <div className="space-y-2 pt-2">
                                 <button
-                                    onClick={() => changeParam("category", null)}
-                                    className={`block text-sm text-left w-full transition ${!params.get("category") ? "text-amber-700 font-semibold" : "text-gray-600 hover:text-gray-900"}`}
+                                    onClick={() => selectCategory(null)}
+                                    className={`block text-sm text-left w-full transition ${!selectedMainCategory ? "text-amber-700 font-semibold" : "text-gray-600 hover:text-gray-900"}`}
                                 >
                                     All Categories
                                 </button>
                                 {categories.map((cat) => (
                                     <button
-                                        key={cat}
-                                        onClick={() => changeParam("category", cat)}
-                                        className={`block text-sm text-left w-full transition ${params.get("category") === cat ? "text-amber-700 font-semibold" : "text-gray-600 hover:text-gray-900"}`}
+                                        key={cat._id}
+                                        onClick={() => selectCategory(cat)}
+                                        className={`block text-sm text-left w-full transition ${selectedSubCategory === cat._id || selectedMainCategory === cat._id ? "text-amber-700 font-semibold" : "text-gray-600 hover:text-gray-900"}`}
                                     >
-                                        {cat}
+                                        {cat.name}
                                     </button>
                                 ))}
                             </div>
@@ -261,7 +249,7 @@ export default function ProductPage() {
                                 <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-amber-700" />
                                 <p className="text-sm text-gray-500 tracking-wide font-medium">Curating live collection...</p>
                             </div>
-                        ) : products.length === 0 ? (
+                        ) : filteredProducts.length === 0 ? (
                             <div className="text-center py-24 bg-white rounded-lg border border-dashed border-gray-300 p-8">
                                 <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
@@ -276,12 +264,12 @@ export default function ProductPage() {
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 xl:gap-x-8">
-                                {products.map((product) => (
+                                {filteredProducts.map((product) => (
                                     <ProductCard
                                         key={product.id}
                                         product={product}
                                         defaultKarat={selectedKaratFilter}
-                                        onClick={() => onWishlistToggle(product)}
+                                        onWishlistToggle={handleWishlistToggle}
                                     />
                                 ))}
                             </div>
@@ -289,6 +277,8 @@ export default function ProductPage() {
                     </div>
                 </div>
             </main >
+
+
 
             {/* Mobile Overlays */}
             {
@@ -303,8 +293,8 @@ export default function ProductPage() {
                                 <div>
                                     <h3 className="text-sm font-semibold text-gray-900 mb-2">Categories</h3>
                                     {categories.map((c) => (
-                                        <button key={c} onClick={() => { changeParam("category", c); setIsFilterMobileOpen(false); }} className={`block py-1 text-sm text-left w-full ${params.get("category") === c ? "text-amber-700 font-bold" : "text-gray-600"}`}>
-                                            {c}
+                                        <button key={c._id} onClick={() => { selectCategory(c); setIsFilterMobileOpen(false); }} className={`block py-1 text-sm text-left w-full ${selectedSubCategory === c._id || selectedMainCategory === c._id ? "text-amber-700 font-bold" : "text-gray-600"}`}>
+                                            {c.name}
                                         </button>
                                     ))}
                                 </div>
@@ -367,6 +357,7 @@ function FilterSection({ title, children }: { title: string; children: React.Rea
 }
 
 function ProductCard({ product, defaultKarat, onWishlistToggle }: { product: Product; defaultKarat: "9kt" | "14kt" | "18kt"; onWishlistToggle: (product: Product) => void }) {
+    const categoryName = (category: Category | string) => typeof category === "string" ? "Jewellery" : category.name;
     const [activeKarat, setActiveKarat] = useState<"9kt" | "14kt" | "18kt">(defaultKarat);
     const [currentImgIndex, setCurrentImgIndex] = useState(0);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -375,9 +366,7 @@ function ProductCard({ product, defaultKarat, onWishlistToggle }: { product: Pro
         setActiveKarat(defaultKarat);
     }, [defaultKarat]);
 
-    const images = [product["image_link-1"], product["image_link-2"], product["image_link-3"]].filter(
-        (img): img is string => typeof img === "string" && img.trim() !== ""
-    );
+    const images = product.images.map((image) => image.url);
 
     const fallbackImage = "https://via.placeholder.com/600?text=No+Jewelry+Image";
     const displaysCarousel = images.length > 1;
@@ -408,18 +397,18 @@ function ProductCard({ product, defaultKarat, onWishlistToggle }: { product: Pro
                 <Link to={`/product/${product.slug}`} className="block w-full h-full">
                     <img
                         src={images[currentImgIndex] || fallbackImage}
-                        alt={product.Title}
+                        alt={product.title}
                         className="h-full w-full object-cover object-center transition duration-500 scale-100 group-hover:scale-102"
                     />
                 </Link>
 
                 <div className="absolute top-3 left-3 flex flex-col space-y-1">
-                    {product.Is_Best_Seller && (
+                    {product.isBestSeller && (
                         <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-800 uppercase tracking-wider shadow-sm">
                             Bestseller
                         </span>
                     )}
-                    {product.Is_New_Product && (
+                    {product.isNewProduct && (
                         <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800 uppercase tracking-wider shadow-sm">
                             New
                         </span>
@@ -427,7 +416,7 @@ function ProductCard({ product, defaultKarat, onWishlistToggle }: { product: Pro
                 </div>
 
                 <button
-                    onClick={() => onWishlistToggle(product.id)}
+                    onClick={() => onWishlistToggle(product)}
                     className="absolute top-3 right-3 p-2 rounded-full bg-white/90 text-gray-500 hover:text-rose-600 hover:bg-white shadow-sm transition"
                     aria-label="Save to Wishlist"
                 >
@@ -449,11 +438,11 @@ function ProductCard({ product, defaultKarat, onWishlistToggle }: { product: Pro
             </div>
 
             <div className="flex flex-1 flex-col p-4 space-y-2">
-                <span className="text-[10px] tracking-wider text-gray-400 uppercase font-semibold">{product.Category}</span>
+                <span className="text-[10px] tracking-wider text-gray-400 uppercase font-semibold">{categoryName(product.subCategory)}</span>
 
                 <Link to={`/product/${product.slug}`} className="block">
                     <h3 className="text-sm font-medium text-gray-900 hover:text-amber-700 line-clamp-2 min-h-[40px] transition">
-                        {product.Title}
+                        {product.title}
                     </h3>
                 </Link>
 

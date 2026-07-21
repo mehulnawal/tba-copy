@@ -5,49 +5,14 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { useToast } from "../context/ToastContext";
 import { useAddToCart } from "../hooks/useCart";
-
-type Price = {
-    karat: "9kt" | "14kt" | "18kt";
-    makingCharge: number;
-    totalCost: number;
-    gst: number;
-    finalPrice: number;
-    grossWeight: number;
-    netWeight: number;
-    goldValue?: number;
-    roundDiamondCarat?: number;
-    roundDiamondValue?: number;
-    fancyDiamondCarat?: number;
-    fancyDiamondValue?: number;
-    certificateCharges?: number;
-};
+import { RING_SIZES } from "../constants/product";
+import type { Product } from "../types";
 
 type Review = {
     _id: string;
     rating: number;
     text: string;
     user?: { name: string };
-};
-
-type Product = {
-    SKU: string;
-    Title: string;
-    Description: string;
-    Category: string;
-    slug: string;
-    "image_link-1"?: string;
-    "image_link-2"?: string;
-    "image_link-3"?: string;
-    video_link?: string;
-    colors?: string[];
-    size_options?: string[];
-    prices: Price[];
-    roundDiamondCarat?: number;
-    roundDiamondValue?: number;
-    fancyDiamondCarat?: number;
-    fancyDiamondValue?: number;
-    certificateCharges?: number;
-    [key: string]: any;
 };
 
 function getSwatchHexColor(colorName: string): string {
@@ -93,7 +58,7 @@ export default function ProductDetails() {
                 setProduct(p);
                 const defaultColors = p.colors && p.colors.length > 0 ? p.colors : ["Yellow", "Rose", "White"];
                 setColor(defaultColors[0]);
-                if (p.size_options?.length) setSize(p.size_options[0]);
+                setSize(RING_SIZES[0]);
 
                 apiRequest<Review[]>(`/reviews/${p.SKU}`).then(setReviews).catch(() => { });
             })
@@ -115,20 +80,20 @@ export default function ProductDetails() {
         );
     }
 
-    const activePriceObj = product.prices.find((p) => p.karat === karat) || product.prices[0];
+    const activePriceObj = product.prices.find((price) => price.karat === karat) || product.prices[0];
+    const categoryName = (category: Product["mainCategory"]) => typeof category === "string" ? "Jewellery" : category.name;
+    const categoryId = (category: Product["mainCategory"]) => typeof category === "string" ? category : category._id;
 
-    const mediaList = [product["image_link-1"], product["image_link-2"], product["image_link-3"]]
-        .filter((img): img is string => typeof img === "string" && img.trim() !== "")
-        .map((url) => ({ type: "image" as const, url }));
+    const mediaList = product.images.map((image) => ({ type: "image" as const, url: image.url }));
 
     const availableColors = (product.colors && product.colors.length > 0)
         ? (product.colors.some(c => c.toLowerCase().includes("white")) ? product.colors : [...product.colors, "White"])
         : ["Yellow", "Rose", "White"];
 
     // FIX 2: Fancy Diamond & Round Diamond display logic
-    const roundCarat = activePriceObj.roundDiamondCarat ?? product.roundDiamondCarat ?? 0.12;
-    const fancyCarat = activePriceObj.fancyDiamondCarat ?? product.fancyDiamondCarat ?? 0.18;
-    const certCharges = activePriceObj.certificateCharges ?? product.certificateCharges ?? 1500;
+    const roundCarat = product.diamond?.roundCarat ?? 0;
+    const fancyCarat = product.diamond?.fancyCarat ?? 0;
+    const certCharges = activePriceObj.certificateCharges ?? product.certificateCharges;
 
     const computedGoldValue = activePriceObj.goldValue ||
         Math.max(0, activePriceObj.totalCost - activePriceObj.makingCharge - certCharges);
@@ -148,14 +113,10 @@ export default function ProductDetails() {
                 color,
                 size,
                 quantity: 1,
-                price: activePriceObj.finalPrice,
-                name: product.Title,
-                image: product["image_link-1"] || "",
-                category: product.Category
             });
             showToast("Item added to cart!", "success");
-        } catch (err: any) {
-            showToast(err.message || "Failed to add to cart.", "error");
+        } catch (err: unknown) {
+            showToast(err instanceof Error ? err.message : "Failed to add to cart.", "error");
         }
     };
 
@@ -169,8 +130,8 @@ export default function ProductDetails() {
             setReviews((prev) => [addedReview, ...prev]);
             showToast("Review submitted!", "success");
             setReviewText("");
-        } catch (err: any) {
-            showToast(err.message || "Could not submit review.", "error");
+        } catch (err: unknown) {
+            showToast(err instanceof Error ? err.message : "Could not submit review.", "error");
         }
     };
 
@@ -184,9 +145,9 @@ export default function ProductDetails() {
                 <nav className="mb-6 text-[11px] tracking-widest text-amber-900/60 uppercase font-medium space-x-2 border-b border-stone-200/60 pb-3">
                     <Link to="/" className="hover:text-amber-900">Home</Link>
                     <span>/</span>
-                    <Link to={`/products?category=${encodeURIComponent(product.Category)}`}>{product.Category}</Link>
+                    <Link to={`/products?mainCategory=${encodeURIComponent(categoryId(product.mainCategory))}`}>{categoryName(product.mainCategory)}</Link>
                     <span>/</span>
-                    <span className="text-stone-900 font-semibold">{product.Title}</span>
+                    <span className="text-stone-900 font-semibold">{product.title}</span>
                 </nav>
 
                 {/* Balanced Grid - Image on Left, Details on Right */}
@@ -220,7 +181,7 @@ export default function ProductDetails() {
                                 >
                                     <img
                                         src={mediaList[activeMediaIndex]?.url}
-                                        alt={product.Title}
+                                        alt={product.title}
                                         className={`w-full h-full object-cover transition-opacity duration-200 ${isHoveringMainImage ? "opacity-0" : "opacity-100"}`}
                                     />
                                     {isHoveringMainImage && (
@@ -240,7 +201,7 @@ export default function ProductDetails() {
                         {/* FIX 3: Description relocated under the image */}
                         <div className="bg-white p-5 border border-stone-200/80 rounded-lg shadow-xs space-y-2">
                             <h3 className="text-xs font-bold uppercase tracking-widest text-stone-700">Description</h3>
-                            <p className="text-xs leading-relaxed text-stone-600">{product.Description}</p>
+                            <p className="text-xs leading-relaxed text-stone-600">{product.description}</p>
                         </div>
                     </div>
 
@@ -249,10 +210,10 @@ export default function ProductDetails() {
 
                         <div>
                             <span className="text-xs uppercase tracking-[0.2em] font-semibold text-amber-900">
-                                {product.Category}
+                                {categoryName(product.mainCategory)}
                             </span>
                             <h1 className="text-2xl md:text-3xl font-serif text-stone-900 tracking-tight mt-1">
-                                {product.Title}
+                                {product.title}
                             </h1>
                         </div>
 
@@ -385,6 +346,13 @@ export default function ProductDetails() {
                                         </span>
                                     </button>
                                 ))}
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="block text-xs uppercase tracking-widest font-semibold text-stone-600">Ring Size: <span className="text-stone-900">{size}</span></label>
+                            <div className="flex flex-wrap gap-2">
+                                {RING_SIZES.map((ringSize) => <button key={ringSize} type="button" onClick={() => setSize(ringSize)} className={`min-w-10 px-3 py-2 text-xs font-semibold rounded border transition ${size === ringSize ? "border-amber-800 bg-amber-900 text-white" : "border-stone-300 bg-white text-stone-700 hover:border-amber-700"}`}>{ringSize}</button>)} 
                             </div>
                         </div>
 

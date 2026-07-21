@@ -56,6 +56,8 @@ const {
   remove: removeReview,
 } = require("../controllers/review.controller");
 
+const { adminListProducts, adminGetProduct, createProduct, updateProduct, deleteProduct, previewPrice, uploadImageHandler } = require("../controllers/product.controller");
+
 const router = express.Router();
 
 router.post("/auth/login", authLimiter, adminLogin);
@@ -88,6 +90,14 @@ router.patch("/coupons/:couponId", updateCoupon);
 router.delete("/coupons/:couponId", deleteCoupon);
 
 router.get("/orders", listOrders);
+router.post("/upload-image", upload.single("image"), uploadImageHandler);
+router.post("/products/preview-price", previewPrice);
+router.get("/products", adminListProducts);
+router.get("/products/:productId", adminGetProduct);
+router.post("/products", createProduct);
+router.patch("/products/:productId", updateProduct);
+router.delete("/products/:productId", deleteProduct);
+
 router.get("/categories", listAdmin);
 router.post("/categories", createCategory);
 router.patch("/categories/:categoryId", updateCategory);

@@ -4,6 +4,8 @@ import { adminApi, type AdminUser, type BannerPayload, type Coupon, type Managed
 import type { Banner } from "../api/banner.api";
 import type { Announcement } from "../api/announcement.api";
 import { ApiRequestError, apiRequest } from "../api/client";
+import type { Category } from "../types";
+import Products from "./Products";
 
 // --- HELPERS ---
 const errorMessage = (error: unknown) =>
@@ -152,6 +154,7 @@ function Layout({ admin, onLogout }: { admin: AdminUser; onLogout: () => void })
     { to: "/admin", label: "Overview", icon: "💎", end: true },
     { to: "/admin/orders", label: "Orders", icon: "🛍️" },
     { to: "/admin/coupons", label: "Coupons", icon: "🏷️" },
+    { to: "/admin/products", label: "Products", icon: "💎" },
     { to: "/admin/categories", label: "Categories", icon: "🗂️" },
     { to: "/admin/users", label: "Customers", icon: "👥" },
     { to: "/admin/banners", label: "Banners", icon: "🖼️" },
@@ -220,6 +223,7 @@ function Layout({ admin, onLogout }: { admin: AdminUser; onLogout: () => void })
           <Route path="orders" element={<Orders />} />
           <Route path="metal-rates" element={<MetalRates />} />
           <Route path="categories" element={<Categories />} />
+          <Route path="products" element={<Products />} />
           <Route path="*" element={<Navigate to="/admin" replace />} />
         </Routes>
       </main>
@@ -674,7 +678,8 @@ function Announcements() {
 
   const save = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const f = new FormData(e.currentTarget);
+    const form = e.currentTarget;
+    const f = new FormData(form);
     const p = { message: String(f.get("message")), order: Number(f.get("order")) };
     try {
       edit ? await adminApi.updateAnnouncement(edit._id, p) : await adminApi.createAnnouncement(p);
@@ -753,7 +758,8 @@ function MetalRates() {
   const save = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!confirm("Confirm updating precious metal base rates?")) return;
-    const f = new FormData(e.currentTarget);
+    const form = e.currentTarget;
+    const f = new FormData(form);
     const body = {
       gold9kt: Number(f.get("gold9kt")),
       gold14kt: Number(f.get("gold14kt")),
@@ -793,87 +799,55 @@ function MetalRates() {
 
 // --- CATEGORIES ---
 function Categories() {
-  const [items, setItems] = useState<any[]>([]);
+  const [items, setItems] = useState<Category[]>([]);
+  const [isSubCategory, setIsSubCategory] = useState(false);
+  const [selectedParentId, setSelectedParentId] = useState("");
+  const [editing, setEditing] = useState<Category | null>(null);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
 
-  const load = useCallback(() => apiRequest<any[]>("/admin/categories").then(setItems).catch((e) => setToast({ message: errorMessage(e), type: "error" })), []);
+  const load = useCallback(() => adminApi.categories().then(setItems).catch((e) => setToast({ message: errorMessage(e), type: "error" })), []);
   useEffect(() => { void load(); }, [load]);
+  const mainCategories = items.filter((category) => !category.parent);
+  const parentId = (category: Category) => typeof category.parent === "string" ? category.parent : category.parent?._id;
+  const resetForm = () => { setEditing(null); setIsSubCategory(false); setSelectedParentId(""); };
 
   const save = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const f = new FormData(e.currentTarget);
+    const form = e.currentTarget;
+    const f = new FormData(form);
+    const parent = isSubCategory ? selectedParentId : null;
+    if (isSubCategory && !parent) { setToast({ message: "Select a main category", type: "error" }); return; }
+    const payload = { name: String(f.get("name")).trim(), parent, displayOrder: Number(f.get("displayOrder")), isActive: f.get("isActive") === "on" };
     try {
-      await apiRequest("/admin/categories", {
-        method: "POST",
-        body: JSON.stringify({
-          name: String(f.get("name")),
-          displayOrder: Number(f.get("displayOrder")),
-          isActive: f.get("isActive") === "on",
-        }),
-      });
-      e.currentTarget.reset();
-      setToast({ message: "Category Created Successfully", type: "success" });
+      if (editing) await adminApi.updateCategory(editing._id, payload);
+      else await adminApi.createCategory(payload);
+      form.reset();
+      resetForm();
+      setToast({ message: editing ? "Category Updated Successfully" : "Category Created Successfully", type: "success" });
       await load();
-    } catch (e) {
-      setToast({ message: errorMessage(e), type: "error" });
-    }
+    } catch (error) { setToast({ message: errorMessage(error), type: "error" }); }
   };
+  const startEdit = (category: Category) => { setEditing(category); const id = parentId(category); setIsSubCategory(Boolean(id)); setSelectedParentId(id || ""); };
+  const toggle = async (category: Category) => { try { await adminApi.updateCategory(category._id, { isActive: !category.isActive }); await load(); } catch (error) { setToast({ message: errorMessage(error), type: "error" }); } };
+  const remove = async (id: string) => { if (!confirm("Delete category?")) return; try { await adminApi.deleteCategory(id); await load(); } catch (error) { setToast({ message: errorMessage(error), type: "error" }); } };
+  const renderRow = (category: Category, nested = false) => <div key={category._id} className={`admin-row justify-between ${nested ? "ml-6 border-l-2 border-[var(--color-border)] pl-4" : ""}`}>
+    <div><p className="text-sm font-semibold text-[var(--color-charcoal)]">{nested && <span className="mr-2 text-[var(--color-text-muted)]">↳</span>}{category.name}</p><small>{nested ? "Sub Category" : "Main Category"} · Order: {category.displayOrder}</small></div>
+    <div className="flex items-center gap-2"><Badge variant={category.isActive ? "success" : "neutral"}>{category.isActive ? "Active" : "Inactive"}</Badge><button onClick={() => startEdit(category)} className="cursor-pointer">Edit</button><button onClick={() => void toggle(category)} className="cursor-pointer">Toggle</button><button onClick={() => void remove(category._id)} className="text-red-700 cursor-pointer">Delete</button></div>
+  </div>;
 
-  return (
-    <div className="space-y-8">
-      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
-      <PageHeader title="Product Categories" subtitle="Structure catalogue navigation and filters" />
-
-      <form onSubmit={save} className="admin-form max-w-xl">
-        <b>Create New Category</b>
-        <label>
-          Category Name
-          <input required name="name" placeholder="Category Name" className="admin-input" />
-        </label>
-        <label>
-          Display Order
-          <input name="displayOrder" type="number" defaultValue="0" placeholder="Display Order" className="admin-input" />
-        </label>
-        <div className="col-span-full flex items-center justify-between">
-          <label className="flex items-center gap-2 text-xs font-semibold text-[var(--color-text-muted)]">
-            <input name="isActive" type="checkbox" defaultChecked className="rounded border-[var(--color-border)] text-[var(--color-teal)]" />
-            Active
-          </label>
-          <button className="admin-button cursor-pointer">Create Category</button>
-        </div>
-      </form>
-
-      {items.length === 0 ? (
-        <EmptyState title="No categories found" description="Create initial catalogue categories." icon="🗂️" />
-      ) : (
-        <div className="space-y-2">
-          {items.map((c) => (
-            <div key={c._id} className="admin-row justify-between">
-              <div>
-                <p className="text-sm font-semibold text-[var(--color-charcoal)]">{c.name}</p>
-                <small>Order: {c.displayOrder}</small>
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge variant={c.isActive ? "success" : "neutral"}>{c.isActive ? "Active" : "Inactive"}</Badge>
-                <button
-                  onClick={() => apiRequest(`/admin/categories/${c._id}`, { method: "PATCH", body: JSON.stringify({ isActive: !c.isActive }) }).then(load)}
-                  className="cursor-pointer"
-                >
-                  Toggle
-                </button>
-                <button
-                  onClick={() => confirm("Delete category?") && apiRequest(`/admin/categories/${c._id}`, { method: "DELETE" }).then(load)}
-                  className="text-red-700 cursor-pointer"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+  return <div className="space-y-8">
+    {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+    <PageHeader title="Product Categories" subtitle="Structure catalogue navigation and filters" />
+    <form onSubmit={save} className="admin-form max-w-xl">
+      <b>{editing ? "Edit Category" : "Create New Category"}</b>
+      <label>Category Type<select value={isSubCategory ? "sub" : "main"} onChange={(e) => { const sub = e.target.value === "sub"; setIsSubCategory(sub); if (!sub) setSelectedParentId(""); }} className="admin-input"><option value="main">Main Category</option><option value="sub">Sub Category</option></select></label>
+      {isSubCategory && <label>Parent Main Category<select required value={selectedParentId} onChange={(e) => setSelectedParentId(e.target.value)} className="admin-input"><option value="">Select main category</option>{mainCategories.filter((category) => category._id !== editing?._id).map((category) => <option key={category._id} value={category._id}>{category.name}</option>)}</select></label>}
+      <label>Category Name<input required name="name" key={editing?._id || "new"} defaultValue={editing?.name || ""} placeholder="Category Name" className="admin-input" /></label>
+      <label>Display Order<input name="displayOrder" key={`${editing?._id || "new"}-order`} type="number" defaultValue={editing?.displayOrder ?? 0} className="admin-input" /></label>
+      <div className="col-span-full flex items-center justify-between"><label className="flex items-center gap-2 text-xs font-semibold text-[var(--color-text-muted)]"><input name="isActive" key={`${editing?._id || "new"}-active`} type="checkbox" defaultChecked={editing?.isActive ?? true} className="rounded border-[var(--color-border)] text-[var(--color-teal)]" />Active</label><div className="flex gap-2">{editing && <button type="button" onClick={resetForm} className="cursor-pointer">Cancel</button>}<button className="admin-button cursor-pointer">{editing ? "Update Category" : "Create Category"}</button></div></div>
+    </form>
+    {items.length === 0 ? <EmptyState title="No categories found" description="Create initial catalogue categories." icon="🗂️" /> : <div className="space-y-2">{mainCategories.map((main) => <React.Fragment key={main._id}>{renderRow(main)}{items.filter((category) => parentId(category) === main._id).map((sub) => renderRow(sub, true))}</React.Fragment>)}</div>}
+  </div>;
 }
 
 // --- ORDERS ---
