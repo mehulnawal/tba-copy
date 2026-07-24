@@ -7,7 +7,17 @@ type Karat = "9kt" | "14kt" | "18kt";
 type Form = Omit<Product, "id" | "_id" | "slug" | "mainCategory" | "subCategory" | "prices"> & { mainCategory: string; subCategory: string };
 const blank = (): Form => ({ SKU: "", title: "", description: "", businessType: "B2C", mainCategory: "", subCategory: "", images: [], videoLink: "", colors: [], grossWeight: { "9kt": 0, "14kt": 0, "18kt": 0 }, netWeight: { "9kt": 0, "14kt": 0, "18kt": 0 }, diamond: { roundPrice: 0, roundCarat: 0, fancyPrice: 0, fancyCarat: 0 }, certificateCharges: 0, makingChargeRatePerGram: 0, isBestSeller: false, isNewProduct: false, isActive: true });
 const categoryId = (value: string | { _id: string; name?: string } | null) => typeof value === "string" ? value : value?._id ?? "";
-const categoryName = (value: Category | string) => typeof value === "string" ? "Uncategorised" : value.name;
+
+// const categoryName = (value: Category | string) => typeof value === "string" ? "Uncategorised" : value.name;
+
+const categoryName = (
+    value?: Category | string | null
+) => {
+    if (!value) return "Uncategorised";
+    if (typeof value === "string") return value;
+    return value.name ?? "Uncategorised";
+};
+
 const currency = (value: number) => `₹${Math.round(value || 0).toLocaleString("en-IN")}`;
 
 function Toggle({ label, hint, checked, onChange }: { label: string; hint?: string; checked: boolean; onChange: (value: boolean) => void }) {

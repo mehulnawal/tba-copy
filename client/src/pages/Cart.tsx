@@ -38,12 +38,12 @@ const itemVariants = {
     visible: {
         opacity: 1,
         y: 0,
-        transition: { duration: 0.5, ease: [0.215, 0.610, 0.355, 1.000] }
+        transition: { duration: 0.5, ease: [0.215, 0.610, 0.355, 1.000] as const }
     },
     exit: {
         opacity: 0,
         x: -20,
-        transition: { duration: 0.3, ease: [0.4, 0, 1, 1] }
+        transition: { duration: 0.3, ease: [0.4, 0, 1, 1] as const }
     }
 };
 

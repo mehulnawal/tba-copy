@@ -28,7 +28,7 @@ type AppliedCoupon = {
 
 type AvailableCoupon = {
     code: string;
-    discountType: "percentage" | "fixed";
+    discountType: string;
     discountValue: number;
     minimumCartValue: number;
     expiryDate: string;

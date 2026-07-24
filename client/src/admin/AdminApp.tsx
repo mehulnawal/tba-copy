@@ -760,11 +760,10 @@ function MetalRates() {
     if (!confirm("Confirm updating precious metal base rates?")) return;
     const form = e.currentTarget;
     const f = new FormData(form);
-    const body = {
-      gold9kt: Number(f.get("gold9kt")),
-      gold14kt: Number(f.get("gold14kt")),
-      gold18kt: Number(f.get("gold18kt")),
+    const body = {      gold24kt: Number(f.get("gold24kt")),
       silver: Number(f.get("silver")),
+      makingRatePerGram: Number(f.get("makingRatePerGram")),
+      certificateRatePerGram: Number(f.get("certificateRatePerGram")),
     };
     try {
       const res = await apiRequest<any>("/admin/metal-rates", { method: "PUT", body: JSON.stringify(body) });
@@ -782,7 +781,7 @@ function MetalRates() {
 
       <form onSubmit={save} className="admin-form max-w-2xl">
         <b>Baseline Rate Configuration</b>
-        {["gold9kt", "gold14kt", "gold18kt", "silver"].map((k) => (
+        {["gold24kt", "silver", "makingRatePerGram", "certificateRatePerGram"].map((k) => (
           <label key={k} className="uppercase">
             {k}
             <input className="admin-input" name={k} type="number" min="0" step="any" defaultValue={rates[k]} />
@@ -807,7 +806,8 @@ function Categories() {
 
   const load = useCallback(() => adminApi.categories().then(setItems).catch((e) => setToast({ message: errorMessage(e), type: "error" })), []);
   useEffect(() => { void load(); }, [load]);
-  const mainCategories = items.filter((category) => !category.parent);
+  const mainCategories = items.filter((category) => category.categoryKind === "metal-root");
+  const parentCategories = items.filter((category) => category.categoryKind === "metal-root" || category.categoryKind === "type");
   const parentId = (category: Category) => typeof category.parent === "string" ? category.parent : category.parent?._id;
   const resetForm = () => { setEditing(null); setIsSubCategory(false); setSelectedParentId(""); };
 
@@ -841,12 +841,12 @@ function Categories() {
     <form onSubmit={save} className="admin-form max-w-xl">
       <b>{editing ? "Edit Category" : "Create New Category"}</b>
       <label>Category Type<select value={isSubCategory ? "sub" : "main"} onChange={(e) => { const sub = e.target.value === "sub"; setIsSubCategory(sub); if (!sub) setSelectedParentId(""); }} className="admin-input"><option value="main">Main Category</option><option value="sub">Sub Category</option></select></label>
-      {isSubCategory && <label>Parent Main Category<select required value={selectedParentId} onChange={(e) => setSelectedParentId(e.target.value)} className="admin-input"><option value="">Select main category</option>{mainCategories.filter((category) => category._id !== editing?._id).map((category) => <option key={category._id} value={category._id}>{category.name}</option>)}</select></label>}
+      {isSubCategory && <label>Parent Category<select required value={selectedParentId} onChange={(e) => setSelectedParentId(e.target.value)} className="admin-input"><option value="">Select parent category</option>{parentCategories.filter((category) => category._id !== editing?._id).map((category) => <option key={category._id} value={category._id}>{category.name}</option>)}</select></label>}
       <label>Category Name<input required name="name" key={editing?._id || "new"} defaultValue={editing?.name || ""} placeholder="Category Name" className="admin-input" /></label>
       <label>Display Order<input name="displayOrder" key={`${editing?._id || "new"}-order`} type="number" defaultValue={editing?.displayOrder ?? 0} className="admin-input" /></label>
       <div className="col-span-full flex items-center justify-between"><label className="flex items-center gap-2 text-xs font-semibold text-[var(--color-text-muted)]"><input name="isActive" key={`${editing?._id || "new"}-active`} type="checkbox" defaultChecked={editing?.isActive ?? true} className="rounded border-[var(--color-border)] text-[var(--color-teal)]" />Active</label><div className="flex gap-2">{editing && <button type="button" onClick={resetForm} className="cursor-pointer">Cancel</button>}<button className="admin-button cursor-pointer">{editing ? "Update Category" : "Create Category"}</button></div></div>
     </form>
-    {items.length === 0 ? <EmptyState title="No categories found" description="Create initial catalogue categories." icon="🗂️" /> : <div className="space-y-2">{mainCategories.map((main) => <React.Fragment key={main._id}>{renderRow(main)}{items.filter((category) => parentId(category) === main._id).map((sub) => renderRow(sub, true))}</React.Fragment>)}</div>}
+    {items.length === 0 ? <EmptyState title="No categories found" description="Create initial catalogue categories." icon="🗂️" /> : <div className="space-y-2">{mainCategories.map((main) => <React.Fragment key={main._id}>{renderRow(main)}{items.filter((category) => parentId(category) === main._id).map((sub) => <React.Fragment key={sub._id}>{renderRow(sub, true)}{items.filter((category) => parentId(category) === sub._id).map((leaf) => renderRow(leaf, true))}</React.Fragment>)}</React.Fragment>)}</div>}
   </div>;
 }
 

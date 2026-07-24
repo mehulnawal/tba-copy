@@ -58,7 +58,9 @@ export default function App() {
                 }
               />
 
-              <Route path="/products" element={<ProductsPage />} />
+              <Route path="/products" element={<ProductsPage metal="gold" />} />
+              <Route path="/gold-jewellery" element={<ProductsPage metal="gold" />} />
+              <Route path="/silver-jewellery" element={<ProductsPage metal="silver" />} />
               <Route path="/product/:slug" element={<ProductDetailPage />} />
 
               <Route

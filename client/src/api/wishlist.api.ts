@@ -8,6 +8,7 @@ export interface WishlistItem {
   category: string;
   image: string;
   price: number;
+  karat?: string;
 }
 
 export interface WishlistProductPayload {

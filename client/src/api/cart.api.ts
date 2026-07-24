@@ -22,7 +22,12 @@ export interface Cart {
 
 export interface CartProductPayload {
   productId: string;
-  karat?: "9kt" | "14kt" | "18kt";
+  slug?: string;
+  name?: string;
+  category?: string;
+  image?: string;
+  price?: number;
+  karat?: string;
   color?: string;
   size?: string;
   quantity?: number;

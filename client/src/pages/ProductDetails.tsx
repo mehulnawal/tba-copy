@@ -81,8 +81,26 @@ export default function ProductDetails() {
     }
 
     const activePriceObj = product.prices.find((price) => price.karat === karat) || product.prices[0];
-    const categoryName = (category: Product["mainCategory"]) => typeof category === "string" ? "Jewellery" : category.name;
-    const categoryId = (category: Product["mainCategory"]) => typeof category === "string" ? category : category._id;
+
+    const categoryName = (
+        category?: Product["mainCategory"] | null
+    ) => {
+        if (!category) return "Jewellery";
+
+        if (typeof category === "string") return "Jewellery";
+
+        return category.name ?? "Jewellery";
+    };
+
+    const categoryId = (
+        category?: Product["mainCategory"] | null
+    ) => {
+        if (!category) return "";
+
+        if (typeof category === "string") return category;
+
+        return category._id ?? "";
+    };
 
     const mediaList = product.images.map((image) => ({ type: "image" as const, url: image.url }));
 
@@ -352,7 +370,7 @@ export default function ProductDetails() {
                         <div className="space-y-2">
                             <label className="block text-xs uppercase tracking-widest font-semibold text-stone-600">Ring Size: <span className="text-stone-900">{size}</span></label>
                             <div className="flex flex-wrap gap-2">
-                                {RING_SIZES.map((ringSize) => <button key={ringSize} type="button" onClick={() => setSize(ringSize)} className={`min-w-10 px-3 py-2 text-xs font-semibold rounded border transition ${size === ringSize ? "border-amber-800 bg-amber-900 text-white" : "border-stone-300 bg-white text-stone-700 hover:border-amber-700"}`}>{ringSize}</button>)} 
+                                {RING_SIZES.map((ringSize) => <button key={ringSize} type="button" onClick={() => setSize(ringSize)} className={`min-w-10 px-3 py-2 text-xs font-semibold rounded border transition ${size === ringSize ? "border-amber-800 bg-amber-900 text-white" : "border-stone-300 bg-white text-stone-700 hover:border-amber-700"}`}>{ringSize}</button>)}
                             </div>
                         </div>
 

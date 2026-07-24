@@ -31,6 +31,6 @@ declare module "*.jpeg" {
 }
 
 interface Window {
-  google?: { accounts?: { id: { initialize: (config: { client_id: string; callback: (response: { credential?: string }) => void }) => void; prompt: () => void } } };
+  google?: { accounts?: { id: { initialize: (config: { client_id: string; callback: (response: { credential?: string }) => void }) => void; prompt: () => void }; oauth2: { initTokenClient: (config: { client_id: string; scope: string; callback: (response: { access_token?: string }) => void }) => { requestAccessToken: () => void } } } };
   FB?: { init: (config: { appId: string; cookie: boolean; xfbml: boolean; version: string }) => void; login: (callback: (response: { authResponse?: { accessToken?: string } }) => void, options: { scope: string }) => void };
 }

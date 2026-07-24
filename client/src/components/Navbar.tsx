@@ -56,6 +56,8 @@ export default function Navbar({
   };
 
   const handleCategoryClick = (category: string) => {
+    if (category === "Gold") { navigate("/gold-jewellery"); return; }
+    if (category === "Silver") { navigate("/silver-jewellery"); return; }
     if (location.pathname === "/products") {
       onCategoryChange(category);
     } else {
@@ -110,7 +112,7 @@ export default function Navbar({
   const navStructure = useMemo(() => {
     if (!categories) return [];
     return categories.filter((category) => !category.parent && category.isActive).map((main) => ({
-      title: main.name, hasDropdown: true, categoryId: main._id,
+      title: main.name, hasDropdown: true, categoryId: main._id, path: undefined,
       categories: ["All", ...categories.filter((category) => {
         const parentId = typeof category.parent === "string" ? category.parent : category.parent?._id;
         return parentId === main._id && category.isActive;
@@ -302,13 +304,7 @@ export default function Navbar({
               ) : (
                 <div className="flex gap-3 md:gap-5 text-[12px] md:text-sm whitespace-nowrap">
                   <span className="tracking-wider">
-                    Gold 9K: <strong className="font-mono">₹{metalRates?.gold9kt}</strong>
-                  </span>
-                  <span className="tracking-wider">
-                    Gold 14K: <strong className="font-mono">₹{metalRates?.gold14kt}</strong>
-                  </span>
-                  <span className="tracking-wider">
-                    Gold 18K: <strong className="font-mono">₹{metalRates?.gold18kt}</strong>
+                    Gold 24K: <strong className="font-mono">₹{metalRates?.gold24kt}</strong>
                   </span>
                   <span className="tracking-wider">
                     Silver: <strong className="font-mono">₹{metalRates?.silver}</strong>

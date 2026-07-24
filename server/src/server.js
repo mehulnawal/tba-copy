@@ -5,6 +5,7 @@ const connectDB = require("./database/connectDB");
 const User = require("./models/user.model");
 const { ROLES } = require("./constants/roles");
 const { initialize: initializeMetalRates } = require("./controllers/metalRate.controller");
+const { initializeCategoryStructure } = require("./controllers/category.controller");
 
 const seedAdmin = async () => {
   const { ADMIN_NAME, ADMIN_EMAIL, ADMIN_PASSWORD } = process.env;
@@ -34,6 +35,7 @@ const startServer = async () => {
   await connectDB();
   await seedAdmin();
   await initializeMetalRates();
+  await initializeCategoryStructure();
 
   const PORT = process.env.PORT || 8000;
 

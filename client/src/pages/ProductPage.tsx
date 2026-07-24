@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { apiRequest } from "../api/client";
+import { useCategories } from "../hooks/useCategories";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { useAuth } from "../context/AuthContext";
@@ -27,10 +28,11 @@ const SORT_OPTIONS = [
     { label: "Best Sellers", value: "best-sellers" },
 ];
 
-export default function ProductPage() {
+export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silver" }) {
     const [params, setParams] = useSearchParams();
     const [products, setProducts] = useState<Product[]>([]);
-    const [categories, setCategories] = useState<Category[]>([]);
+    const { data: categoryData = [] } = useCategories(metal);
+    const categories = categoryData;
     const [loading, setLoading] = useState(true);
     const [selectedKaratFilter, setSelectedKaratFilter] = useState<"9kt" | "14kt" | "18kt">("9kt");
     const [isFilterMobileOpen, setIsFilterMobileOpen] = useState(false);
@@ -53,9 +55,19 @@ export default function ProductPage() {
             })
             .catch((err) => console.error("Error loading jewelry catalog data:", err))
             .finally(() => setLoading(false));
-    }, [query]);
+    }, [query, metal]);
 
-    const categoryId = (category: string | { _id: string; name?: string }) => typeof category === "string" ? category : category._id;
+    const categoryId = (
+        category?: string | { _id: string; name?: string } | null
+    ) => {
+        if (!category) return "";
+
+        return typeof category === "string"
+            ? category
+            : category._id ?? "";
+    };
+
+
     const parentId = (category: Category) => category.parent ? categoryId(category.parent) : null;
     const selectCategory = (category: Category | null) => {
         const next = new URLSearchParams(params);
@@ -131,9 +143,9 @@ export default function ProductPage() {
             <main className="flex-grow mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 py-8">
                 <div className="border-b border-gray-200 pb-5 sm:flex sm:items-center sm:justify-between">
                     <div>
-                        <h1 className="text-3xl font-serif font-semibold tracking-tight text-gray-900">Fine Jewellery</h1>
+                        <h1 className="text-3xl font-serif font-semibold tracking-tight text-gray-900">{metal === "gold" ? "Gold Jewellery" : "Silver Jewellery"}</h1>
                         <p className="mt-2 text-sm text-gray-500">
-                            Discover masterfully crafted settings across premium materials.
+                            {metal === "gold" ? "Explore our dedicated gold collection." : "Explore our dedicated silver collection."}
                         </p>
                     </div>
                     <div className="mt-3 sm:mt-0 sm:ml-4">
@@ -357,7 +369,15 @@ function FilterSection({ title, children }: { title: string; children: React.Rea
 }
 
 function ProductCard({ product, defaultKarat, onWishlistToggle }: { product: Product; defaultKarat: "9kt" | "14kt" | "18kt"; onWishlistToggle: (product: Product) => void }) {
-    const categoryName = (category: Category | string) => typeof category === "string" ? "Jewellery" : category.name;
+
+    const categoryName = (
+        category?: Category | string | null
+    ) => {
+        if (!category) return "Jewellery";
+        if (typeof category === "string") return "Jewellery";
+        return category.name ?? "Jewellery";
+    };
+
     const [activeKarat, setActiveKarat] = useState<"9kt" | "14kt" | "18kt">(defaultKarat);
     const [currentImgIndex, setCurrentImgIndex] = useState(0);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
