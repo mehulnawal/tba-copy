@@ -1,6 +1,8 @@
 const Cart = require("../models/cart.model");
 const Coupon = require("../models/coupon.model");
 const Address = require("../models/address.model");
+const Product = require("../models/product.model");
+const { calculatePrice } = require("../utils/priceCalculator");
 const ApiError = require("../utils/ApiError");
 const ApiResponse = require("../utils/ApiResponse");
 const asyncHandler = require("../utils/asyncHandler");
@@ -17,8 +19,20 @@ const getOrCreateCart = async (userId) => {
   return cart;
 };
 
+const refreshCartPrices = async (cart) => {
+  let changed = false;
+  for (const item of cart.items) {
+    const product = await Product.findOne({ SKU: item.productId });
+    if (!product) throw new ApiError(400, `${item.name} is no longer available`);
+    const current = await calculatePrice(product, item.karat);
+    if (Math.round(Number(item.price) * 100) !== Math.round(Number(current.finalPrice) * 100)) { item.price = current.finalPrice; changed = true; }
+  }
+  if (changed) await cart.save();
+  return changed;
+};
 const getCartSummary = asyncHandler(async (req, res) => {
   const cart = await getOrCreateCart(req.user._id);
+  const priceChanged = await refreshCartPrices(cart);
   let discount = 0;
 
   if (cart.appliedCoupon) {
@@ -46,8 +60,8 @@ const getCartSummary = asyncHandler(async (req, res) => {
     .json(
       new ApiResponse(
         200,
-        { cart, summary },
-        "Cart summary fetched successfully",
+        { cart, summary, priceChanged },
+        priceChanged ? "Prices updated to current rates" : "Cart summary fetched successfully",
       ),
     );
 });
@@ -132,6 +146,7 @@ const getOrderSummary = asyncHandler(async (req, res) => {
     });
   }
 
+  const priceChanged = await refreshCartPrices(cart);
   let discount = 0;
   let coupon = null;
 
@@ -162,8 +177,9 @@ const getOrderSummary = asyncHandler(async (req, res) => {
         address,
         coupon,
         summary,
+        priceChanged,
       },
-      "Order summary fetched successfully",
+      priceChanged ? "Prices updated to current rates; please review your cart" : "Order summary fetched successfully",
     ),
   );
 });

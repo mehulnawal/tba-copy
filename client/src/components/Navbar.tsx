@@ -18,6 +18,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../hooks/useCart";
 import { useAnnouncements } from "../hooks/useContent";
+type NavCategory = { id: string; name: string; parentId?: string; children: NavCategory[] };
 
 export default function Navbar({
   onSearchChange,
@@ -55,20 +56,14 @@ export default function Navbar({
     handleAuthAction();
   };
 
-  const handleCategoryClick = (category: string) => {
-    if (category === "Gold") { navigate("/gold-jewellery"); return; }
-    if (category === "Silver") { navigate("/silver-jewellery"); return; }
-    if (location.pathname === "/products") {
-      onCategoryChange(category);
-    } else {
-      navigate(
-        category === "All"
-          ? "/products"
-          : `/products?category=${encodeURIComponent(category)}`
-      );
-    }
+  const handleCategoryClick = (category: NavCategory | null, metal?: "gold" | "silver") => {
+    const path = metal === "silver" ? "/silver-jewellery" : "/gold-jewellery";
+    if (!category) { navigate(path); return; }
+    const params = new URLSearchParams();
+    if (category.children.length) params.set("mainCategory", category.id);
+    else { params.set("mainCategory", category.parentId || ""); params.set("subCategory", category.id); }
+    navigate(`${path}?${params.toString()}`);
   };
-
   const [isAnnouncementVisible, setIsAnnouncementVisible] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -111,12 +106,12 @@ export default function Navbar({
   const { data: categories } = useCategories();
   const navStructure = useMemo(() => {
     if (!categories) return [];
-    return categories.filter((category) => !category.parent && category.isActive).map((main) => ({
-      title: main.name, hasDropdown: true, categoryId: main._id, path: undefined,
-      categories: ["All", ...categories.filter((category) => {
-        const parentId = typeof category.parent === "string" ? category.parent : category.parent?._id;
-        return parentId === main._id && category.isActive;
-      }).sort((a, b) => a.displayOrder - b.displayOrder).map((subcategory) => subcategory.name)],
+    const childrenOf = (parentId: string): NavCategory[] => categories
+      .filter((category) => (typeof category.parent === "string" ? category.parent : category.parent?._id) === parentId && category.isActive)
+      .sort((a, b) => a.displayOrder - b.displayOrder)
+      .map((category) => ({ id: category._id, name: category.name, children: childrenOf(category._id) }));
+    return categories.filter((category) => !category.parent && category.categoryKind === "metal-root" && category.isActive).map((main) => ({
+      title: main.name, metal: main.metal, hasDropdown: true, categoryId: main._id, path: undefined, categories: childrenOf(main._id),
     }));
   }, [categories]);
   const {
@@ -178,8 +173,8 @@ export default function Navbar({
     onSearchChange("");
   };
 
-  const handleCategorySelect = (category: string) => {
-    handleCategoryClick(category);
+  const handleCategorySelect = (category: NavCategory | null, metal?: "gold" | "silver") => {
+    handleCategoryClick(category, metal);
     setIsMobileMenuOpen(false);
     setActiveDropdown(null);
 
@@ -393,24 +388,13 @@ export default function Navbar({
                             transition={{ duration: 0.18, ease: "easeOut" }}
                             className="absolute top-[85%] left-1/2 -translate-x-1/2 w-48 bg-[var(--color-white)] shadow-xl border border-[var(--color-border-subtle)] py-2 z-[var(--z-dropdown)] rounded-b-md"
                           >
-                            {item.categories?.map((category) => {
-                              const isActive = activeCategory === category;
-                              return (
-                                <button
-                                  key={category}
-                                  onClick={() => handleCategorySelect(category)}
-                                  className={`w-full text-left px-4 py-2 text-xs font-medium uppercase tracking-wider font-secondary transition-colors cursor-pointer bg-transparent border-none flex items-center justify-between ${isActive
-                                    ? "text-[var(--color-teal)] font-semibold bg-[var(--color-bg-secondary)]"
-                                    : "text-[var(--color-text)] hover:text-[var(--color-teal)] hover:bg-[var(--color-bg-secondary)]"
-                                    }`}
-                                >
-                                  <span>{category}</span>
-                                  {isActive && (
-                                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-teal)]" />
-                                  )}
-                                </button>
-                              );
-                            })}
+                            <button onClick={() => handleCategorySelect(null, item.metal)} className="w-full text-left px-4 py-2 text-xs font-medium uppercase tracking-wider font-secondary text-[var(--color-text)] hover:text-[var(--color-teal)] hover:bg-[var(--color-bg-secondary)]">All</button>
+                            {item.categories?.map((category) => category.children.length ? (
+                              <div key={category.id} className="border-t border-[var(--color-border-subtle)] py-1">
+                                <button onClick={() => handleCategorySelect(category, item.metal)} className="w-full text-left px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[var(--color-teal)]">{category.name}</button>
+                                {category.children.map((child) => <button key={child.id} onClick={() => handleCategorySelect({ ...child, parentId: category.id }, item.metal)} className="w-full text-left px-7 py-1.5 text-xs uppercase tracking-wider text-[var(--color-text)] hover:text-[var(--color-teal)] hover:bg-[var(--color-bg-secondary)]">{child.name}</button>)}
+                              </div>
+                            ) : <button key={category.id} onClick={() => handleCategorySelect({ ...category, parentId: item.categoryId }, item.metal)} className="w-full text-left px-4 py-2 text-xs font-medium uppercase tracking-wider font-secondary text-[var(--color-text)] hover:text-[var(--color-teal)] hover:bg-[var(--color-bg-secondary)]">{category.name}</button>)}
                           </motion.div>
                         )}
                       </AnimatePresence>
@@ -591,18 +575,8 @@ export default function Navbar({
                                 transition={{ duration: 0.25 }}
                                 className="overflow-hidden flex flex-col pl-4 border-l border-white/20 mt-1 space-y-2 py-2"
                               >
-                                {item.categories?.map((cat) => (
-                                  <button
-                                    key={cat}
-                                    onClick={() => handleCategorySelect(cat)}
-                                    className={`text-left text-sm font-secondary tracking-wider uppercase py-1 cursor-pointer bg-transparent border-none transition-colors ${activeCategory === cat
-                                      ? "text-white font-bold"
-                                      : "text-white/70 hover:text-white"
-                                      }`}
-                                  >
-                                    › {cat}
-                                  </button>
-                                ))}
+                                <button onClick={() => handleCategorySelect(null, item.metal)} className="text-left text-sm font-secondary tracking-wider uppercase py-1 cursor-pointer bg-transparent border-none text-white/70 hover:text-white">› All</button>
+                                {item.categories?.map((category) => category.children.length ? <div key={category.id} className="pt-2"><button onClick={() => handleCategorySelect(category, item.metal)} className="text-left text-sm font-secondary tracking-wider uppercase py-1 cursor-pointer bg-transparent border-none text-white font-bold">› {category.name}</button>{category.children.map((child) => <button key={child.id} onClick={() => handleCategorySelect({ ...child, parentId: category.id }, item.metal)} className="block text-left text-xs font-secondary tracking-wider uppercase py-1 pl-4 cursor-pointer bg-transparent border-none text-white/70 hover:text-white">› {child.name}</button>)}</div> : <button key={category.id} onClick={() => handleCategorySelect({ ...category, parentId: item.categoryId }, item.metal)} className="text-left text-sm font-secondary tracking-wider uppercase py-1 cursor-pointer bg-transparent border-none text-white/70 hover:text-white">› {category.name}</button>)}
                               </motion.div>
                             )}
                           </AnimatePresence>

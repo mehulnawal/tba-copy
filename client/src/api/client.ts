@@ -26,11 +26,9 @@ export class ApiRequestError extends Error {
 }
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api/v1";
+let adminRefreshInFlight: Promise<boolean> | null = null;
 
-export async function apiRequest<T>(
-  endpoint: string,
-  options: RequestInit = {},
-): Promise<T> {
+const requestOnce = async (endpoint: string, options: RequestInit = {}) => {
   const isFormData = options.body instanceof FormData;
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     credentials: "include",
@@ -40,17 +38,44 @@ export async function apiRequest<T>(
     },
     ...options,
   });
+  return { response, data: await response.json().catch(() => ({})) };
+};
 
-  const data = await response.json().catch(() => ({}));
+const refreshAdminSession = async () => {
+  if (!adminRefreshInFlight) {
+    adminRefreshInFlight = requestOnce("/admin/auth/refresh", { method: "POST" })
+      .then(({ response, data }) => response.ok && data.success !== false)
+      .catch(() => false)
+      .finally(() => { adminRefreshInFlight = null; });
+  }
+  return adminRefreshInFlight;
+};
 
-  if (!response.ok || data.success === false) {
-    throw new ApiRequestError(
-      data.statusCode || response.status,
-      data.message || "Request failed",
-      data.errors || [],
-    );
+const redirectToAdminLogin = () => {
+  if (typeof window !== "undefined" && window.location.pathname !== "/admin/login") {
+    window.location.assign("/admin/login");
+  }
+};
+
+export async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  let { response, data } = await requestOnce(endpoint, options);
+  const isProtectedAdminCall = endpoint.startsWith("/admin/")
+    && endpoint !== "/admin/auth/login"
+    && endpoint !== "/admin/auth/logout"
+    && endpoint !== "/admin/auth/refresh";
+
+  if (response.status === 401 && isProtectedAdminCall) {
+    if (await refreshAdminSession()) {
+      ({ response, data } = await requestOnce(endpoint, options));
+    } else {
+      redirectToAdminLogin();
+    }
   }
 
+  if (!response.ok || data.success === false) {
+    if (response.status === 401 && isProtectedAdminCall) redirectToAdminLogin();
+    throw new ApiRequestError(data.statusCode || response.status, data.message || "Request failed", data.errors || []);
+  }
   return data.data as T;
 }
 

@@ -39,7 +39,7 @@ const {
 } = require("../middlewares/admin.middleware");
 const upload = require("../middlewares/upload.middleware");
 const { authLimiter } = require("../middlewares/rateLimiter.middleware");
-const { listOrders } = require("../controllers/admin.order.controller");
+const { listOrders, updateProductionStatus } = require("../controllers/admin.order.controller");
 const {
   listAdmin,
   create: createCategory,
@@ -56,7 +56,7 @@ const {
   remove: removeReview,
 } = require("../controllers/review.controller");
 
-const { adminListProducts, adminGetProduct, createProduct, updateProduct, deleteProduct, previewPrice, uploadImageHandler } = require("../controllers/product.controller");
+const { adminListProducts, adminGetProduct, listPricingConfigs, createProduct, updateProduct, deleteProduct, previewPrice, uploadImageHandler } = require("../controllers/product.controller");
 
 const router = express.Router();
 
@@ -90,8 +90,10 @@ router.patch("/coupons/:couponId", updateCoupon);
 router.delete("/coupons/:couponId", deleteCoupon);
 
 router.get("/orders", listOrders);
+router.patch("/orders/:orderId/production-status", updateProductionStatus);
 router.post("/upload-image", upload.single("image"), uploadImageHandler);
 router.post("/products/preview-price", previewPrice);
+router.get("/pricing-configs", listPricingConfigs);
 router.get("/products", adminListProducts);
 router.get("/products/:productId", adminGetProduct);
 router.post("/products", createProduct);

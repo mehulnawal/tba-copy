@@ -137,12 +137,15 @@ export default function HomePage() {
     const addToWishlistMutation = useAddToWishlist();
     const removeFromWishlistMutation = useRemoveFromWishlist();
 
-    // Fetch dynamic category & query params search filtered products
+    // Mixed-metal listing is intentionally unsupported; load each catalogue and merge it for home sections.
     useEffect(() => {
-        const categoryParam = activeCategory !== "All" ? `&category=${encodeURIComponent(activeCategory)}` : "";
-        apiRequest<ApiProduct[]>(`/products?search=${encodeURIComponent(searchQuery)}${categoryParam}`)
-            .then(setProducts)
-            .catch(err => console.error("Error loading live product catalog matrices:", err));
+        Promise.all([
+            apiRequest<ApiProduct[]>(`/products/gold?search=${encodeURIComponent(searchQuery)}`),
+            apiRequest<ApiProduct[]>(`/products/silver?search=${encodeURIComponent(searchQuery)}`),
+        ]).then(([gold, silver]) => {
+            const merged = [...gold, ...silver];
+            setProducts(activeCategory === "All" ? merged : merged.filter((product) => product.Category === activeCategory));
+        }).catch((err) => console.error("Error loading home catalogue products:", err));
     }, [searchQuery, activeCategory]);
 
     // Hero carousel fallback system setup
@@ -330,7 +333,7 @@ export default function HomePage() {
                 <PrimeSelection />
 
                 {/* 3. Best Seller Showcase */}
-                <section className="reveal-section py-3 bg-[var(--color-bg)]" id="collection-grid">
+                {bestSellerProducts.length > 0 && <section className="reveal-section py-3 bg-[var(--color-bg)]" id="collection-grid">
                     <div className="container">
                         <div className="flex flex-col items-center mb-16 text-center">
                             <span className="section-label">Selected Statement Masterpieces</span>
@@ -350,7 +353,7 @@ export default function HomePage() {
                             addToCart={addToCart}
                         />
                     </div>
-                </section>
+                </section>}
 
                 {/* 4. BrandPromise ("Why Choose Us") */}
                 <BrandPromise />

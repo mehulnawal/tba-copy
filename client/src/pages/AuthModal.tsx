@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { X, Mail, Lock, User, ArrowRight, Eye, EyeOff } from "lucide-react"; // Imported Eye and EyeOff icons
+import { X, Mail, Lock, User, Phone, ArrowRight, Eye, EyeOff } from "lucide-react"; // Imported Eye and EyeOff icons
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
@@ -23,6 +23,7 @@ export function AuthModal({ isOpen, onClose }: LuxuryAuthModalProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false); // Visibility state for password
 
@@ -63,7 +64,7 @@ export function AuthModal({ isOpen, onClose }: LuxuryAuthModalProps) {
         await login(email, password);
         showToast("Welcome back", "success");
       } else {
-        await register(name, email, password);
+        await register(name, email, password, phone);
         showToast("Account created successfully", "success");
       }
 
@@ -241,6 +242,12 @@ export function AuthModal({ isOpen, onClose }: LuxuryAuthModalProps) {
             </div>
           )}
 
+          {authMode === "register" && (
+            <div className="space-y-1.5">
+              <label className="font-secondary text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] font-medium block">Phone Number</label>
+              <div className="relative"><Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-muted)]" /><input type="tel" required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+91 98765 43210" className="w-full bg-[var(--color-bg-secondary)] border border-[var(--color-border)] py-2.5 pl-10 pr-4 font-secondary text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)]/50 focus:outline-none focus:border-[var(--color-teal)] transition-colors" /></div>
+            </div>
+          )}
           <div className="space-y-1.5">
             <label className="font-secondary text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] font-medium block">
               Email Address

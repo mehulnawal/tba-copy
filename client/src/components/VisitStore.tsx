@@ -146,7 +146,7 @@ export default function VisitStore() {
 
                         {/* Secondary CTA — swap href to actual phone number */}
                         <a
-                            href="tel:+91XXXXXXXXXX"
+                            href={import.meta.env.VITE_STORE_PHONE ? `tel:${import.meta.env.VITE_STORE_PHONE}` : "#"} aria-disabled={!import.meta.env.VITE_STORE_PHONE}
                             className="no-underline transition-all duration-300"
                             style={{
                                 fontSize: "10px",

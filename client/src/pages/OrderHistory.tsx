@@ -14,6 +14,7 @@ type OrderItem = {
 type Order = {
     _id: string;
     orderStatus: "pending" | "confirmed" | "failed";
+    productionStatus?: string;
     amount: number;
     createdAt: string;
     items: OrderItem[];
@@ -142,6 +143,9 @@ export default function OrderHistory() {
                                                 <span className={`text-[10px] uppercase tracking-widest px-3 py-1 font-secondary font-medium ${statusInfo.color}`}>
                                                     Status: {statusInfo.label}
                                                 </span>
+                                                {o.orderStatus === "confirmed" && <span className="text-[10px] uppercase tracking-widest px-3 py-1 font-secondary font-medium text-[var(--color-teal)] bg-[var(--color-bg-secondary)]">
+                                                    {(o.productionStatus || "order_placed").replaceAll("_", " ")}
+                                                </span>}
                                             </div>
                                         </div>
 

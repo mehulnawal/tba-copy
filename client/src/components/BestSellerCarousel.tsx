@@ -23,7 +23,7 @@ export default function BestSellerCarousel({
     toggleWishlist,
     addToCart,
 }: Props) {
-    const [emblaRef, emblaApi] = useEmblaCarousel({
+const [emblaRef, emblaApi] = useEmblaCarousel({
         loop: true,
         align: 'start',
         slidesToScroll: 1,
@@ -56,7 +56,8 @@ export default function BestSellerCarousel({
     const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
     const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
 
-    return (
+    if (filteredProducts.length === 0) return null;
+return (
         <div className="relative w-full">
 
             {/* Navigation Buttons */}

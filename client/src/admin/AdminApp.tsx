@@ -6,6 +6,7 @@ import type { Announcement } from "../api/announcement.api";
 import { ApiRequestError, apiRequest } from "../api/client";
 import type { Category } from "../types";
 import Products from "./Products";
+import Reviews from "./Reviews";
 
 // --- HELPERS ---
 const errorMessage = (error: unknown) =>
@@ -153,6 +154,7 @@ function Layout({ admin, onLogout }: { admin: AdminUser; onLogout: () => void })
   const navItems = [
     { to: "/admin", label: "Overview", icon: "💎", end: true },
     { to: "/admin/orders", label: "Orders", icon: "🛍️" },
+    { to: "/admin/reviews", label: "Reviews", icon: "⭐" },
     { to: "/admin/coupons", label: "Coupons", icon: "🏷️" },
     { to: "/admin/products", label: "Products", icon: "💎" },
     { to: "/admin/categories", label: "Categories", icon: "🗂️" },
@@ -221,6 +223,7 @@ function Layout({ admin, onLogout }: { admin: AdminUser; onLogout: () => void })
           <Route path="coupons" element={<Coupons />} />
           <Route path="users" element={<Users />} />
           <Route path="orders" element={<Orders />} />
+          <Route path="reviews" element={<Reviews />} />
           <Route path="metal-rates" element={<MetalRates />} />
           <Route path="categories" element={<Categories />} />
           <Route path="products" element={<Products />} />
@@ -237,7 +240,7 @@ function Dashboard() {
 
   useEffect(() => {
     Promise.allSettled([
-      apiRequest<any>("/orders?limit=25").catch(() => apiRequest<any>("/admin/orders?limit=25")),
+      apiRequest<any>("/admin/orders?limit=25"),
       adminApi.users(),
       adminApi.coupons(),
     ]).then(([o, u, c]) => {
@@ -818,6 +821,9 @@ function Categories() {
     const parent = isSubCategory ? selectedParentId : null;
     if (isSubCategory && !parent) { setToast({ message: "Select a main category", type: "error" }); return; }
     const payload = { name: String(f.get("name")).trim(), parent, displayOrder: Number(f.get("displayOrder")), isActive: f.get("isActive") === "on" };
+    const candidateMetal = parent ? items.find((category) => category._id === parent)?.metal : payload.name.toLowerCase();
+    const duplicate = items.some((category) => category._id !== editing?._id && category.name.trim().toLowerCase() === payload.name.toLowerCase() && (parentId(category) || null) === parent && category.metal === candidateMetal);
+    if (duplicate) { setToast({ message: "A category with this name already exists under the selected parent.", type: "error" }); return; }
     try {
       if (editing) await adminApi.updateCategory(editing._id, payload);
       else await adminApi.createCategory(payload);
@@ -830,9 +836,10 @@ function Categories() {
   const startEdit = (category: Category) => { setEditing(category); const id = parentId(category); setIsSubCategory(Boolean(id)); setSelectedParentId(id || ""); };
   const toggle = async (category: Category) => { try { await adminApi.updateCategory(category._id, { isActive: !category.isActive }); await load(); } catch (error) { setToast({ message: errorMessage(error), type: "error" }); } };
   const remove = async (id: string) => { if (!confirm("Delete category?")) return; try { await adminApi.deleteCategory(id); await load(); } catch (error) { setToast({ message: errorMessage(error), type: "error" }); } };
+  const canDelete = (category: Category) => category.categoryKind !== "metal-root" && !items.some((item) => parentId(item) === category._id);
   const renderRow = (category: Category, nested = false) => <div key={category._id} className={`admin-row justify-between ${nested ? "ml-6 border-l-2 border-[var(--color-border)] pl-4" : ""}`}>
-    <div><p className="text-sm font-semibold text-[var(--color-charcoal)]">{nested && <span className="mr-2 text-[var(--color-text-muted)]">↳</span>}{category.name}</p><small>{nested ? "Sub Category" : "Main Category"} · Order: {category.displayOrder}</small></div>
-    <div className="flex items-center gap-2"><Badge variant={category.isActive ? "success" : "neutral"}>{category.isActive ? "Active" : "Inactive"}</Badge><button onClick={() => startEdit(category)} className="cursor-pointer">Edit</button><button onClick={() => void toggle(category)} className="cursor-pointer">Toggle</button><button onClick={() => void remove(category._id)} className="text-red-700 cursor-pointer">Delete</button></div>
+    <div><p className="text-sm font-semibold text-[var(--color-charcoal)]">{nested && <span className="mr-2 text-[var(--color-text-muted)]">â†³</span>}{category.name}</p><small>{nested ? "Sub Category" : "Main Category"} Â· Order: {category.displayOrder}</small></div>
+    <div className="flex items-center gap-2"><Badge variant={category.isActive ? "success" : "neutral"}>{category.isActive ? "Active" : "Inactive"}</Badge><button onClick={() => startEdit(category)} className="cursor-pointer">Edit</button><button onClick={() => void toggle(category)} className="cursor-pointer">Toggle</button>{canDelete(category) && <button onClick={() => void remove(category._id)} className="text-red-700 cursor-pointer">Delete</button>}</div>
   </div>;
 
   return <div className="space-y-8">
@@ -857,12 +864,21 @@ function Orders() {
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
 
   const load = useCallback(() =>
-    apiRequest<any>("/orders?limit=25")
-      .catch(() => apiRequest<any>("/admin/orders?limit=25"))
+    apiRequest<any>("/admin/orders?limit=25")
       .then(setData)
       .catch((e) => setToast({ message: errorMessage(e), type: "error" })), []);
 
   useEffect(() => { void load(); }, [load]);
+
+  const updateProductionStatus = async (orderId: string, productionStatus: string) => {
+    try {
+      await adminApi.updateProductionStatus(orderId, productionStatus);
+      setToast({ message: "Production status updated", type: "success" });
+      void load();
+    } catch (error) {
+      setToast({ message: errorMessage(error), type: "error" });
+    }
+  };
 
   const orders = data.orders || data || [];
   const filtered = Array.isArray(orders)
@@ -899,6 +915,8 @@ function Orders() {
                 <th className="p-4">Items</th>
                 <th className="p-4">Amount</th>
                 <th className="p-4">Payment</th>
+                <th className="p-4">Order</th>
+                <th className="p-4">Production</th>
                 <th className="p-4">Date</th>
               </tr>
             </thead>
@@ -913,6 +931,8 @@ function Orders() {
                   <td className="p-4">{o.items?.length || 0} item(s)</td>
                   <td className="p-4 font-semibold text-[var(--color-teal)]">{formatCurrency(o.amount || 0)}</td>
                   <td className="p-4"><Badge variant="gold">{o.paymentStatus}</Badge></td>
+                  <td className="p-4"><Badge variant={o.orderStatus === "confirmed" ? "success" : o.orderStatus === "failed" ? "danger" : "warning"}>{o.orderStatus || "pending"}</Badge></td>
+                  <td className="p-4"><select aria-label={`Production status for order ${o._id}`} value={o.productionStatus || "order_placed"} disabled={o.paymentStatus !== "paid" || o.orderStatus !== "confirmed"} onChange={(e) => void updateProductionStatus(o._id, e.target.value)} className="admin-input min-w-36 py-1 text-xs disabled:opacity-50"><option value="order_placed">Order placed</option><option value="designing">Designing</option><option value="in_production">In production</option><option value="quality_check">Quality check</option><option value="ready_to_ship">Ready to ship</option><option value="shipped">Shipped</option><option value="delivered">Delivered</option></select></td>
                   <td className="p-4 text-[var(--color-text-muted)]">{formatDate(o.createdAt)}</td>
                 </tr>
               ))}

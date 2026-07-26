@@ -3,6 +3,7 @@ import type { Announcement } from "./announcement.api";
 import type { Banner } from "./banner.api";
 import type { Category, Product, PriceBreakdown } from "../types";
 
+export interface PricingConfig { _id: string; key: string; metal: "gold" | "silver"; categoryType: string; makingRatePerGram: number; weightBasis: "net" | "gross"; stoneRatePerUnit?: number; certificateApplies: boolean; usesLabGrownFixedDiamondRates: boolean; isActive: boolean; }
 export interface AdminUser {
   id: string;
   name: string;
@@ -25,6 +26,15 @@ export interface Coupon {
   usageLimit: number | null;
   usedCount: number;
   activeStatus: boolean;
+}
+export interface AdminReview {
+  _id: string;
+  rating: number;
+  text: string;
+  status: "pending" | "approved" | "rejected";
+  createdAt: string;
+  user?: { name?: string; email?: string } | null;
+  product?: { SKU?: string; data?: { Title?: string } } | null;
 }
 export type BannerPayload = {
   title?: string;
@@ -102,6 +112,7 @@ export const adminApi = {
   deleteCoupon: (id: string) =>
     apiRequest<null>(`/admin/coupons/${id}`, { method: "DELETE" }),
   adminProducts: (search = "") => apiRequest<Product[]>(`/admin/products${search ? `?search=${encodeURIComponent(search)}` : ""}`), adminGetProduct: (id: string) => apiRequest<Product>(`/admin/products/${id}`), createProduct: (p: Partial<Product>) => apiRequest<Product>("/admin/products", { method: "POST", body: JSON.stringify(p) }), updateProduct: (id: string, p: Partial<Product>) => apiRequest<Product>(`/admin/products/${id}`, { method: "PATCH", body: JSON.stringify(p) }), deleteProduct: (id: string) => apiRequest<null>(`/admin/products/${id}`, { method: "DELETE" }), previewPrice: (p: Partial<Product>) => apiRequest<PriceBreakdown[]>("/admin/products/preview-price", { method: "POST", body: JSON.stringify(p) }), uploadImage: (file: File) => { const body = new FormData(); body.append("image", file); return apiRequest<{ url: string }>("/admin/upload-image", { method: "POST", body }); },
+  pricingConfigs: () => apiRequest<PricingConfig[]>("/admin/pricing-configs"),
   categories: () => apiRequest<Category[]>("/admin/categories"),
   createCategory: (p: {
     name: string;
@@ -128,6 +139,12 @@ export const adminApi = {
     }),
   deleteCategory: (id: string) =>
     apiRequest<null>(`/admin/categories/${id}`, { method: "DELETE" }),
+  updateProductionStatus: (id: string, productionStatus: string) =>
+    apiRequest(`/admin/orders/${id}/production-status`, { method: "PATCH", body: JSON.stringify({ productionStatus }) }),
+  reviews: () => apiRequest<AdminReview[]>("/admin/reviews"),
+  moderateReview: (id: string, status: "approved" | "rejected") =>
+    apiRequest<AdminReview>(`/admin/reviews/${id}`, { method: "PATCH", body: JSON.stringify({ status }) }),
+  deleteReview: (id: string) => apiRequest<null>(`/admin/reviews/${id}`, { method: "DELETE" }),
   users: () => apiRequest<ManagedUser[]>("/admin/users"),
   setUserBlocked: (id: string, blocked: boolean) =>
     apiRequest<{ id: string; isBlocked: boolean }>(

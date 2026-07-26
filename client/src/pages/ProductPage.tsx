@@ -15,7 +15,6 @@ const PRICE_BUCKETS = [
 ];
 
 const KARAT_OPTIONS = [
-    { label: "9kt Gold", value: "9kt" },
     { label: "14kt Gold", value: "14kt" },
     { label: "18kt Gold", value: "18kt" },
 ];
@@ -32,9 +31,9 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
     const [params, setParams] = useSearchParams();
     const [products, setProducts] = useState<Product[]>([]);
     const { data: categoryData = [] } = useCategories(metal);
-    const categories = categoryData;
+    const categories = categoryData ?? [];
     const [loading, setLoading] = useState(true);
-    const [selectedKaratFilter, setSelectedKaratFilter] = useState<"9kt" | "14kt" | "18kt">("9kt");
+    const [selectedKaratFilter, setSelectedKaratFilter] = useState<"14kt" | "18kt">((params.get("karat") as "14kt" | "18kt") || "14kt");
     const [isFilterMobileOpen, setIsFilterMobileOpen] = useState(false);
     const [isSortMobileOpen, setIsSortMobileOpen] = useState(false);
 
@@ -45,14 +44,7 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
 
     useEffect(() => {
         setLoading(true);
-        Promise.all([
-            apiRequest<Product[]>(`/products?${query}`),
-            apiRequest<Category[]>("/products/categories")
-        ])
-            .then(([p, c]) => {
-                setProducts(p);
-                setCategories(c);
-            })
+        apiRequest<Product[]>(`/products/${metal}?${query}`).then(setProducts)
             .catch((err) => console.error("Error loading jewelry catalog data:", err))
             .finally(() => setLoading(false));
     }, [query, metal]);
@@ -115,7 +107,8 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
                 await apiRequest(`/wishlist/${product.SKU}`, { method: "DELETE" });
                 alert("Removed from wishlist.");
             } else {
-                const priceObj = product.prices.find((p) => p.karat === "14kt") || product.prices[0];
+                const productPrices = Array.isArray(product.prices) ? product.prices : [];
+                const priceObj = productPrices.find((p) => p.karat === "14kt") || productPrices[0];
                 await apiRequest("/wishlist", {
                     method: "POST",
                     body: JSON.stringify({ productId: product.SKU, karat: priceObj?.karat || "14kt" }),
@@ -216,7 +209,7 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
                                             type="radio"
                                             name="purity-desktop"
                                             checked={selectedKaratFilter === k.value}
-                                            onChange={() => setSelectedKaratFilter(k.value as any)}
+                                            onChange={() => { setSelectedKaratFilter(k.value as "14kt" | "18kt"); changeParam("karat", k.value); }}
                                             className="h-4 w-4 border-gray-300 text-amber-600 focus:ring-amber-500"
                                         />
                                         <span className={selectedKaratFilter === k.value ? "text-amber-700 font-medium" : ""}>{k.label}</span>
@@ -368,7 +361,7 @@ function FilterSection({ title, children }: { title: string; children: React.Rea
     );
 }
 
-function ProductCard({ product, defaultKarat, onWishlistToggle }: { product: Product; defaultKarat: "9kt" | "14kt" | "18kt"; onWishlistToggle: (product: Product) => void }) {
+function ProductCard({ product, defaultKarat, onWishlistToggle }: { product: Product; defaultKarat: "14kt" | "18kt"; onWishlistToggle: (product: Product) => void }) {
 
     const categoryName = (
         category?: Category | string | null
@@ -378,7 +371,7 @@ function ProductCard({ product, defaultKarat, onWishlistToggle }: { product: Pro
         return category.name ?? "Jewellery";
     };
 
-    const [activeKarat, setActiveKarat] = useState<"9kt" | "14kt" | "18kt">(defaultKarat);
+    const [activeKarat, setActiveKarat] = useState<"14kt" | "18kt">(defaultKarat);
     const [currentImgIndex, setCurrentImgIndex] = useState(0);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -403,7 +396,8 @@ function ProductCard({ product, defaultKarat, onWishlistToggle }: { product: Pro
         setCurrentImgIndex(0);
     };
 
-    const targetPriceObj = product.prices.find((p) => p.karat === activeKarat) || product.prices[0];
+    const productPrices = Array.isArray(product.prices) ? product.prices : [];
+    const targetPriceObj = productPrices.find((p) => p.karat === activeKarat) || productPrices[0];
     const displaysPrice = targetPriceObj ? Math.round(targetPriceObj.finalPrice) : 0;
 
     return (
@@ -478,8 +472,8 @@ function ProductCard({ product, defaultKarat, onWishlistToggle }: { product: Pro
                 <div className="pt-3 mt-auto border-t border-gray-100 flex items-center justify-between">
                     <span className="text-[11px] font-medium text-gray-500">Purity:</span>
                     <div className="flex space-x-1">
-                        {(["9kt", "14kt", "18kt"] as const).map((kt) => {
-                            const hasPurityVariant = product.prices.some((p) => p.karat === kt);
+                        {(["14kt", "18kt"] as const).map((kt) => {
+                            const hasPurityVariant = (product.prices ?? []).some((p) => p.karat === kt);
                             return (
                                 <button
                                     key={kt}

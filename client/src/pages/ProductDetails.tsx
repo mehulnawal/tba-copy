@@ -19,7 +19,7 @@ function getSwatchHexColor(colorName: string): string {
     const normalized = colorName.toLowerCase();
     if (normalized.includes("rose") || normalized.includes("pink")) return "#E0A899";
     if (normalized.includes("yellow") || normalized.includes("gold")) return "#E5C158";
-    if (normalized.includes("white") || normalized.includes("silver") || normalized.includes("platinum")) return "#FFFFF";
+    if (normalized.includes("white") || normalized.includes("silver") || normalized.includes("platinum")) return "#FFFFFF";
     return "#FFF";
 }
 
@@ -80,7 +80,8 @@ export default function ProductDetails() {
         );
     }
 
-    const activePriceObj = product.prices.find((price) => price.karat === karat) || product.prices[0];
+    const productPrices = Array.isArray(product.prices) ? product.prices : [];
+    const activePriceObj = productPrices.find((price) => price.karat === karat) || productPrices[0] || { totalCost: 0, gst: 0, finalPrice: 0, grossWeight: 0 };
 
     const categoryName = (
         category?: Product["mainCategory"] | null

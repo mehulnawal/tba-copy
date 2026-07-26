@@ -480,27 +480,28 @@ Changes -
 3. making charges - 850 * net wieght 
 4. size dropdown (5-25) - all products
 5. certificate charges - 200 * total diamond wieght(center + round + fancy)
-6. option to add diamond categories new 
-7. certificate charges per gram- make it universal (change one time and it will change the calculations everyweher)
-8. change phone number in everywehere
-9. remove BIS from everywhere
-10. one dedicate pages for categories (if silver open then all silver products will be shown)
-11. every imgaes will have 6 images instead of 3
-12. 24kt Gold price = 18kt (24kt * 76%), 
-13. one product will be entered but different prices will be shown in B2C & B2B - as per caluclations
-14. 24kt Gold price (145000) = 18kt (145000 * 76% = 1,10,200), 14kt (145000 * 60%  = 87,000) 
-15. Silver category (add text = 9-5)
-16. Diamond - 3 categories 1. Center diamond 2. Small diamond (this will have two sub categories - round & fancy)
-17. show total diamond price also with 
-18. Bold total charges 
-19. Whatsapp cart reminders 
-20. Certificate update
-21. WhatsApp cart-reminder (next day - reminder should be send)
-22. Login with phone number + otp = add option in login page 
-23. price breakup layout as per whatsapp image 
-24. change text to image - in login page 
-25. change https - www - to change domain (www.tbajewles.com)
-26. B2B - less 50 making charges 
-27. website fonts should be same as TBA logo charges 
+6. 
+7. option to add diamond categories new 
+8. certificate charges per gram- make it universal (change one time and it will change the calculations everyweher)
+9. change phone number in everywehere
+10. remove BIS from everywhere
+11. one dedicate pages for categories (if silver open then all silver products will be shown)
+12. every imgaes will have 6 images instead of 3
+13. 24kt Gold price = 18kt (24kt * 76%), 
+14. one product will be entered but different prices will be shown in B2C & B2B - as per caluclations
+15. 24kt Gold price (145000) = 18kt (145000 * 76% = 1,10,200), 14kt (145000 * 60%  = 87,000) 
+16. Silver category (add text = 9-5)
+17. Diamond - 3 categories 1. Center diamond 2. Small diamond (this will have two sub categories - round & fancy)
+18. show total diamond price also with 
+19. Bold total charges 
+20. Whatsapp cart reminders 
+21. Certificate update
+22. WhatsApp cart-reminder (next day - reminder should be send)
+23. Login with phone number + otp = add option in login page 
+24. price breakup layout as per whatsapp image 
+25. change text to image - in login page 
+26. change https - www - to change domain (www.tbajewles.com)
+27. B2B - less 50 making charges 
+28. website fonts should be same as TBA logo charges 
 
 
