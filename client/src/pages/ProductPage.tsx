@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router-dom";
 import { apiRequest } from "../api/client";
 import { useCategories } from "../hooks/useCategories";
@@ -27,27 +28,34 @@ const SORT_OPTIONS = [
     { label: "Best Sellers", value: "best-sellers" },
 ];
 
+const responsiveImage = (url: string, width = 800) => url.includes("res.cloudinary.com") ? url.replace("/upload/", `/upload/f_auto,q_auto,w_${width},c_limit/`) : url;
+
 export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silver" }) {
     const [params, setParams] = useSearchParams();
-    const [products, setProducts] = useState<Product[]>([]);
+
     const { data: categoryData = [] } = useCategories(metal);
     const categories = categoryData ?? [];
-    const [loading, setLoading] = useState(true);
     const [selectedKaratFilter, setSelectedKaratFilter] = useState<"14kt" | "18kt">((params.get("karat") as "14kt" | "18kt") || "14kt");
     const [isFilterMobileOpen, setIsFilterMobileOpen] = useState(false);
     const [isSortMobileOpen, setIsSortMobileOpen] = useState(false);
+
+    useEffect(() => {
+        const open = isFilterMobileOpen || isSortMobileOpen;
+        document.body.classList.toggle("modal-open", open);
+        return () => document.body.classList.remove("modal-open");
+    }, [isFilterMobileOpen, isSortMobileOpen]);
 
     // FIX #1: Hybrid Dynamic Auth Check (Checks most common storage names)
     const { isAuthenticated: isLoggedIn } = useAuth();
 
     const query = params.toString();
 
-    useEffect(() => {
-        setLoading(true);
-        apiRequest<Product[]>(`/products/${metal}?${query}`).then(setProducts)
-            .catch((err) => console.error("Error loading jewelry catalog data:", err))
-            .finally(() => setLoading(false));
-    }, [query, metal]);
+    const { data: products = [], isLoading: loading } = useQuery({
+        queryKey: ["products", metal, query],
+        queryFn: () => apiRequest<Product[]>(`/products/${metal}?${query}`),
+        staleTime: 2 * 60 * 1000,
+        gcTime: 15 * 60 * 1000,
+    });
 
     const categoryId = (
         category?: string | { _id: string; name?: string } | null
@@ -125,7 +133,7 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
     const clearFilters = () => { setParams(new URLSearchParams()); };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-gray-900 antialiased">
+        <div className="catalog-page min-h-screen flex flex-col antialiased">
 
             <Navbar
                 onSearchChange={(v) => changeParam("search", v || null)}
@@ -133,8 +141,8 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
                 onCategoryChange={(cat) => changeParam("category", cat === "All" ? null : cat)}
             />
 
-            <main className="flex-grow mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 py-8">
-                <div className="border-b border-gray-200 pb-5 sm:flex sm:items-center sm:justify-between">
+            <main className="flex-grow mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 py-8 pb-24 lg:pb-8">
+                <div className="catalog-title-bar border-b pb-5 sm:flex sm:items-center sm:justify-between">
                     <div>
                         <h1 className="text-3xl font-serif font-semibold tracking-tight text-gray-900">{metal === "gold" ? "Gold Jewellery" : "Silver Jewellery"}</h1>
                         <p className="mt-2 text-sm text-gray-500">
@@ -154,7 +162,7 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
 
                 <div className="pt-8 lg:grid lg:grid-cols-4 lg:gap-x-8">
                     {/* Desktop Sidebar Filters */}
-                    <aside className="hidden lg:block space-y-6">
+                    <aside className="catalog-filter-panel hidden lg:block space-y-6">
                         <div className="flex items-center justify-between border-b border-gray-200 pb-4">
                             <h2 className="text-lg font-medium text-gray-900">Filters</h2>
                             <button onClick={clearFilters} className="text-xs font-medium text-amber-700 hover:text-amber-800 underline">
@@ -239,14 +247,7 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
                                 </select>
                             </div>
 
-                            <div className="flex lg:hidden space-x-2 w-full justify-between sm:w-auto">
-                                <button onClick={() => setIsFilterMobileOpen(true)} className="flex-1 sm:flex-none inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md bg-white text-gray-700 hover:bg-gray-50">
-                                    Filters
-                                </button>
-                                <button onClick={() => setIsSortMobileOpen(true)} className="flex-1 sm:flex-none inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md bg-white text-gray-700 hover:bg-gray-50">
-                                    Sort Options
-                                </button>
-                            </div>
+
                         </div>
 
                         {loading ? (
@@ -283,13 +284,22 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
                 </div>
             </main >
 
+            <div className="catalog-mobile-bar fixed inset-x-0 bottom-0 z-[var(--z-sticky)] flex gap-3 border-t border-[var(--color-border)] bg-[var(--color-bg-secondary)]/95 p-3 shadow-[var(--shadow-lg)] backdrop-blur lg:hidden">
+                <button onClick={() => setIsFilterMobileOpen(true)} className="flex-1 rounded-[var(--radius-sm)] border border-[var(--color-teal)] px-4 py-3 text-sm font-semibold text-[var(--color-teal)]">
+                    Filters
+                </button>
+                <button onClick={() => setIsSortMobileOpen(true)} className="flex-1 rounded-[var(--radius-sm)] bg-[var(--color-teal)] px-4 py-3 text-sm font-semibold text-white">
+                    Sort options
+                </button>
+            </div>
+
 
 
             {/* Mobile Overlays */}
             {
                 isFilterMobileOpen && (
-                    <div className="fixed inset-0 z-50 flex lg:hidden bg-black bg-opacity-40 transition-opacity">
-                        <div className="ml-auto relative max-w-xs w-full h-full bg-white shadow-xl py-4 pb-12 flex flex-col overflow-y-auto px-4">
+                    <div className="catalog-sheet-backdrop fixed inset-0 z-[var(--z-modal)] flex items-end bg-black/40 lg:hidden" onClick={() => setIsFilterMobileOpen(false)}>
+                        <div className="catalog-bottom-sheet relative max-h-[85vh] w-full rounded-t-[var(--radius-xl)] bg-[var(--color-bg-secondary)] shadow-[var(--shadow-lg)] py-5 pb-10 flex flex-col overflow-y-auto px-5 animate-[slideUp_220ms_ease-out]" onClick={(event) => event.stopPropagation()}>
                             <div className="flex items-center justify-between pb-4 border-b">
                                 <h2 className="text-lg font-medium text-gray-900">Filters</h2>
                                 <button onClick={() => setIsFilterMobileOpen(false)} className="text-gray-500 text-xl font-bold">&times;</button>
@@ -319,8 +329,8 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
 
             {
                 isSortMobileOpen && (
-                    <div className="fixed inset-0 z-50 flex items-end lg:hidden bg-black bg-opacity-40" onClick={() => setIsSortMobileOpen(false)}>
-                        <div className="relative w-full bg-white shadow-xl rounded-t-xl p-6 space-y-4" onClick={e => e.stopPropagation()}>
+                    <div className="catalog-sheet-backdrop fixed inset-0 z-[var(--z-modal)] flex items-end lg:hidden bg-black/40" onClick={() => setIsSortMobileOpen(false)}>
+                        <div className="catalog-bottom-sheet relative w-full bg-[var(--color-bg-secondary)] shadow-[var(--shadow-lg)] rounded-t-[var(--radius-xl)] p-6 space-y-4 animate-[slideUp_220ms_ease-out]" onClick={e => e.stopPropagation()}>
                             <div className="flex justify-between items-center border-b pb-2">
                                 <h3 className="text-lg font-medium text-gray-900">Sort Matrix Options</h3>
                                 <button onClick={() => setIsSortMobileOpen(false)} className="text-gray-500 text-xl font-bold">&times;</button>
@@ -402,7 +412,7 @@ function ProductCard({ product, defaultKarat, onWishlistToggle }: { product: Pro
 
     return (
         <div
-            className="group relative flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md max-w-sm w-full mx-auto"
+            className="catalog-product-card group relative flex flex-col overflow-hidden rounded-[var(--radius-lg)] border bg-white shadow-sm transition max-w-sm w-full mx-auto"
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
         >
@@ -410,7 +420,7 @@ function ProductCard({ product, defaultKarat, onWishlistToggle }: { product: Pro
             <div className="relative aspect-[4/5] w-full bg-gray-50 overflow-hidden">
                 <Link to={`/product/${product.slug}`} className="block w-full h-full">
                     <img
-                        src={images[currentImgIndex] || fallbackImage}
+                        src={responsiveImage(images[currentImgIndex] || fallbackImage, 800)}
                         alt={product.title}
                         className="h-full w-full object-cover object-center transition duration-500 scale-100 group-hover:scale-102"
                     />

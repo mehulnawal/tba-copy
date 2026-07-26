@@ -39,6 +39,7 @@ import {
     productToWishlistPayload
 } from "../utils/productHelpers";
 import { ApiRequestError } from "../api/client";
+import { responsiveImage } from "../utils/image";
 
 const HERO_SLIDES = [
     { id: "1", image: banner1, mobileImage: banner1 },
@@ -284,8 +285,11 @@ export default function HomePage() {
                                     }}
                                 >
                                     <img
-                                        src={slide.image}
+                                        src={responsiveImage(slide.image, i === 0 ? 1920 : 960)}
                                         alt={`Banner slide ${i + 1}`}
+                                        loading={i === 0 ? "eager" : "lazy"}
+                                        fetchPriority={i === 0 ? "high" : "auto"}
+                                        decoding="async"
                                         className="w-full h-full object-cover object-left pointer-events-none block"
                                     />
                                 </div>
@@ -558,7 +562,7 @@ export default function HomePage() {
                                         return (
                                             <div key={item._id} className="flex gap-4 border border-[var(--color-border-subtle)] p-4 rounded-lg bg-[var(--color-bg-secondary)] relative group">
                                                 <div className="w-18 h-22 bg-zinc-200 rounded-sm overflow-hidden shrink-0">
-                                                    <img src={item.image} alt={item.name} className="w-full h-full object-cover object-center" />
+                                                    <img src={item.image} alt={item.name} loading="lazy" decoding="async" className="w-full h-full object-cover object-center" />
                                                 </div>
 
                                                 <div className="flex-1 flex flex-col justify-between py-0.5">

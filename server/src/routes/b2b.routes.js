@@ -1,0 +1,10 @@
+const express = require("express");
+const { access, logout, listProducts, getProduct, status } = require("../controllers/b2b.controller");
+const { requireB2BAccess } = require("../middlewares/b2b.middleware");
+const router = express.Router();
+router.post("/access", access);
+router.post("/logout", logout);
+router.get("/status", requireB2BAccess, status);
+router.get("/products", requireB2BAccess, listProducts);
+router.get("/products/:identifier", requireB2BAccess, getProduct);
+module.exports = router;

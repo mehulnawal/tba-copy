@@ -29,7 +29,18 @@ const listGoldProducts = listForMetal("gold");
 const listSilverProducts = listForMetal("silver");
 const listProducts = asyncHandler(async (req, res) => { throw new ApiError(410, "Use /products/gold or /products/silver; mixed-metal catalog listings are not available"); });
 const getProduct = asyncHandler(async (req, res) => { const product = await populated(Product.findOne({ $or: [{ slug: req.params.identifier }, { SKU: req.params.identifier }], isActive: true })); if (!product) throw new ApiError(404, "Product not found"); res.json(new ApiResponse(200, await toProductResponse(product), "Product fetched")); });
-const validateCategories = async body => { const main = await Category.findById(body.mainCategory), sub = await Category.findById(body.subCategory); if (!main || !sub || main.metal !== sub.metal) throw new ApiError(400, "Valid categories from one metal are required"); if (main.metal === "gold" && (main.categoryKind !== "metal-root" || String(sub.parent) !== String(main._id))) throw new ApiError(400, "Gold products require a Gold sub-category"); if (main.metal === "silver" && (main.categoryKind !== "type" || String(sub.parent) !== String(main._id))) throw new ApiError(400, "Silver products require a Silver type and its sub-category"); if (body.metal && body.metal !== main.metal) throw new ApiError(400, "Product metal must match its category metal"); };
+const validateCategories = async body => {
+  const main = await Category.findById(body.mainCategory);
+  const sub = await Category.findById(body.subCategory);
+  if (!main || !sub || main.metal !== sub.metal) throw new ApiError(400, "Valid categories from one metal are required");
+  if (main.metal === "gold" && (main.categoryKind !== "metal-root" || String(sub.parent) !== String(main._id))) throw new ApiError(400, "Gold products require a Gold sub-category");
+  if (main.metal === "silver" && (main.categoryKind !== "type" || String(sub.parent) !== String(main._id))) throw new ApiError(400, "Silver products require a Silver type and its sub-category");
+  if (body.metal && body.metal !== main.metal) throw new ApiError(400, "Product metal must match its category metal");
+  const key = String(body.pricingConfigKey || "").trim().toUpperCase();
+  const config = await CategoryPricingConfig.findOne({ key, isActive: true }).lean();
+  if (!config || config.metal !== main.metal) throw new ApiError(400, "Pricing configuration must match the selected metal");
+  if (main.metal === "silver" && String(config.categoryType).toLowerCase() !== String(main.name).toLowerCase()) throw new ApiError(400, "Pricing configuration must match the selected Silver type");
+};
 const adminListProducts = asyncHandler(async (req, res) => {
   const filter = {};
   if (req.query.search) filter.$or = [{ title: new RegExp(req.query.search, "i") }, { SKU: new RegExp(req.query.search, "i") }];
@@ -48,10 +59,18 @@ const listPricingConfigs = asyncHandler(async (req, res) => {
   const configs = await CategoryPricingConfig.find({ isActive: true }).sort({ metal: 1, categoryType: 1, key: 1 }).lean();
   res.json(new ApiResponse(200, configs, "Active pricing configurations fetched"));
 });
+const updatePricingConfig = asyncHandler(async (req, res) => {
+  const key = String(req.params.key || "").trim().toUpperCase();
+  const makingRatePerGram = Number(req.body?.makingRatePerGram);
+  if (!Number.isFinite(makingRatePerGram) || makingRatePerGram < 0) throw new ApiError(400, "makingRatePerGram must be a non-negative number");
+  const config = await CategoryPricingConfig.findOneAndUpdate({ key }, { makingRatePerGram }, { new: true, runValidators: true });
+  if (!config) throw new ApiError(404, "Pricing configuration not found");
+  res.json(new ApiResponse(200, config, "Pricing configuration updated"));
+});
 const adminGetProduct = asyncHandler(async (req, res) => { const product = await populated(Product.findById(req.params.productId)); if (!product) throw new ApiError(404, "Product not found"); res.json(new ApiResponse(200, await toProductResponse(product), "Product fetched")); });
 const createProduct = asyncHandler(async (req, res) => { await validateCategories(req.body); const product = await Product.create({ ...req.body, slug: slugify(req.body.title) }); res.status(201).json(new ApiResponse(201, await toProductResponse(await populated(Product.findById(product._id))), "Product created")); });
-const updateProduct = asyncHandler(async (req, res) => { const current = await Product.findById(req.params.productId); if (!current) throw new ApiError(404, "Product not found"); const update = { ...req.body }; if (update.title) update.slug = slugify(update.title); if (update.mainCategory || update.subCategory) await validateCategories({ ...current.toObject(), ...update }); const product = await Product.findByIdAndUpdate(current._id, update, { new: true, runValidators: true }); res.json(new ApiResponse(200, await toProductResponse(await populated(Product.findById(product._id))), "Product updated")); });
+const updateProduct = asyncHandler(async (req, res) => { const current = await Product.findById(req.params.productId); if (!current) throw new ApiError(404, "Product not found"); const update = { ...req.body }; if (update.title) update.slug = slugify(update.title); if (update.mainCategory || update.subCategory || update.pricingConfigKey || update.metal) await validateCategories({ ...current.toObject(), ...update }); const product = await Product.findByIdAndUpdate(current._id, update, { new: true, runValidators: true }); res.json(new ApiResponse(200, await toProductResponse(await populated(Product.findById(product._id))), "Product updated")); });
 const deleteProduct = asyncHandler(async (req, res) => { const product = await Product.findByIdAndDelete(req.params.productId); if (!product) throw new ApiError(404, "Product not found"); res.json(new ApiResponse(200, null, "Product deleted")); });
 const previewPrice = asyncHandler(async (req, res) => { const karats = req.body.metal === "silver" ? [undefined] : ["14kt", "18kt"]; res.json(new ApiResponse(200, await Promise.all(karats.map(karat => calculatePrice(req.body, karat, req.body.buyer || "B2C"))), "Price preview")); });
 const uploadImageHandler = asyncHandler(async (req, res) => { const url = await uploadToCloudinary(req.file, "tba-products", { quality: "auto", fetch_format: "auto", width: 1600, crop: "limit" }); res.status(201).json(new ApiResponse(201, { url }, "Image uploaded")); });
-module.exports = { listProducts, listGoldProducts, listSilverProducts, getProduct, adminListProducts, adminGetProduct, listPricingConfigs, createProduct, updateProduct, deleteProduct, previewPrice, uploadImageHandler };
+module.exports = { listProducts, listGoldProducts, listSilverProducts, getProduct, adminListProducts, adminGetProduct, listPricingConfigs, updatePricingConfig, createProduct, updateProduct, deleteProduct, previewPrice, uploadImageHandler };

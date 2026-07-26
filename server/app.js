@@ -20,6 +20,7 @@ const productRoutes = require("./src/routes/product.routes");
 const reviewRoutes = require("./src/routes/review.routes");
 const orderRoutes = require("./src/routes/order.routes");
 const categoryRoutes = require("./src/routes/category.routes");
+const b2bRoutes = require("./src/routes/b2b.routes");
 const errorHandler = require("./src/middlewares/error.middleware");
 const { apiLimiter } = require("./src/middlewares/rateLimiter.middleware");
 const ApiError = require("./src/utils/ApiError");
@@ -34,9 +35,13 @@ app.use(
   }),
 );
 
+const allowedOrigins = new Set([process.env.CLIENT_URL, "http://localhost:3000", "http://localhost:5173"].filter(Boolean));
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.has(origin)) return callback(null, true);
+      return callback(new Error("CORS origin not allowed"));
+    },
     credentials: true,
   }),
 );
@@ -67,6 +72,7 @@ app.use("/api/v1/products", productRoutes);
 app.use("/api/v1/reviews", reviewRoutes);
 app.use("/api/v1/orders", orderRoutes);
 app.use("/api/v1/categories", categoryRoutes);
+app.use("/api/v1/b2b", b2bRoutes);
 
 app.use((req, res, next) => {
   next(new ApiError(404, `Route ${req.originalUrl} not found`));

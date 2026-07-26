@@ -505,3 +505,11 @@ Changes -
 28. website fonts should be same as TBA logo charges 
 
 
+
+
+Things left - 
+WhatsOtp 
+Testing 
+Whatsapp Cart reminders 
+
+

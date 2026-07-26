@@ -6,7 +6,9 @@ export function ReactQueryProvider({ children }: { children: React.ReactNode }) 
     defaultOptions: { 
       queries: { 
         retry: 1, 
-        refetchOnWindowFocus: false 
+        refetchOnWindowFocus: false,
+        staleTime: 5 * 60 * 1000,
+        gcTime: 30 * 60 * 1000,
       } 
     }
   }));

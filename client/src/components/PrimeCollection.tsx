@@ -170,6 +170,8 @@ export default function PrimeSelection() {
                     <img
                         src={PRIME_LOOKS[currentLookIndex].image}
                         alt="Prime Collection Look"
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover object-center select-none pointer-events-none"
                     />
 
@@ -284,7 +286,7 @@ export default function PrimeSelection() {
                                             {selectedHotspot.products.map((product) => (
                                                 <div key={product.id} className="flex gap-4 rounded-xl border border-zinc-100 p-2 bg-white shrink-0">
                                                     <div className="w-20 h-20 rounded-lg overflow-hidden bg-zinc-50 shrink-0">
-                                                        <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
+                                                        <img src={product.image} alt={product.name} loading="lazy" decoding="async" className="h-full w-full object-cover" />
                                                     </div>
                                                     <div className="flex flex-col flex-1 justify-between py-1">
                                                         <div>
@@ -349,7 +351,7 @@ export default function PrimeSelection() {
                                     {selectedHotspot.products.map((product) => (
                                         <div key={product.id} className="flex gap-4 rounded-xl border border-zinc-100 p-2 bg-white shrink-0">
                                             <div className="w-20 h-20 rounded-lg overflow-hidden bg-zinc-50 shrink-0">
-                                                <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
+                                                <img src={product.image} alt={product.name} loading="lazy" decoding="async" className="h-full w-full object-cover" />
                                             </div>
                                             <div className="flex flex-col flex-1 justify-between py-1">
                                                 <div>

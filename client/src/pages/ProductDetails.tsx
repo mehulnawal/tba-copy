@@ -185,7 +185,7 @@ export default function ProductDetails() {
                                         className={`w-20 h-20 aspect-square border rounded transition bg-white overflow-hidden ${idx === activeMediaIndex ? "border-amber-800 ring-1 ring-amber-800" : "border-stone-200 opacity-70"
                                             }`}
                                     >
-                                        <img src={media.url} alt="" className="w-full h-full object-cover" />
+                                        <img src={media.url} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />
                                     </button>
                                 ))}
                             </div>

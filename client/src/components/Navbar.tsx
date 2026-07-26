@@ -299,10 +299,13 @@ export default function Navbar({
               ) : (
                 <div className="flex gap-3 md:gap-5 text-[12px] md:text-sm whitespace-nowrap">
                   <span className="tracking-wider">
-                    Gold 24K: <strong className="font-mono">₹{metalRates?.gold24kt}</strong>
+                    Gold 18K: <strong className="font-mono">₹{Math.round((metalRates.gold24kt || 0) * 0.76).toLocaleString("en-IN")}</strong>
                   </span>
                   <span className="tracking-wider">
-                    Silver: <strong className="font-mono">₹{metalRates?.silver}</strong>
+                    Gold 14K: <strong className="font-mono">₹{Math.round((metalRates.gold24kt || 0) * 0.60).toLocaleString("en-IN")}</strong>
+                  </span>
+                  <span className="tracking-wider">
+                    Silver: <strong className="font-mono">₹{Number(metalRates.silver || 0).toLocaleString("en-IN")}</strong>
                   </span>
                 </div>
               )}
@@ -417,6 +420,7 @@ export default function Navbar({
 
             {/* Right Column: Action Icons (Wishlist, Cart, Account) */}
             <div className="flex items-center justify-end gap-3 sm:gap-5 text-[var(--color-text)]">
+
               <button
                 onClick={() => handleProtectedNav("/wishlist")}
                 className="hover:text-[var(--color-teal)] transition-colors duration-200 p-2 cursor-pointer bg-transparent border-none relative flex items-center justify-center"

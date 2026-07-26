@@ -1,0 +1,13 @@
+import { FormEvent, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { apiRequest, ApiRequestError } from "../api/client";
+
+export default function B2BAccess() {
+  const navigate = useNavigate();
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const submit = async (event: FormEvent) => { event.preventDefault(); setSubmitting(true); setError(""); try { await apiRequest("/b2b/access", { method: "POST", body: JSON.stringify({ password }) }); navigate("/b2b/catalog", { replace: true }); } catch (reason) { setError(reason instanceof ApiRequestError ? reason.message : "Unable to grant B2B access"); } finally { setSubmitting(false); } };
+  return <main className="min-h-screen grid place-items-center bg-[var(--color-bg)] px-5"><form onSubmit={submit} className="w-full max-w-md bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] p-8 space-y-6"><div className="space-y-2"><p className="section-label">Trade Access</p><h1 className="font-primary text-3xl text-[var(--color-teal)]">B2B Catalogue</h1><p className="text-sm text-[var(--color-text-muted)]">Enter the shared access password supplied by your account manager.</p></div>{error && <p role="alert" className="rounded-[var(--radius-sm)] border border-[var(--color-error)]/30 bg-[var(--color-error)]/10 p-3 text-sm text-[var(--color-error)]">{error}</p>}<label className="block text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">Access password<div className="relative mt-2"><input required type={showPassword ? "text" : "password"} value={password} onChange={event => setPassword(event.target.value)} className="admin-input pr-20" autoComplete="current-password" /><button type="button" onClick={() => setShowPassword(value => !value)} className="absolute inset-y-0 right-0 px-4 text-xs font-semibold normal-case tracking-normal text-[var(--color-teal)] hover:text-[var(--color-teal-light)]" aria-label={showPassword ? "Hide password" : "Show password"}>{showPassword ? "Hide" : "Show"}</button></div></label><button disabled={submitting} className="admin-button w-full disabled:opacity-60">{submitting ? "Checking access…" : "Enter B2B catalogue"}</button></form></main>;
+}

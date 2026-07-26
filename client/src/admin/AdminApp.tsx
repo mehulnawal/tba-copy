@@ -1,6 +1,6 @@
 import React, { FormEvent, useEffect, useState, useMemo, useCallback } from "react";
 import { Navigate, NavLink, Route, Routes, useNavigate } from "react-router-dom";
-import { adminApi, type AdminUser, type BannerPayload, type Coupon, type ManagedUser } from "../api/admin.api";
+import { adminApi, type AdminUser, type BannerPayload, type Coupon, type ManagedUser, type B2BAccessStatus, type PricingConfig } from "../api/admin.api";
 import type { Banner } from "../api/banner.api";
 import type { Announcement } from "../api/announcement.api";
 import { ApiRequestError, apiRequest } from "../api/client";
@@ -66,8 +66,10 @@ function EmptyState({ title, description, icon }: { title: string; description: 
 
 function LoadingState({ title = "Loading content..." }: { title?: string }) {
   return (
-    <div className="flex flex-col items-center justify-center p-12 text-center border border-[var(--color-border)] rounded-[var(--radius-lg)] bg-[var(--color-bg-secondary)] space-y-3">
-      <div className="w-8 h-8 border-2 border-[var(--color-teal)] border-t-transparent rounded-full animate-spin"></div>
+    <div className="p-6 border border-[var(--color-border)] rounded-[var(--radius-lg)] bg-[var(--color-bg-secondary)] space-y-4" aria-busy="true" aria-label={title}>
+      <div className="skeleton h-5 w-1/3" />
+      <div className="skeleton h-12 w-full" />
+      <div className="skeleton h-12 w-5/6" />
       <p className="text-xs font-secondary tracking-widest text-[var(--color-text-muted)] uppercase">{title}</p>
     </div>
   );
@@ -162,6 +164,7 @@ function Layout({ admin, onLogout }: { admin: AdminUser; onLogout: () => void })
     { to: "/admin/banners", label: "Banners", icon: "🖼️" },
     { to: "/admin/announcements", label: "Announcements", icon: "📢" },
     { to: "/admin/metal-rates", label: "Metal Rates", icon: "⚖️" },
+    { to: "/admin/b2b-access", label: "B2B Access", icon: "🔐" },
   ];
 
   return (
@@ -225,6 +228,7 @@ function Layout({ admin, onLogout }: { admin: AdminUser; onLogout: () => void })
           <Route path="orders" element={<Orders />} />
           <Route path="reviews" element={<Reviews />} />
           <Route path="metal-rates" element={<MetalRates />} />
+          <Route path="b2b-access" element={<B2BAccessManagement />} />
           <Route path="categories" element={<Categories />} />
           <Route path="products" element={<Products />} />
           <Route path="*" element={<Navigate to="/admin" replace />} />
@@ -597,7 +601,7 @@ function Banners() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {items.map((b) => (
             <div key={b._id} className="admin-row flex flex-col space-y-3">
-              <img src={b.image} alt={`Banner ${b.order}`} className="w-full h-44 object-cover rounded-[var(--radius-md)] border border-[var(--color-border)]" />
+              <img src={b.image} loading="lazy" decoding="async" alt={`Banner ${b.order}`} className="w-full h-44 object-cover rounded-[var(--radius-md)] border border-[var(--color-border)]" />
               <div className="flex items-center justify-between text-xs w-full">
                 <span className="text-[var(--color-text-muted)] font-semibold uppercase tracking-wider">Slot Order: <b className="text-[var(--color-teal)]">{b.order}</b></span>
                 <Badge variant={b.isActive ? "success" : "neutral"}>{b.isActive ? "Active" : "Disabled"}</Badge>
@@ -745,60 +749,37 @@ function Announcements() {
   );
 }
 
+// --- B2B ACCESS ---
+function B2BAccessManagement() {
+  const [status, setStatus] = useState<B2BAccessStatus | null>(null);
+  const [password, setPassword] = useState("");
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
+  const load = useCallback(() => adminApi.b2bAccessStatus().then(setStatus).catch(error => setToast({ message: errorMessage(error), type: "error" })), []);
+  useEffect(() => { void load(); }, [load]);
+  const generate = () => setPassword(crypto.randomUUID().replace(/-/g, "").slice(0, 16));
+  const save = async (event: FormEvent) => { event.preventDefault(); try { const next = await adminApi.setB2BPassword(password); setStatus(next); setToast({ message: "B2B password activated. Existing B2B sessions are now invalid.", type: "success" }); } catch (error) { setToast({ message: errorMessage(error), type: "error" }); } };
+  const revoke = async () => { if (!confirm("Revoke B2B access now? This invalidates every active B2B session.")) return; try { const next = await adminApi.revokeB2BPassword(); setStatus(next); setPassword(""); setToast({ message: "B2B access revoked for all sessions.", type: "success" }); } catch (error) { setToast({ message: errorMessage(error), type: "error" }); } };
+  if (!status) return <LoadingState title="Checking B2B access status..." />;
+  return <div className="space-y-8">{toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}<PageHeader title="B2B Access Password" subtitle="One shared password protects the read-only Gold trade catalogue." /><div className="admin-form max-w-2xl"><div className="flex items-center justify-between"><div><b>Current access</b><p className="mt-1 text-xs text-[var(--color-text-muted)]">Last changed: {status.lastChanged ? new Date(status.lastChanged).toLocaleString() : "Never"}</p></div><Badge variant={status.active ? "success" : "danger"}>{status.active ? "Active" : "Revoked"}</Badge></div><form onSubmit={save} className="space-y-4 border-t border-[var(--color-border)] pt-5"><label className="block">Shared B2B password<div className="mt-2 flex gap-2"><input required minLength={8} type="text" value={password} onChange={event => setPassword(event.target.value)} placeholder="Set or generate a password" className="admin-input flex-1" /><button type="button" onClick={generate} className="px-4 border border-[var(--color-border)] rounded-[var(--radius-sm)] text-xs font-semibold cursor-pointer">Generate</button></div></label><button className="admin-button cursor-pointer">Activate / replace password</button></form>{status.active && <button onClick={() => void revoke()} className="border border-[var(--color-error)]/40 text-[var(--color-error)] rounded-[var(--radius-sm)] px-4 py-2 text-xs font-semibold cursor-pointer">Revoke current password</button>}</div></div>;
+}
+
 // --- METAL RATES ---
 function MetalRates() {
   const [rates, setRates] = useState<any>(null);
+  const [configs, setConfigs] = useState<PricingConfig[]>([]);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
-
-  useEffect(() => {
-    apiRequest<any>("/admin/metal-rates")
-      .then(setRates)
-      .catch((e) => setToast({ message: errorMessage(e), type: "error" }));
-  }, []);
-
+  const load = useCallback(() => Promise.all([apiRequest<any>("/admin/metal-rates"), adminApi.pricingConfigs()]).then(([currentRates, currentConfigs]) => { setRates(currentRates); setConfigs(currentConfigs); }).catch((e) => setToast({ message: errorMessage(e), type: "error" })), []);
+  useEffect(() => { void load(); }, [load]);
   if (!rates) return <LoadingState title="Retrieving baseline precious metal rates..." />;
-
   const save = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!confirm("Confirm updating precious metal base rates?")) return;
-    const form = e.currentTarget;
-    const f = new FormData(form);
-    const body = {      gold24kt: Number(f.get("gold24kt")),
-      silver: Number(f.get("silver")),
-      makingRatePerGram: Number(f.get("makingRatePerGram")),
-      certificateRatePerGram: Number(f.get("certificateRatePerGram")),
-    };
-    try {
-      const res = await apiRequest<any>("/admin/metal-rates", { method: "PUT", body: JSON.stringify(body) });
-      setRates(res);
-      setToast({ message: "Metal rates successfully updated", type: "success" });
-    } catch (e) {
-      setToast({ message: errorMessage(e), type: "error" });
-    }
+    e.preventDefault(); const f = new FormData(e.currentTarget);
+    const body = { gold24kt: Number(f.get("gold24kt")), silver: Number(f.get("silver")), makingRatePerGram: Number(f.get("makingRatePerGram")), certificateRatePerGram: Number(f.get("certificateRatePerGram")) };
+    const moissanite = Number(f.get("silverMoissaniteMakingRate")); const polki = Number(f.get("silverPolkiMakingRate"));
+    try { const [nextRates] = await Promise.all([apiRequest<any>("/admin/metal-rates", { method: "PUT", body: JSON.stringify(body) }), adminApi.updatePricingConfig("SILVER_MOISSANITE", moissanite), adminApi.updatePricingConfig("SILVER_POLKI", polki)]); setRates(nextRates); await load(); setToast({ message: "Universal and Silver-specific rates updated.", type: "success" }); } catch (error) { setToast({ message: errorMessage(error), type: "error" }); }
   };
-
-  return (
-    <div className="space-y-8">
-      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
-      <PageHeader title="Metal Rates" subtitle="Set current live gold and silver baseline values" />
-
-      <form onSubmit={save} className="admin-form max-w-2xl">
-        <b>Baseline Rate Configuration</b>
-        {["gold24kt", "silver", "makingRatePerGram", "certificateRatePerGram"].map((k) => (
-          <label key={k} className="uppercase">
-            {k}
-            <input className="admin-input" name={k} type="number" min="0" step="any" defaultValue={rates[k]} />
-          </label>
-        ))}
-        <div className="col-span-full flex items-center justify-between border-t border-[var(--color-border)] pt-4">
-          <span className="text-xs text-[var(--color-text-muted)]">Last updated: {new Date(rates.updatedAt).toLocaleString()}</span>
-          <button className="admin-button cursor-pointer">Update Baseline Rates</button>
-        </div>
-      </form>
-    </div>
-  );
+  const configRate = (key: string, fallback: number) => configs.find(config => config.key === key)?.makingRatePerGram ?? fallback;
+  return <div className="space-y-8">{toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}<PageHeader title="Universal Charge Settings" subtitle="Live baseline metal rates and category-specific Silver making rates." /><form onSubmit={save} className="admin-form max-w-2xl"><b>Baseline Rate Configuration</b>{[["gold24kt", "Gold 24kt rate"], ["silver", "Fine silver rate"], ["makingRatePerGram", "Universal Gold making rate / gram"], ["certificateRatePerGram", "Certificate charge / carat"]].map(([key, label]) => <label key={key} className="uppercase">{label}<input className="admin-input" name={key} type="number" min="0" step="any" defaultValue={rates[key]} /></label>)}<div className="col-span-full border-t border-[var(--color-border)] pt-5"><b>Silver Category Making Rates</b><p className="mt-1 text-xs text-[var(--color-text-muted)]">These are read by the active CategoryPricingConfig on every Silver price calculation.</p></div><label className="uppercase">Silver-Moissanite making rate / gram<input className="admin-input" name="silverMoissaniteMakingRate" type="number" min="0" step="any" defaultValue={configRate("SILVER_MOISSANITE", 500)} /></label><label className="uppercase">Silver-Polki making rate / gram<input className="admin-input" name="silverPolkiMakingRate" type="number" min="0" step="any" defaultValue={configRate("SILVER_POLKI", 350)} /></label><div className="col-span-full flex items-center justify-between border-t border-[var(--color-border)] pt-4"><span className="text-xs text-[var(--color-text-muted)]">Last metal-rate update: {rates.updatedAt ? new Date(rates.updatedAt).toLocaleString() : "N/A"}</span><button className="admin-button cursor-pointer">Save live charge settings</button></div></form></div>;
 }
-
 // --- CATEGORIES ---
 function Categories() {
   const [items, setItems] = useState<Category[]>([]);

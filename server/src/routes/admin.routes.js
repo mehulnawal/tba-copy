@@ -56,7 +56,9 @@ const {
   remove: removeReview,
 } = require("../controllers/review.controller");
 
-const { adminListProducts, adminGetProduct, listPricingConfigs, createProduct, updateProduct, deleteProduct, previewPrice, uploadImageHandler } = require("../controllers/product.controller");
+const { list: listDiamondCategories, save: saveDiamondCategory } = require("../controllers/diamondCategory.controller");
+const { status: getB2BStatus, setPassword: setB2BPassword, revoke: revokeB2BPassword } = require("../controllers/b2b.controller");
+const { adminListProducts, adminGetProduct, listPricingConfigs, updatePricingConfig, createProduct, updateProduct, deleteProduct, previewPrice, uploadImageHandler } = require("../controllers/product.controller");
 
 const router = express.Router();
 
@@ -89,11 +91,18 @@ router.post("/coupons", createCoupon);
 router.patch("/coupons/:couponId", updateCoupon);
 router.delete("/coupons/:couponId", deleteCoupon);
 
+router.get("/b2b-access", getB2BStatus);
+router.put("/b2b-access", setB2BPassword);
+router.delete("/b2b-access", revokeB2BPassword);
+
 router.get("/orders", listOrders);
 router.patch("/orders/:orderId/production-status", updateProductionStatus);
 router.post("/upload-image", upload.single("image"), uploadImageHandler);
 router.post("/products/preview-price", previewPrice);
 router.get("/pricing-configs", listPricingConfigs);
+router.patch("/pricing-configs/:key", updatePricingConfig);
+router.get("/diamond-categories", listDiamondCategories);
+router.post("/diamond-categories", saveDiamondCategory);
 router.get("/products", adminListProducts);
 router.get("/products/:productId", adminGetProduct);
 router.post("/products", createProduct);

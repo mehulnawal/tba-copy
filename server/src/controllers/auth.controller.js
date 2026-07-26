@@ -95,9 +95,6 @@ const login = asyncHandler(async (req, res) => {
     throw new ApiError(403, "Your account has been blocked");
   }
 
-  if (![ROLES.USER, ROLES.BUSINESS].includes(user.role)) {
-    throw new ApiError(403, "Please use the admin login portal");
-  }
 
   setAuthCookies(res, user._id);
 

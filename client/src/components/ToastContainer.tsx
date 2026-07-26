@@ -1,27 +1,15 @@
 import { useToast } from "../context/ToastContext";
 
+const iconFor = (type: "success" | "error" | "info") => type === "success" ? "✓" : type === "error" ? "!" : "i";
+
 export default function ToastContainer() {
   const { toasts, removeToast } = useToast();
-
   if (toasts.length === 0) return null;
-
-  return (
-    <div className="fixed top-24 right-4 z-[10000] flex flex-col gap-2 max-w-sm">
-      {toasts.map((toast) => (
-        <div
-          key={toast.id}
-          onClick={() => removeToast(toast.id)}
-          className={`px-4 py-3 border shadow-lg font-secondary text-sm cursor-pointer transition-opacity ${
-            toast.type === "success"
-              ? "bg-[var(--color-bg)] border-green-600 text-green-700"
-              : toast.type === "error"
-                ? "bg-[var(--color-bg)] border-red-600 text-red-700"
-                : "bg-[var(--color-bg)] border-[var(--color-border)] text-[var(--color-text)]"
-          }`}
-        >
-          {toast.message}
-        </div>
-      ))}
-    </div>
-  );
+  return <div className="customer-toast-stack" aria-live="polite" aria-atomic="true">
+    {toasts.map(toast => <div key={toast.id} role={toast.type === "error" ? "alert" : "status"} className={"customer-toast customer-toast--" + toast.type}>
+      <span className="customer-toast__icon" aria-hidden="true">{iconFor(toast.type)}</span>
+      <p>{toast.message}</p>
+      <button onClick={() => removeToast(toast.id)} aria-label="Dismiss notification">×</button>
+    </div>)}
+  </div>;
 }

@@ -3,7 +3,9 @@ import type { Announcement } from "./announcement.api";
 import type { Banner } from "./banner.api";
 import type { Category, Product, PriceBreakdown } from "../types";
 
+export interface DiamondCategory { _id: string; name: string; subTypes: string[]; isActive: boolean; }
 export interface PricingConfig { _id: string; key: string; metal: "gold" | "silver"; categoryType: string; makingRatePerGram: number; weightBasis: "net" | "gross"; stoneRatePerUnit?: number; certificateApplies: boolean; usesLabGrownFixedDiamondRates: boolean; isActive: boolean; }
+export interface B2BAccessStatus { active: boolean; lastChanged: string | null; }
 export interface AdminUser {
   id: string;
   name: string;
@@ -113,6 +115,12 @@ export const adminApi = {
     apiRequest<null>(`/admin/coupons/${id}`, { method: "DELETE" }),
   adminProducts: (search = "") => apiRequest<Product[]>(`/admin/products${search ? `?search=${encodeURIComponent(search)}` : ""}`), adminGetProduct: (id: string) => apiRequest<Product>(`/admin/products/${id}`), createProduct: (p: Partial<Product>) => apiRequest<Product>("/admin/products", { method: "POST", body: JSON.stringify(p) }), updateProduct: (id: string, p: Partial<Product>) => apiRequest<Product>(`/admin/products/${id}`, { method: "PATCH", body: JSON.stringify(p) }), deleteProduct: (id: string) => apiRequest<null>(`/admin/products/${id}`, { method: "DELETE" }), previewPrice: (p: Partial<Product>) => apiRequest<PriceBreakdown[]>("/admin/products/preview-price", { method: "POST", body: JSON.stringify(p) }), uploadImage: (file: File) => { const body = new FormData(); body.append("image", file); return apiRequest<{ url: string }>("/admin/upload-image", { method: "POST", body }); },
   pricingConfigs: () => apiRequest<PricingConfig[]>("/admin/pricing-configs"),
+  updatePricingConfig: (key: string, makingRatePerGram: number) => apiRequest<PricingConfig>("/admin/pricing-configs/" + encodeURIComponent(key), { method: "PATCH", body: JSON.stringify({ makingRatePerGram }) }),
+  b2bAccessStatus: () => apiRequest<B2BAccessStatus>("/admin/b2b-access"),
+  setB2BPassword: (password: string) => apiRequest<B2BAccessStatus>("/admin/b2b-access", { method: "PUT", body: JSON.stringify({ password }) }),
+  revokeB2BPassword: () => apiRequest<B2BAccessStatus>("/admin/b2b-access", { method: "DELETE" }),
+  diamondCategories: () => apiRequest<DiamondCategory[]>("/admin/diamond-categories"),
+  saveDiamondCategory: (name: string, subType = "") => apiRequest<DiamondCategory>("/admin/diamond-categories", { method: "POST", body: JSON.stringify({ name, subType }) }),
   categories: () => apiRequest<Category[]>("/admin/categories"),
   createCategory: (p: {
     name: string;
