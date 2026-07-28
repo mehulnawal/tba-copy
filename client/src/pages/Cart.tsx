@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingBag, Trash2, Heart, Plus, Minus, ArrowRight, ShieldCheck, Truck, Sparkles, AlertCircle, CheckCircle2 } from 'lucide-react';
@@ -22,6 +22,7 @@ interface CartItem {
     image: string;
     quantity: number;
     price: number;
+    size: string;
 }
 
 /* ==========================================================================
@@ -72,6 +73,7 @@ export default function CartPage() {
                 image: item.image,
                 quantity: item.quantity,
                 price: item.price,
+                size: item.size || "",
             })),
         [cartData],
     );
@@ -292,6 +294,9 @@ export default function CartPage() {
                                                             >
                                                                 {item.name}
                                                             </h3>
+                                                            <div className="font-display text-xs text-[var(--color-text-muted)] pt-0.5">
+                                                                Ring size: {item.size || "Not selected"}
+                                                            </div>
                                                             <div className="font-display text-xs text-[var(--color-text-muted)] pt-0.5">
                                                                 Piece Value: {formatINR(item.price)}
                                                             </div>

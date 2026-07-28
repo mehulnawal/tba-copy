@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { AuthModal } from "./AuthModal";
 import { useAuth } from "../context/AuthContext";
@@ -110,7 +110,6 @@ export default function ProductDetails() {
     };
 
     const mediaList = product.images.map((image) => ({ type: "image" as const, url: image.url }));
-    const isRingProduct = [product.mainCategory, product.subCategory].some((category) => typeof category !== "string" && category?.name.toLowerCase().includes("ring"));
 
     const availableColors = (product.colors && product.colors.length > 0)
         ? (product.colors.some(c => c.toLowerCase().includes("white")) ? product.colors : [...product.colors, "White"])
@@ -132,6 +131,10 @@ export default function ProductDetails() {
     };
 
     const handleAddToCart = async () => {
+        if (!size) {
+            showToast("Select a ring size before adding this product.", "error");
+            return;
+        }
         if (!isAuthenticated) { setIsAuthOpen(true); return; }
         try {
             await addToCartMutation.mutateAsync({
@@ -376,13 +379,13 @@ export default function ProductDetails() {
                             </div>
                         </div>
 
-                        {isRingProduct && <div className="space-y-2">
+                        <div className="space-y-2">
                             <label htmlFor="ring-size" className="block text-xs uppercase tracking-widest font-semibold text-stone-600">Ring size</label>
                             <select id="ring-size" value={size} onChange={(event) => setSize(event.target.value)} className="w-full rounded border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-800 focus:border-amber-800 focus:outline-none" aria-required="true">
                                 <option value="">Select size</option>
                                 {RING_SIZES.map((ringSize) => <option key={ringSize} value={ringSize}>{ringSize}</option>)}
                             </select>
-                        </div>}
+                        </div>
 
                         {/* CTA Buttons */}
                         <div className="flex gap-4 pt-2">

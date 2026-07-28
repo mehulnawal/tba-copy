@@ -1,4 +1,4 @@
-export interface ApiSuccessResponse<T> {
+﻿export interface ApiSuccessResponse<T> {
   statusCode: number;
   data: T;
   message: string;
@@ -27,6 +27,7 @@ export class ApiRequestError extends Error {
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api/v1";
 let adminRefreshInFlight: Promise<boolean> | null = null;
+let customerRefreshInFlight: Promise<boolean> | null = null;
 
 const requestOnce = async (endpoint: string, options: RequestInit = {}) => {
   const isFormData = options.body instanceof FormData;
@@ -51,6 +52,15 @@ const refreshAdminSession = async () => {
   return adminRefreshInFlight;
 };
 
+const refreshCustomerSession = async () => {
+  if (!customerRefreshInFlight) {
+    customerRefreshInFlight = requestOnce("/auth/refresh", { method: "POST" })
+      .then(({ response, data }) => response.ok && data.success !== false)
+      .catch(() => false)
+      .finally(() => { customerRefreshInFlight = null; });
+  }
+  return customerRefreshInFlight;
+};
 const redirectToAdminLogin = () => {
   if (typeof window !== "undefined" && window.location.pathname !== "/admin/login") {
     window.location.assign("/admin/login");
@@ -65,11 +75,10 @@ export async function apiRequest<T>(endpoint: string, options: RequestInit = {})
     && endpoint !== "/admin/auth/refresh";
 
   if (response.status === 401 && isProtectedAdminCall) {
-    if (await refreshAdminSession()) {
-      ({ response, data } = await requestOnce(endpoint, options));
-    } else {
-      redirectToAdminLogin();
-    }
+    if (await refreshAdminSession()) ({ response, data } = await requestOnce(endpoint, options));
+    else redirectToAdminLogin();
+  } else if (response.status === 401 && !endpoint.startsWith("/auth/")) {
+    if (await refreshCustomerSession()) ({ response, data } = await requestOnce(endpoint, options));
   }
 
   if (!response.ok || data.success === false) {

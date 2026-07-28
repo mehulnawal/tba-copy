@@ -1,4 +1,4 @@
-const MetalRate = require("../models/metalRate.model");
+﻿const MetalRate = require("../models/metalRate.model");
 const ApiError = require("../utils/ApiError");
 const ApiResponse = require("../utils/ApiResponse");
 const asyncHandler = require("../utils/asyncHandler");
@@ -6,7 +6,7 @@ const asyncHandler = require("../utils/asyncHandler");
 const apply = rate => {
   const values = { gold24kt: Number(rate.gold24kt), silver: Number(rate.silver), makingRatePerGram: Number(rate.makingRatePerGram), certificateRatePerGram: Number(rate.certificateRatePerGram) };
   global.TBA_METAL_RATES = values;
-  return values;
+  return { ...values, updatedAt: rate.updatedAt };
 };
 const get = asyncHandler(async (req, res) => { const rate = await MetalRate.findOne({ key: "current" }); if (!rate) throw new ApiError(503, "Metal rates have not been configured"); res.json(new ApiResponse(200, apply(rate), "Metal rates fetched")); });
 const getPublic = asyncHandler(async (req, res) => { const rate = await MetalRate.findOne({ key: "current" }); if (!rate) throw new ApiError(503, "Metal rates have not been configured"); const rates = apply(rate); res.json(new ApiResponse(200, { ...rates, updatedAt: rate.updatedAt }, "Metal rates fetched")); });

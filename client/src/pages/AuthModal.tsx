@@ -1,7 +1,7 @@
 ﻿import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { X, Mail, Lock, User, Phone, ArrowRight, Eye, EyeOff } from "lucide-react"; // Imported Eye and EyeOff icons
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { authApi } from "../api/auth.api";
@@ -17,6 +17,8 @@ type AuthMode = "login" | "register" | "forgot";
 
 export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalProps) {
   const navigate = useNavigate();
+  const location = useLocation();
+  const returnTo = typeof location.state?.from === "string" && location.state.from.startsWith("/") && !location.state.from.startsWith("//") ? location.state.from : "/";
   const { login, register, setUser } = useAuth();
   const { showToast } = useToast();
 
@@ -70,7 +72,7 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
       }
 
       onClose();
-      if (onAuthenticated) onAuthenticated(); else navigate("/");
+      if (onAuthenticated) onAuthenticated(); else navigate(returnTo, { replace: true });
     } catch (error) {
       const message =
         error instanceof ApiRequestError
@@ -99,7 +101,7 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
             setUser(await authApi.googleLogin(tokenResponse.access_token));
             showToast("Signed in with Google", "success");
             onClose();
-      if (onAuthenticated) onAuthenticated(); else navigate("/");
+      if (onAuthenticated) onAuthenticated(); else navigate(returnTo, { replace: true });
           } catch (error) {
             showToast("Google login failed", "error");
           } finally {
@@ -133,7 +135,7 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
           setUser(await authApi.facebookLogin(accessToken));
           showToast("Signed in with Facebook", "success");
           onClose();
-      if (onAuthenticated) onAuthenticated(); else navigate("/");
+      if (onAuthenticated) onAuthenticated(); else navigate(returnTo, { replace: true });
         } catch (error) {
           showToast(error instanceof ApiRequestError ? error.message : "Facebook sign-in failed. Please try again.", "error");
         } finally { setIsSubmitting(false); }

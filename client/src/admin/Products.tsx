@@ -14,7 +14,8 @@ type ProductForm = {
   grossWeight: Record<Karat, number> | number; netWeight: Record<Karat, number>; moissaniteCaratWeight: number;
   diamonds: DiamondEntry[]; isBestSeller: boolean; isNewProduct: boolean; isActive: boolean;
 };
-const blank = (): ProductForm => ({ SKU: "", title: "", description: "", metal: "", pricingConfigKey: "", mainCategory: "", subCategory: "", images: [], videoLink: "", sizes: [], colors: [], grossWeight: { "14kt": 0, "18kt": 0 }, netWeight: { "14kt": 0, "18kt": 0 }, moissaniteCaratWeight: 0, diamonds: [], isBestSeller: false, isNewProduct: false, isActive: true });
+const STANDARD_RING_SIZES = Array.from({ length: 21 }, (_, index) => index + 5);
+const blank = (): ProductForm => ({ SKU: "", title: "", description: "", metal: "", pricingConfigKey: "", mainCategory: "", subCategory: "", images: [], videoLink: "", sizes: STANDARD_RING_SIZES, colors: [], grossWeight: { "14kt": 0, "18kt": 0 }, netWeight: { "14kt": 0, "18kt": 0 }, moissaniteCaratWeight: 0, diamonds: [], isBestSeller: false, isNewProduct: false, isActive: true });
 const categoryId = (value?: string | { _id: string } | null) => typeof value === "string" ? value : value?._id || "";
 const categoryName = (value?: Category | string | null) => !value ? "Uncategorised" : typeof value === "string" ? value : value.name;
 const currency = (value: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(value || 0);
@@ -74,7 +75,7 @@ export default function Products() {
   const payload = (): Partial<Product> => ({ ...form, metal: form.metal as "gold" | "silver", grossWeight: form.metal === "silver" ? Number(form.grossWeight) : form.grossWeight, netWeight: form.metal === "gold" ? form.netWeight : undefined, moissaniteCaratWeight: form.metal === "silver" ? form.moissaniteCaratWeight : undefined });
   useEffect(() => { if (!form.metal || !form.pricingConfigKey || !form.mainCategory || !form.subCategory) { setPreview([]); return; } const timer = setTimeout(() => { void adminApi.previewPrice(payload()).then(setPreview).catch(() => setPreview([])); }, 400); return () => clearTimeout(timer); }, [form]);
   const openCreate = () => { setEditing(null); setForm(blank()); setPreview([]); setErrors({}); setSubmitted(false); setCreating(true); window.scrollTo({ top: 0, behavior: "smooth" }); };
-  const openEdit = (product: Product) => { const metal = product.metal || "gold"; setEditing(product); setForm({ ...blank(), ...product, metal, pricingConfigKey: product.pricingConfigKey || "", mainCategory: categoryId(product.mainCategory), subCategory: categoryId(product.subCategory), images: product.images || [], sizes: product.sizes || [], colors: product.colors || [], grossWeight: product.grossWeight || (metal === "silver" ? 0 : { "14kt": 0, "18kt": 0 }), netWeight: (product.netWeight as Record<Karat, number>) || { "14kt": 0, "18kt": 0 }, diamonds: product.diamonds || [] }); setErrors({}); setSubmitted(false); setCreating(true); };
+  const openEdit = (product: Product) => { const metal = product.metal || "gold"; setEditing(product); setForm({ ...blank(), ...product, metal, pricingConfigKey: product.pricingConfigKey || "", mainCategory: categoryId(product.mainCategory), subCategory: categoryId(product.subCategory), images: product.images || [], sizes: STANDARD_RING_SIZES, colors: product.colors || [], grossWeight: product.grossWeight || (metal === "silver" ? 0 : { "14kt": 0, "18kt": 0 }), netWeight: (product.netWeight as Record<Karat, number>) || { "14kt": 0, "18kt": 0 }, diamonds: product.diamonds || [] }); setErrors({}); setSubmitted(false); setCreating(true); };
   const save = async (e: FormEvent, publish: boolean) => {
     e.preventDefault();
     if (saving) return;

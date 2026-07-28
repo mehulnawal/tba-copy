@@ -1,4 +1,4 @@
-import { Navigate, useLocation } from "react-router-dom";
+﻿import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 interface ProtectedRouteProps {
@@ -24,7 +24,7 @@ export default function ProtectedRoute({
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/auth" replace state={{ from: location.pathname }} />;
+    return <Navigate to="/auth" replace state={{ from: `${location.pathname}${location.search}${location.hash}` }} />;
   }
 
   if (user && allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {

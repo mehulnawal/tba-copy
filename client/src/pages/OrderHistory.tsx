@@ -9,6 +9,7 @@ type OrderItem = {
     image: string;
     quantity: number;
     karat: string;
+    size?: string;
 };
 
 type Order = {
@@ -35,17 +36,11 @@ export default function OrderHistory() {
             .finally(() => setIsLoading(false));
     }, []);
 
-    const formatStatus = (status: Order["orderStatus"]) => {
-        switch (status) {
-            case "confirmed":
-                return { label: "Processing", color: "text-[var(--color-teal)] bg-[var(--color-bg-secondary)]" };
-            case "pending":
-                return { label: "Pending", color: "text-amber-700 bg-amber-50" };
-            case "failed":
-                return { label: "Failed", color: "text-red-700 bg-red-50" };
-            default:
-                return { label: status, color: "text-[var(--color-text-muted)] bg-[var(--color-cream-light)]" };
-        }
+    const formatStatus = (order: Order) => {
+        if (order.orderStatus === "failed") return { label: "Payment failed", color: "text-red-700 bg-red-50" };
+        if (order.orderStatus === "pending") return { label: "Payment processing", color: "text-amber-700 bg-amber-50" };
+        const workflow = order.productionStatus || "order_placed";
+        return { label: workflow.replaceAll("_", " "), color: "text-[var(--color-teal)] bg-[var(--color-bg-secondary)]" };
     };
 
     return (
@@ -123,7 +118,7 @@ export default function OrderHistory() {
                         /* Orders List */
                         <div className="space-y-8">
                             {orders.map((o) => {
-                                const statusInfo = formatStatus(o.orderStatus);
+                                const statusInfo = formatStatus(o);
                                 return (
                                     <div
                                         key={o._id}
@@ -166,6 +161,9 @@ export default function OrderHistory() {
                                                             <p className="font-secondary text-xs text-[var(--color-text-muted)] mt-1">
                                                                 Metal: <span className="uppercase text-[var(--color-text)] font-medium">{i.karat}</span>
                                                             </p>
+                                                            {i.size && <p className="font-secondary text-xs text-[var(--color-text-muted)]">
+                                                                Ring size: <span className="text-[var(--color-text)] font-medium">{i.size}</span>
+                                                            </p>}
                                                             <p className="font-secondary text-xs text-[var(--color-text-muted)]">
                                                                 Qty: <span className="text-[var(--color-text)] font-medium">{i.quantity}</span>
                                                             </p>

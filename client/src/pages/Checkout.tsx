@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { checkoutApi } from "../api/checkout.api";
 import { apiRequest } from "../api/client";
@@ -19,6 +19,7 @@ type CartItem = {
     quantity: number;
     price: number;
     karat?: string;
+    size?: string;
 };
 
 type AppliedCoupon = {
@@ -220,7 +221,7 @@ export default function Checkout() {
                                                 {i.name}
                                             </h3>
                                             <p className="text-xs text-gray-500 uppercase tracking-wider mt-1">
-                                                {i.karat && `${i.karat.toUpperCase()} · `}Qty: {i.quantity}
+                                                {i.karat && `${i.karat.toUpperCase()} · `}{i.size && `Size: ${i.size} · `}Qty: {i.quantity}
                                             </p>
                                         </div>
                                         <div className="text-right font-medium text-sm text-gray-900">

@@ -1,4 +1,4 @@
-﻿import React, { FormEvent, useEffect, useState, useMemo, useCallback } from "react";
+import React, { FormEvent, useEffect, useState, useMemo, useCallback } from "react";
 import { Navigate, NavLink, Route, Routes, useNavigate } from "react-router-dom";
 import { adminApi, type AdminUser, type BannerPayload, type Coupon, type ManagedUser, type B2BAccessStatus, type PricingConfig } from "../api/admin.api";
 import type { Banner } from "../api/banner.api";
@@ -910,7 +910,7 @@ function Orders() {
                     <p className="font-semibold text-[var(--color-teal)]">{o.customer?.name || "Guest User"}</p>
                     <p className="text-[var(--color-text-muted)]">{o.customer?.email || "N/A"}</p>
                   </td>
-                  <td className="p-4">{o.items?.length || 0} item(s)</td>
+                  <td className="p-4"><p>{o.items?.length || 0} item(s)</p><div className="mt-1 space-y-1 text-[11px] text-[var(--color-text-muted)]">{o.items?.map((item: any, index: number) => <p key={`${item.productSku || item.title}-${index}`}>{item.title || item.productSku || "Product"}{item.size ? ` · Size ${item.size}` : ""}</p>)}</div></td>
                   <td className="p-4 font-semibold text-[var(--color-teal)]">{formatCurrency(o.amount || 0)}</td>
                   <td className="p-4"><Badge variant="gold">{o.paymentStatus}</Badge></td>
                   <td className="p-4"><Badge variant={o.orderStatus === "confirmed" ? "success" : o.orderStatus === "failed" ? "danger" : "warning"}>{o.orderStatus || "pending"}</Badge></td>
