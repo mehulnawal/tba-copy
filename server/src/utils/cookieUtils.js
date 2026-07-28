@@ -1,9 +1,11 @@
-const isProduction = process.env.NODE_ENV === "production";
+﻿const isProduction = process.env.NODE_ENV === "production";
 
+const cookieDomain = process.env.COOKIE_DOMAIN || undefined;
 const cookieOptions = {
   httpOnly: true,
   secure: isProduction,
   sameSite: isProduction ? "none" : "lax",
+  ...(cookieDomain ? { domain: cookieDomain } : {}),
 };
 
 const accessTokenCookieOptions = {

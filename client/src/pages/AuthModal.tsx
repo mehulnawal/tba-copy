@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { X, Mail, Lock, User, Phone, ArrowRight, Eye, EyeOff } from "lucide-react"; // Imported Eye and EyeOff icons
 import { useNavigate } from "react-router-dom";
@@ -10,11 +10,12 @@ import { ApiRequestError } from "../api/client";
 interface LuxuryAuthModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onAuthenticated?: () => void;
 }
 
 type AuthMode = "login" | "register" | "forgot";
 
-export function AuthModal({ isOpen, onClose }: LuxuryAuthModalProps) {
+export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalProps) {
   const navigate = useNavigate();
   const { login, register, setUser } = useAuth();
   const { showToast } = useToast();
@@ -69,7 +70,7 @@ export function AuthModal({ isOpen, onClose }: LuxuryAuthModalProps) {
       }
 
       onClose();
-      navigate("/");
+      if (onAuthenticated) onAuthenticated(); else navigate("/");
     } catch (error) {
       const message =
         error instanceof ApiRequestError
@@ -98,7 +99,7 @@ export function AuthModal({ isOpen, onClose }: LuxuryAuthModalProps) {
             setUser(await authApi.googleLogin(tokenResponse.access_token));
             showToast("Signed in with Google", "success");
             onClose();
-            navigate("/");
+      if (onAuthenticated) onAuthenticated(); else navigate("/");
           } catch (error) {
             showToast("Google login failed", "error");
           } finally {
@@ -132,7 +133,7 @@ export function AuthModal({ isOpen, onClose }: LuxuryAuthModalProps) {
           setUser(await authApi.facebookLogin(accessToken));
           showToast("Signed in with Facebook", "success");
           onClose();
-          navigate("/");
+      if (onAuthenticated) onAuthenticated(); else navigate("/");
         } catch (error) {
           showToast(error instanceof ApiRequestError ? error.message : "Facebook sign-in failed. Please try again.", "error");
         } finally { setIsSubmitting(false); }

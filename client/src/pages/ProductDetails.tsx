@@ -1,5 +1,7 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import { AuthModal } from "./AuthModal";
+import { useAuth } from "../context/AuthContext";
 import { apiRequest } from "../api/client";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
@@ -7,6 +9,7 @@ import { useToast } from "../context/ToastContext";
 import { useAddToCart } from "../hooks/useCart";
 import { RING_SIZES } from "../constants/product";
 import type { Product } from "../types";
+import { formatINR } from "../utils/currency";
 
 type Review = {
     _id: string;
@@ -34,10 +37,11 @@ function formatFinishLabel(colorName: string): string {
 export default function ProductDetails() {
     const { slug = "" } = useParams();
     const { showToast } = useToast();
+    const { isAuthenticated } = useAuth();
     const addToCartMutation = useAddToCart();
 
     const [product, setProduct] = useState<Product | null>(null);
-    const [karat, setKarat] = useState<"9kt" | "14kt" | "18kt">("14kt");
+    const [karat, setKarat] = useState<"14kt" | "18kt">("14kt");
     const [color, setColor] = useState("");
     const [size, setSize] = useState("");
     const [reviews, setReviews] = useState<Review[]>([]);
@@ -45,6 +49,7 @@ export default function ProductDetails() {
     const [rating, setRating] = useState(5);
     const [hoverRating, setHoverRating] = useState(0);
     const [reviewText, setReviewText] = useState("");
+    const [isAuthOpen, setIsAuthOpen] = useState(false);
 
     const [activeMediaIndex, setActiveMediaIndex] = useState(0);
     const [isPriceBreakupOpen, setIsPriceBreakupOpen] = useState(true);
@@ -58,7 +63,7 @@ export default function ProductDetails() {
                 setProduct(p);
                 const defaultColors = p.colors && p.colors.length > 0 ? p.colors : ["Yellow", "Rose", "White"];
                 setColor(defaultColors[0]);
-                setSize(RING_SIZES[0]);
+                setSize("");
 
                 apiRequest<Review[]>(`/reviews/${p.SKU}`).then(setReviews).catch(() => { });
             })
@@ -76,6 +81,7 @@ export default function ProductDetails() {
                     </div>
                 </main>
                 <Footer onCategoryChange={() => { }} />
+            <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} onAuthenticated={() => void addToCartMutation.mutateAsync({ productId: product.SKU, karat, color, size, quantity: 1 }).then(() => showToast("Item added to cart!", "success")).catch((error: unknown) => showToast(error instanceof Error ? error.message : "Failed to add to cart.", "error"))} />
             </>
         );
     }
@@ -104,6 +110,7 @@ export default function ProductDetails() {
     };
 
     const mediaList = product.images.map((image) => ({ type: "image" as const, url: image.url }));
+    const isRingProduct = [product.mainCategory, product.subCategory].some((category) => typeof category !== "string" && category?.name.toLowerCase().includes("ring"));
 
     const availableColors = (product.colors && product.colors.length > 0)
         ? (product.colors.some(c => c.toLowerCase().includes("white")) ? product.colors : [...product.colors, "White"])
@@ -125,6 +132,7 @@ export default function ProductDetails() {
     };
 
     const handleAddToCart = async () => {
+        if (!isAuthenticated) { setIsAuthOpen(true); return; }
         try {
             await addToCartMutation.mutateAsync({
                 productId: product.SKU,
@@ -240,7 +248,7 @@ export default function ProductDetails() {
                         <div className="py-3 border-y border-stone-200/80 flex items-baseline justify-between">
                             <div>
                                 <span className="text-3xl font-serif text-stone-900">
-                                    ₹{Math.round(activePriceObj.finalPrice).toLocaleString("en-IN")}
+                                    {formatINR(activePriceObj.finalPrice)}
                                 </span>
                                 <span className="text-[11px] text-stone-500 block">Inclusive of all taxes & 3% GST</span>
                             </div>
@@ -255,7 +263,7 @@ export default function ProductDetails() {
                                 Select Purity Standard: <span className="text-stone-900">{karat.toUpperCase()} Gold</span>
                             </label>
                             <div className="grid grid-cols-3 gap-3">
-                                {(["9kt", "14kt", "18kt"] as const).map((k) => (
+                                {(["14kt", "18kt"] as const).map((k) => (
                                     <button
                                         key={k}
                                         onClick={() => setKarat(k)}
@@ -288,7 +296,7 @@ export default function ProductDetails() {
                                 <div className="space-y-2 text-xs text-stone-600">
                                     <div className="flex justify-between">
                                         <span>Gold Value</span>
-                                        <span className="font-medium text-stone-900">₹{Math.round(computedGoldValue).toLocaleString("en-IN")}</span>
+                                        <span className="font-medium text-stone-900">{formatINR(computedGoldValue)}</span>
                                     </div>
 
                                     {/* Round Diamond */}
@@ -305,22 +313,22 @@ export default function ProductDetails() {
 
                                     <div className="flex justify-between">
                                         <span>Certificate Charges</span>
-                                        <span className="font-medium text-stone-900">₹{Math.round(certCharges).toLocaleString("en-IN")}</span>
+                                        <span className="font-medium text-stone-900">{formatINR(certCharges)}</span>
                                     </div>
 
                                     <div className="flex justify-between">
                                         <span>Making Charges</span>
-                                        <span className="font-medium text-stone-900">₹{Math.round(activePriceObj.makingCharge).toLocaleString("en-IN")}</span>
+                                        <span className="font-medium text-stone-900">{formatINR(activePriceObj.makingCharge)}</span>
                                     </div>
 
                                     <div className="flex justify-between">
                                         <span>GST (3%)</span>
-                                        <span className="font-medium text-stone-900">₹{Math.round(activePriceObj.gst).toLocaleString("en-IN")}</span>
+                                        <span className="font-medium text-stone-900">{formatINR(activePriceObj.gst)}</span>
                                     </div>
 
                                     <div className="flex justify-between pt-2 border-t border-stone-200 font-semibold text-stone-900 text-sm">
                                         <span>Final Price</span>
-                                        <span className="font-serif">₹{Math.round(activePriceObj.finalPrice).toLocaleString("en-IN")}</span>
+                                        <span className="font-serif">{formatINR(activePriceObj.finalPrice)}</span>
                                     </div>
                                 </div>
                             )}
@@ -368,12 +376,13 @@ export default function ProductDetails() {
                             </div>
                         </div>
 
-                        <div className="space-y-2">
-                            <label className="block text-xs uppercase tracking-widest font-semibold text-stone-600">Ring Size: <span className="text-stone-900">{size}</span></label>
-                            <div className="flex flex-wrap gap-2">
-                                {RING_SIZES.map((ringSize) => <button key={ringSize} type="button" onClick={() => setSize(ringSize)} className={`min-w-10 px-3 py-2 text-xs font-semibold rounded border transition ${size === ringSize ? "border-amber-800 bg-amber-900 text-white" : "border-stone-300 bg-white text-stone-700 hover:border-amber-700"}`}>{ringSize}</button>)}
-                            </div>
-                        </div>
+                        {isRingProduct && <div className="space-y-2">
+                            <label htmlFor="ring-size" className="block text-xs uppercase tracking-widest font-semibold text-stone-600">Ring size</label>
+                            <select id="ring-size" value={size} onChange={(event) => setSize(event.target.value)} className="w-full rounded border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-800 focus:border-amber-800 focus:outline-none" aria-required="true">
+                                <option value="">Select size</option>
+                                {RING_SIZES.map((ringSize) => <option key={ringSize} value={ringSize}>{ringSize}</option>)}
+                            </select>
+                        </div>}
 
                         {/* CTA Buttons */}
                         <div className="flex gap-4 pt-2">
@@ -470,6 +479,7 @@ export default function ProductDetails() {
             </main>
 
             <Footer onCategoryChange={() => { }} />
+            <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} onAuthenticated={() => void addToCartMutation.mutateAsync({ productId: product.SKU, karat, color, size, quantity: 1 }).then(() => showToast("Item added to cart!", "success")).catch((error: unknown) => showToast(error instanceof Error ? error.message : "Failed to add to cart.", "error"))} />
         </div>
     );
 }

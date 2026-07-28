@@ -1,4 +1,4 @@
-import React, { FormEvent, useEffect, useState, useMemo, useCallback } from "react";
+﻿import React, { FormEvent, useEffect, useState, useMemo, useCallback } from "react";
 import { Navigate, NavLink, Route, Routes, useNavigate } from "react-router-dom";
 import { adminApi, type AdminUser, type BannerPayload, type Coupon, type ManagedUser, type B2BAccessStatus, type PricingConfig } from "../api/admin.api";
 import type { Banner } from "../api/banner.api";
@@ -7,6 +7,7 @@ import { ApiRequestError, apiRequest } from "../api/client";
 import type { Category } from "../types";
 import Products from "./Products";
 import Reviews from "./Reviews";
+import { FolderTree, Gem, Image, Lock, Megaphone, Menu, Scale, ShoppingBag, Sparkles, Star, Ticket, UsersRound, X } from "lucide-react";
 
 // --- HELPERS ---
 const errorMessage = (error: unknown) =>
@@ -34,7 +35,7 @@ function Toast({ message, type, onClose }: { message: string; type: "success" | 
   return (
     <div className={`fixed bottom-6 right-6 z-[var(--z-float)] flex items-center gap-3 px-5 py-3.5 rounded-[var(--radius-md)] border shadow-[var(--shadow-lg)] text-sm font-secondary transition-all duration-300 ${badgeClasses}`}>
       <span>{message}</span>
-      <button onClick={onClose} className="opacity-70 hover:opacity-100 transition-opacity ml-2 font-bold cursor-pointer">✕</button>
+      <button onClick={onClose} aria-label="Dismiss notification" className="opacity-70 hover:opacity-100 transition-opacity ml-2 font-bold cursor-pointer"><X size={16} /></button>
     </div>
   );
 }
@@ -54,10 +55,10 @@ function Badge({ children, variant = "neutral" }: { children: React.ReactNode; v
   );
 }
 
-function EmptyState({ title, description, icon }: { title: string; description: string; icon?: string }) {
+function EmptyState({ title, description, icon }: { title: string; description: string; icon?: React.ReactNode }) {
   return (
     <div className="flex flex-col items-center justify-center p-12 text-center border border-dashed border-[var(--color-border)] rounded-[var(--radius-lg)] bg-[var(--color-bg-secondary)]">
-      <div className="text-4xl mb-3 text-[var(--color-teal-light)]">{icon || "✨"}</div>
+      <div className="text-4xl mb-3 text-[var(--color-teal-light)]">{icon || <Sparkles aria-hidden="true" />}</div>
       <h3 className="text-lg font-primary text-[var(--color-teal)]">{title}</h3>
       <p className="text-xs text-[var(--color-text-muted)] max-w-sm mt-1 font-secondary">{description}</p>
     </div>
@@ -136,7 +137,7 @@ function Login({ onLogin }: { onLogin: (admin: AdminUser) => void }) {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
+              placeholder="Password"
               className="admin-input"
             />
           </div>
@@ -154,17 +155,17 @@ function Layout({ admin, onLogout }: { admin: AdminUser; onLogout: () => void })
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const navItems = [
-    { to: "/admin", label: "Overview", icon: "💎", end: true },
-    { to: "/admin/orders", label: "Orders", icon: "🛍️" },
-    { to: "/admin/reviews", label: "Reviews", icon: "⭐" },
-    { to: "/admin/coupons", label: "Coupons", icon: "🏷️" },
-    { to: "/admin/products", label: "Products", icon: "💎" },
-    { to: "/admin/categories", label: "Categories", icon: "🗂️" },
-    { to: "/admin/users", label: "Customers", icon: "👥" },
-    { to: "/admin/banners", label: "Banners", icon: "🖼️" },
-    { to: "/admin/announcements", label: "Announcements", icon: "📢" },
-    { to: "/admin/metal-rates", label: "Metal Rates", icon: "⚖️" },
-    { to: "/admin/b2b-access", label: "B2B Access", icon: "🔐" },
+    { to: "/admin", label: "Overview", icon: Gem, end: true },
+    { to: "/admin/orders", label: "Orders", icon: ShoppingBag },
+    { to: "/admin/reviews", label: "Reviews", icon: Star },
+    { to: "/admin/coupons", label: "Coupons", icon: Ticket },
+    { to: "/admin/products", label: "Products", icon: Gem },
+    { to: "/admin/categories", label: "Categories", icon: FolderTree },
+    { to: "/admin/users", label: "Customers", icon: UsersRound },
+    { to: "/admin/banners", label: "Banners", icon: Image },
+    { to: "/admin/announcements", label: "Announcements", icon: Megaphone },
+    { to: "/admin/metal-rates", label: "Metal Rates", icon: Scale },
+    { to: "/admin/b2b-access", label: "B2B Access", icon: Lock },
   ];
 
   return (
@@ -172,7 +173,7 @@ function Layout({ admin, onLogout }: { admin: AdminUser; onLogout: () => void })
       <header className="md:hidden flex items-center justify-between p-4 border-b border-[var(--color-border)] bg-[var(--color-bg-secondary)]">
         <span className="font-primary font-bold text-[var(--color-teal)] tracking-wider">HAUTE JEWELRY</span>
         <button onClick={() => setMobileOpen(!mobileOpen)} className="p-2 text-[var(--color-teal)] font-bold">
-          {mobileOpen ? "✕" : "☰"}
+          {mobileOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
         </button>
       </header>
 
@@ -195,7 +196,7 @@ function Layout({ admin, onLogout }: { admin: AdminUser; onLogout: () => void })
                 onClick={() => setMobileOpen(false)}
                 className={({ isActive }) => `admin-nav flex items-center gap-3 transition-all ${isActive ? "active" : ""}`}
               >
-                <span>{item.icon}</span>
+                <item.icon aria-hidden="true" className="h-4 w-4" />
                 <span>{item.label}</span>
               </NavLink>
             ))}
@@ -257,9 +258,9 @@ function Dashboard() {
   }, []);
 
   const cards = [
-    { label: "Active Orders", value: stats.orders, icon: "🛍️", desc: "Recent completed & pending purchases" },
-    { label: "Total Customers", value: stats.users, icon: "👥", desc: "Registered platform users" },
-    { label: "Active Promos", value: stats.coupons, icon: "🏷️", desc: "Live discounts and campaigns" },
+    { label: "Active Orders", value: stats.orders, icon: ShoppingBag, desc: "Recent completed & pending purchases" },
+    { label: "Total Customers", value: stats.users, icon: UsersRound, desc: "Registered platform users" },
+    { label: "Active Promos", value: stats.coupons, icon: Ticket, desc: "Live discounts and campaigns" },
   ];
 
   return (
@@ -270,7 +271,7 @@ function Dashboard() {
           <div key={i} className="p-6 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-bg-secondary)] shadow-[var(--shadow-sm)] space-y-2">
             <div className="flex items-center justify-between text-[var(--color-text-muted)]">
               <span className="text-xs uppercase font-semibold tracking-wider">{card.label}</span>
-              <span className="text-2xl">{card.icon}</span>
+              <card.icon aria-hidden="true" className="h-6 w-6" />
             </div>
             <p className="text-4xl font-primary text-[var(--color-teal)]">{card.value}</p>
             <p className="text-xs text-[var(--color-text-muted)]">{card.desc}</p>
@@ -423,7 +424,7 @@ function Coupons() {
             className="admin-input"
           >
             <option value="percentage">Percentage (%)</option>
-            <option value="flat">Flat Amount (₹)</option>
+            <option value="flat">Flat Amount (INR)</option>
           </select>
         </label>
 
@@ -442,7 +443,7 @@ function Coupons() {
         </label>
 
         <label>
-          Min Order Value (₹)
+          Min Order Value (INR)
           <input
             required
             type="number"
@@ -515,7 +516,7 @@ function Coupons() {
         />
 
         {filteredItems.length === 0 ? (
-          <EmptyState title="No coupons found" description="Try creating a new coupon code or adjust your search filter." icon="🏷️" />
+          <EmptyState title="No coupons found" description="Try creating a new coupon code or adjust your search filter." icon={<Sparkles aria-hidden="true" />} />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {filteredItems.map((c) => {
@@ -539,7 +540,7 @@ function Coupons() {
 
                   <div className="text-xs space-y-1 text-[var(--color-text-muted)] border-t border-[var(--color-border)] pt-3 w-full">
                     <p>Min Order: <span className="font-semibold text-[var(--color-charcoal)]">{formatCurrency(c.minimumCartValue)}</span></p>
-                    <p>Usage: <span className="font-semibold text-[var(--color-charcoal)]">{c.usedCount ?? 0} / {c.usageLimit ?? "∞"}</span></p>
+                    <p>Usage: <span className="font-semibold text-[var(--color-charcoal)]">{c.usedCount ?? 0} / {c.usageLimit ?? "Unlimited"}</span></p>
                     <p>Expires: <span className="font-semibold text-[var(--color-charcoal)]">{formatDate(c.expiryDate)}</span></p>
                   </div>
 
@@ -596,7 +597,7 @@ function Banners() {
       <BannerForm value={editing} onCancel={() => setEditing(null)} onSave={save} />
 
       {items.length === 0 ? (
-        <EmptyState title="No banners found" description="Upload banner image files to showcase on your homepage." icon="🖼️" />
+        <EmptyState title="No banners found" description="Upload banner image files to showcase on your homepage." icon={<Sparkles aria-hidden="true" />} />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {items.map((b) => (
@@ -607,8 +608,8 @@ function Banners() {
                 <Badge variant={b.isActive ? "success" : "neutral"}>{b.isActive ? "Active" : "Disabled"}</Badge>
               </div>
               <div className="flex items-center justify-end gap-2 border-t border-[var(--color-border)] pt-3 w-full">
-                <button onClick={() => shift(b, -1)} className="cursor-pointer">↑ Order</button>
-                <button onClick={() => shift(b, 1)} className="cursor-pointer">↓ Order</button>
+                <button onClick={() => shift(b, -1)} className="cursor-pointer">Move up Order</button>
+                <button onClick={() => shift(b, 1)} className="cursor-pointer">Move down Order</button>
                 <button onClick={() => adminApi.setBannerActive(b._id, !b.isActive).then(load)} className="cursor-pointer">
                   {b.isActive ? "Disable" : "Enable"}
                 </button>
@@ -720,7 +721,7 @@ function Announcements() {
       </form>
 
       {items.length === 0 ? (
-        <EmptyState title="No announcements found" description="Create notice bar messages for your customers." icon="📢" />
+        <EmptyState title="No announcements found" description="Create notice bar messages for your customers." icon={<Sparkles aria-hidden="true" />} />
       ) : (
         <div className="space-y-3">
           {items.map((a) => (
@@ -819,7 +820,7 @@ function Categories() {
   const remove = async (id: string) => { if (!confirm("Delete category?")) return; try { await adminApi.deleteCategory(id); await load(); } catch (error) { setToast({ message: errorMessage(error), type: "error" }); } };
   const canDelete = (category: Category) => category.categoryKind !== "metal-root" && !items.some((item) => parentId(item) === category._id);
   const renderRow = (category: Category, nested = false) => <div key={category._id} className={`admin-row justify-between ${nested ? "ml-6 border-l-2 border-[var(--color-border)] pl-4" : ""}`}>
-    <div><p className="text-sm font-semibold text-[var(--color-charcoal)]">{nested && <span className="mr-2 text-[var(--color-text-muted)]">â†³</span>}{category.name}</p><small>{nested ? "Sub Category" : "Main Category"} Â· Order: {category.displayOrder}</small></div>
+    <div><p className="text-sm font-semibold text-[var(--color-charcoal)]">{nested && <span className="mr-2 text-[var(--color-text-muted)]" aria-hidden="true">↳</span>}{category.name}</p><small>{nested ? "Sub Category" : "Main Category"} · Order: {category.displayOrder}</small></div>
     <div className="flex items-center gap-2"><Badge variant={category.isActive ? "success" : "neutral"}>{category.isActive ? "Active" : "Inactive"}</Badge><button onClick={() => startEdit(category)} className="cursor-pointer">Edit</button><button onClick={() => void toggle(category)} className="cursor-pointer">Toggle</button>{canDelete(category) && <button onClick={() => void remove(category._id)} className="text-red-700 cursor-pointer">Delete</button>}</div>
   </div>;
 
@@ -834,7 +835,7 @@ function Categories() {
       <label>Display Order<input name="displayOrder" key={`${editing?._id || "new"}-order`} type="number" defaultValue={editing?.displayOrder ?? 0} className="admin-input" /></label>
       <div className="col-span-full flex items-center justify-between"><label className="flex items-center gap-2 text-xs font-semibold text-[var(--color-text-muted)]"><input name="isActive" key={`${editing?._id || "new"}-active`} type="checkbox" defaultChecked={editing?.isActive ?? true} className="rounded border-[var(--color-border)] text-[var(--color-teal)]" />Active</label><div className="flex gap-2">{editing && <button type="button" onClick={resetForm} className="cursor-pointer">Cancel</button>}<button className="admin-button cursor-pointer">{editing ? "Update Category" : "Create Category"}</button></div></div>
     </form>
-    {items.length === 0 ? <EmptyState title="No categories found" description="Create initial catalogue categories." icon="🗂️" /> : <div className="space-y-2">{mainCategories.map((main) => <React.Fragment key={main._id}>{renderRow(main)}{items.filter((category) => parentId(category) === main._id).map((sub) => <React.Fragment key={sub._id}>{renderRow(sub, true)}{items.filter((category) => parentId(category) === sub._id).map((leaf) => renderRow(leaf, true))}</React.Fragment>)}</React.Fragment>)}</div>}
+    {items.length === 0 ? <EmptyState title="No categories found" description="Create initial catalogue categories." icon={<Sparkles aria-hidden="true" />} /> : <div className="space-y-2">{mainCategories.map((main) => <React.Fragment key={main._id}>{renderRow(main)}{items.filter((category) => parentId(category) === main._id).map((sub) => <React.Fragment key={sub._id}>{renderRow(sub, true)}{items.filter((category) => parentId(category) === sub._id).map((leaf) => renderRow(leaf, true))}</React.Fragment>)}</React.Fragment>)}</div>}
   </div>;
 }
 
@@ -885,7 +886,7 @@ function Orders() {
       />
 
       {filtered.length === 0 ? (
-        <EmptyState title="No orders found" description="When customers place orders, they will appear here." icon="🛍️" />
+        <EmptyState title="No orders found" description="When customers place orders, they will appear here." icon={<Sparkles aria-hidden="true" />} />
       ) : (
         <div className="border border-[var(--color-border)] rounded-[var(--radius-md)] overflow-hidden bg-[var(--color-bg-secondary)] shadow-[var(--shadow-sm)]">
           <table className="w-full text-left border-collapse">
@@ -954,7 +955,7 @@ function Users() {
       />
 
       {filtered.length === 0 ? (
-        <EmptyState title="No customers found" description="Customer account details will be listed here." icon="👥" />
+        <EmptyState title="No customers found" description="Customer account details will be listed here." icon={<Sparkles aria-hidden="true" />} />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {filtered.map((u) => (

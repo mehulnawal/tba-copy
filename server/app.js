@@ -1,4 +1,4 @@
-require("dotenv").config();
+﻿require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
@@ -35,7 +35,7 @@ app.use(
   }),
 );
 
-const allowedOrigins = new Set([process.env.CLIENT_URL, "http://localhost:3000", "http://localhost:5173"].filter(Boolean));
+const configuredClientOrigins = [process.env.CLIENT_URL, process.env.CLIENT_URL_WWW, process.env.CLIENT_URL_ALT].filter(Boolean); const productionAliases = configuredClientOrigins.flatMap((origin) => { try { const url = new URL(origin); if (!/^(www\.)?thebrillianceatelier\.com$/i.test(url.hostname)) return [url.origin]; const alternate = url.hostname.startsWith("www.") ? "thebrillianceatelier.com" : "www.thebrillianceatelier.com"; return [url.origin, `${url.protocol}//${alternate}`]; } catch { return []; } }); const allowedOrigins = new Set([...configuredClientOrigins, ...productionAliases, "http://localhost:3000", "http://localhost:5173"]);
 app.use(
   cors({
     origin(origin, callback) {

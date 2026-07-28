@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+﻿import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingBag, Trash2, Heart, Plus, Minus, ArrowRight, ShieldCheck, Truck, Sparkles, AlertCircle, CheckCircle2 } from 'lucide-react';
@@ -8,6 +8,8 @@ import { useCart, useUpdateCartItem, useRemoveFromCart } from '../hooks/useCart'
 import { checkoutApi } from '../api/checkout.api';
 import { useToast } from '../context/ToastContext';
 import { ApiRequestError } from '../api/client';
+import { useAuth } from '../context/AuthContext';
+import { formatINR } from '../utils/currency';
 
 /* ==========================================================================
    INTERFACE CONFIGURATIONS
@@ -53,7 +55,8 @@ const itemVariants = {
 export default function CartPage() {
     const navigate = useNavigate();
     const { showToast } = useToast();
-    const { data: cartData, isLoading: isCartLoading, isError } = useCart();
+    const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
+    const { data: cartData, isLoading: isCartLoading, isError } = useCart(isAuthenticated);
     const updateCartMutation = useUpdateCartItem();
     const removeCartMutation = useRemoveFromCart();
 
@@ -84,14 +87,14 @@ export default function CartPage() {
     const [pincodeStatus, setPincodeStatus] = useState<'idle' | 'checking' | 'valid' | 'invalid' | 'unsupported'>('idle');
 
     useEffect(() => {
-        if (!isCartLoading) {
+        if (!isAuthLoading && !isCartLoading) {
             const timer = setTimeout(() => setIsPageLoading(false), 300);
             return () => clearTimeout(timer);
         }
     }, [isCartLoading]);
 
     useEffect(() => {
-        if (isError) {
+        if (isAuthenticated && isError) {
             showToast('Unable to load cart', 'error');
         }
     }, [isError, showToast]);
@@ -290,7 +293,7 @@ export default function CartPage() {
                                                                 {item.name}
                                                             </h3>
                                                             <div className="font-display text-xs text-[var(--color-text-muted)] pt-0.5">
-                                                                Piece Value: ₹{item.price.toLocaleString()}
+                                                                Piece Value: {formatINR(item.price)}
                                                             </div>
 
                                                             {/* Mobile Inline Controls Container */}
@@ -370,7 +373,7 @@ export default function CartPage() {
 
                                                     {/* Line Matrix Total Value Presentation */}
                                                     <div className="hidden sm:col-span-3 sm:block text-right font-display text-sm tracking-wide text-[var(--color-text)] font-medium">
-                                                        {true ? `₹${(item.price * item.quantity).toLocaleString()}` : '—'}
+                                                        {formatINR(item.price * item.quantity)}
                                                     </div>
                                                 </motion.div>
                                             ))}
@@ -388,7 +391,7 @@ export default function CartPage() {
                                         <div className="space-y-4 font-secondary text-xs tracking-wide">
                                             <div className="flex justify-between text-[var(--color-text-muted)]">
                                                 <span>Subtotal Selection</span>
-                                                <span className="font-display font-medium text-[var(--color-text)]">₹{subtotal.toLocaleString()}</span>
+                                                <span className="font-display font-medium text-[var(--color-text)]">{formatINR(subtotal)}</span>
                                             </div>
 
                                             {appliedDiscount > 0 && (
@@ -403,7 +406,7 @@ export default function CartPage() {
                                             <div className="pt-4 border-t border-[var(--color-border-subtle)] flex justify-between items-baseline">
                                                 <span className="text-sm font-medium text-[var(--color-text)]">Estimated Vault Total</span>
                                                 <span className="font-display text-xl font-semibold text-[var(--color-teal)]">
-                                                    ₹{estimatedTotal.toLocaleString()}
+                                                    {formatINR(estimatedTotal)}
                                                 </span>
                                             </div>
                                         </div>
@@ -460,7 +463,7 @@ export default function CartPage() {
                                 Est. Total ({totalItemsCount})
                             </span>
                             <span className="font-display text-base font-semibold text-[var(--color-teal)]">
-                                ₹{estimatedTotal.toLocaleString()}
+                                {formatINR(estimatedTotal)}
                             </span>
                         </div>
                         <button

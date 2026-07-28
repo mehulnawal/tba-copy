@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+﻿import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingBag, Trash2, Heart, ArrowRight, RefreshCw, Sparkles } from 'lucide-react';
@@ -8,9 +8,10 @@ import { useWishlist, useRemoveFromWishlist } from '../hooks/useWishlist';
 import { useAddToCart } from '../hooks/useCart';
 import { useToast } from '../context/ToastContext';
 import { ApiRequestError } from '../api/client';
+import { formatINR } from '../utils/currency';
 
 /* ==========================================================================
-   MOCK WISHLIST DATA
+   LIVE WISHLIST API DATA
    ========================================================================== */
 interface WishlistItem {
     id: string;
@@ -123,7 +124,7 @@ const WishlistCard: React.FC<CardProps> = ({ item, onRemove, onAddToCart, isActi
                         Value
                     </span>
                     <span className="font-display text-base font-medium text-[var(--color-teal)]">
-                        ₹{item.price.toLocaleString()}
+                        {formatINR(item.price)}
                     </span>
                 </div>
 
@@ -218,7 +219,7 @@ export default function WishlistPage() {
         }
     };
 
-    const handleResetDemo = () => {
+    const handleBrowseCollections = () => {
         navigate('/products');
     };
 
@@ -248,13 +249,13 @@ export default function WishlistPage() {
                             A curated gallery of your saved treasures. Review, manage, or transfer your chosen pieces to the shopping vault.
                         </p>
 
-                        {/* Dev Demo Controller Anchor - Hidden visually from real assistive structures */}
+                        {/* Wishlist navigation control */}
                         {wishlist.length === 0 && !isPageLoading && (
                             <button
-                                onClick={handleResetDemo}
+                                onClick={handleBrowseCollections}
                                 className="mt-4 font-secondary text-[10px] tracking-widest uppercase text-[var(--color-teal)]/40 hover:text-[var(--color-teal)] transition-colors duration-200 underline underline-offset-4"
                             >
-                                Reset Private Gallery Simulation
+                                Browse Collections
                             </button>
                         )}
                     </header>
@@ -320,7 +321,6 @@ export default function WishlistPage() {
                                     As you explore our seasonal haute collections, flag the timeless statement designs that inspire you.
                                 </p>
                                 <button
-                                    onClick={() => alert('Navigating to collection showcase...')}
                                     className="group flex items-center justify-center gap-2.5 bg-[var(--color-teal)] text-[var(--color-cream)] font-secondary tracking-[0.25em] text-[11px] uppercase py-4 px-8 border border-transparent hover:bg-transparent hover:text-[var(--color-teal)] hover:border-[var(--color-teal)] transition-all duration-400 ease-out focus:outline-none focus:ring-1 focus:ring-[var(--color-teal)] cursor-pointer"
                                 >
                                     <span>Explore Creations</span>

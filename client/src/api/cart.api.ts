@@ -1,4 +1,4 @@
-import { apiRequest } from "./client";
+﻿import { apiRequest } from "./client";
 
 export interface CartItem {
   _id: string;
@@ -9,7 +9,7 @@ export interface CartItem {
   image: string;
   price: number;
   quantity: number;
-  karat: "9kt" | "14kt" | "18kt";
+  karat: "14kt" | "18kt";
   color?: string;
   size?: string;
 }

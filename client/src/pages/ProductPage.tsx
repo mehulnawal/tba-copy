@@ -1,10 +1,12 @@
-import { useEffect, useState, useRef } from "react";
+﻿import { useEffect, useState, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router-dom";
 import { apiRequest } from "../api/client";
 import { useCategories } from "../hooks/useCategories";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import { AuthModal } from "./AuthModal";
+import { useToast } from "../context/ToastContext";
 import { useAuth } from "../context/AuthContext";
 import type { Category, Product } from "../types";
 
@@ -38,6 +40,8 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
     const [selectedKaratFilter, setSelectedKaratFilter] = useState<"14kt" | "18kt">((params.get("karat") as "14kt" | "18kt") || "14kt");
     const [isFilterMobileOpen, setIsFilterMobileOpen] = useState(false);
     const [isSortMobileOpen, setIsSortMobileOpen] = useState(false);
+    const [isAuthOpen, setIsAuthOpen] = useState(false);
+    const { showToast } = useToast();
 
     useEffect(() => {
         const open = isFilterMobileOpen || isSortMobileOpen;
@@ -104,7 +108,7 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
 
     const handleWishlistToggle = async (product: Product) => {
         if (!isLoggedIn) {
-            alert("Please login to manage your wishlist items.");
+            setIsAuthOpen(true);
             return;
         }
         try {
@@ -113,7 +117,7 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
 
             if (alreadySaved) {
                 await apiRequest(`/wishlist/${product.SKU}`, { method: "DELETE" });
-                alert("Removed from wishlist.");
+                showToast("Removed from wishlist.", "success");
             } else {
                 const productPrices = Array.isArray(product.prices) ? product.prices : [];
                 const priceObj = productPrices.find((p) => p.karat === "14kt") || productPrices[0];
@@ -121,11 +125,11 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
                     method: "POST",
                     body: JSON.stringify({ productId: product.SKU, karat: priceObj?.karat || "14kt" }),
                 });
-                alert("Product saved to wishlist.");
+                showToast("Product saved to wishlist.", "success");
             }
         } catch (err) {
             console.error(err);
-            alert("Could not update wishlist.");
+            showToast("Could not update wishlist.", "error");
         }
     };
 
@@ -352,6 +356,7 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
             }
 
             <Footer onCategoryChange={() => { }} />
+            <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
         </div >
     );
 }
@@ -390,8 +395,6 @@ function ProductCard({ product, defaultKarat, onWishlistToggle }: { product: Pro
     }, [defaultKarat]);
 
     const images = product.images.map((image) => image.url);
-
-    const fallbackImage = "https://via.placeholder.com/600?text=No+Jewelry+Image";
     const displaysCarousel = images.length > 1;
 
     const handleMouseEnter = () => {
@@ -419,11 +422,7 @@ function ProductCard({ product, defaultKarat, onWishlistToggle }: { product: Pro
             {/* FIX #3: Proportional portrait aspect-ratio layout for card structure */}
             <div className="relative aspect-[4/5] w-full bg-gray-50 overflow-hidden">
                 <Link to={`/product/${product.slug}`} className="block w-full h-full">
-                    <img
-                        src={responsiveImage(images[currentImgIndex] || fallbackImage, 800)}
-                        alt={product.title}
-                        className="h-full w-full object-cover object-center transition duration-500 scale-100 group-hover:scale-102"
-                    />
+                    {images[currentImgIndex] ? <img src={responsiveImage(images[currentImgIndex], 800)} alt={product.title} className="h-full w-full object-contain object-center transition duration-500 group-hover:scale-102" /> : <div className="grid h-full place-items-center p-6 text-center text-xs text-gray-500">Product image unavailable</div>}
                 </Link>
 
                 <div className="absolute top-3 left-3 flex flex-col space-y-1">

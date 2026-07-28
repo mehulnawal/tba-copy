@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { checkoutApi } from "../api/checkout.api";
 import { apiRequest } from "../api/client";
@@ -51,6 +51,7 @@ export default function Checkout() {
     const [isRemoving, setIsRemoving] = useState(false);
     const [isLoadingCoupons, setIsLoadingCoupons] = useState(false);
     const [activeCategory, setActiveCategory] = useState<string>("All");
+    const [isPaying, setIsPaying] = useState(false);
 
     const nav = useNavigate();
 
@@ -144,36 +145,22 @@ export default function Checkout() {
     };
 
     const place = async () => {
+        if (isPaying) return;
+        if (!items.length || !summary) { setError("Your cart is empty."); return; }
         try {
-            const d = await apiRequest<{
-                order: { _id: string };
-                razorpayOrder: { id: string };
-                keyId: string;
-            }>("/orders", { method: "POST" });
-
+            setError(""); setIsPaying(true);
+            const d = await apiRequest<{ order: { _id: string }; razorpayOrder: { id: string; amount: number; currency: string }; keyId: string }>("/orders", { method: "POST" });
             const R = (window as any).Razorpay;
-            if (!R) throw new Error("Razorpay checkout is not loaded");
-
-            new R({
-                key: d.keyId,
-                order_id: d.razorpayOrder.id,
-                amount: Math.round(summary!.total * 100),
-                currency: "INR",
-                handler: async (r: any) => {
-                    await apiRequest("/orders/verify", {
-                        method: "POST",
-                        body: JSON.stringify(r),
-                    });
-                    nav(`/orderConfirmation?orderId=${d.order._id}`);
-                },
+            if (!R) throw new Error("Razorpay checkout is not loaded. Please try again.");
+            new R({ key: d.keyId, order_id: d.razorpayOrder.id, amount: d.razorpayOrder.amount, currency: d.razorpayOrder.currency,
+                handler: async (response: unknown) => { try { await apiRequest("/orders/verify", { method: "POST", body: JSON.stringify(response) }); nav(`/orderConfirmation?orderId=${d.order._id}`); } catch (error) { setError(error instanceof Error ? error.message : "Payment verification failed."); } finally { setIsPaying(false); } },
+                modal: { ondismiss: () => setIsPaying(false) },
             }).open();
-        } catch (e: any) {
-            setError(e.message);
-        }
+        } catch (error: unknown) { setError(error instanceof Error ? error.message : "Unable to start payment."); setIsPaying(false); }
     };
 
     const formatCurrency = (amount: number) => {
-        return `₹${Math.round(amount).toLocaleString("en-IN")}`;
+        return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(amount);
     };
 
     const formatDate = (dateStr: string) => {
@@ -435,10 +422,10 @@ export default function Checkout() {
                                     </div>
 
                                     <button
-                                        onClick={place}
+                                        onClick={place} disabled={isPaying || !items.length}
                                         className="w-full mt-4 bg-black hover:bg-gray-800 text-white text-xs uppercase tracking-widest font-semibold py-3.5 px-4 rounded shadow transition-all duration-200"
                                     >
-                                        Pay Securely
+                                        {isPaying ? "Opening payment…" : "Pay Securely"}
                                     </button>
                                 </div>
                             )}
