@@ -506,10 +506,166 @@ Changes -
 
 
 
-
+ 
 Things left - 
-WhatsOtp 
-Testing 
-Whatsapp Cart reminders 
+1. WhatsOtp 
+2. Testing 
+3. Whatsapp Cart reminders 
+4. Razorpay integration + Order confirmation page 
+5. SEO - Every page should have basic + site logo 
+6. still there are some products are visible in backend 
+7. make tbajweles.in workable
+8. do basic SEO of the site
+9. Facebook Auth set up is left 
+10. Product image optimization taks - from Cloudinary is left
+
+
+
+# TBA Jewellery — Full Site Testing Checklist
+
+WhatsApp OTP + Cart Reminder aur Admin UI redesign is list mein NAHI hain — wo alag/last mein honge.
+
+---
+
+## 1. Authentication
+
+- [ ] Register naya account (Name, Email, Password, Phone) — sab fields required, save hote hain
+- [ ] Login with Email + Password
+- [ ] Login with Google Sign-In
+- [ ] Forgot Password — email aata hai, link se reset hota hai, naye password se login hota hai
+- [ ] Password show/hide toggle — login, register, reset, sab jagah kaam karta hai
+- [ ] Admin dual-role — admin credentials se **customer login page** se login karo, confirm ho jaata hai (koi "use admin portal" wala block na aaye)
+- [ ] Us admin-as-customer session se cart mein item add karo, confirm hota hai
+
+## 2. Category Browsing (Customer site)
+
+- [ ] Navbar — sirf **GOLD** aur **SILVER** top-level dikhein (koi stray Bangles/Earrings items nahi)
+- [ ] Gold dropdown — 5 fixed categories dikhein
+- [ ] Silver dropdown — Moissanite/Polki → unke sub-categories, poora 3-level tak click-through
+- [ ] Kisi bhi leaf category pe click karo, catalog page sahi filter ho ke khule
+
+## 3. Product Catalog + Details (Customer site)
+
+- [ ] Gold catalog page — sirf Gold products dikhein
+- [ ] Silver catalog page — sirf Silver products dikhein, category filter se sahi products aayein
+- [ ] Product card pe image, price, title sahi dikhein
+- [ ] Product Details page kholo — koi crash/console error na aaye
+- [ ] 6 images sahi dikhein (agar upload ki hain), video bhi
+- [ ] Color options (Yellow/White/Rose Gold) select ho sakein
+- [ ] Size dropdown (5-25) kaam kare
+- [ ] Diamond price per carat + total diamond price dikhe
+- [ ] Price Breakup table — metal value, making, diamond/moissanite value, cert charge, GST, sab alag line items, Final Total bold mein
+- [ ] Silver product ka price breakup bhi sahi (Silver value + Making alag-alag dikhein, combine na hon)
+
+## 4. Cart
+
+- [ ] Product ko cart mein add karo
+- [ ] Cart page pe quantity badhao/ghatao, total sahi recalculate ho
+- [ ] Item remove karo cart se
+- [ ] Admin se metal rate change karo, phir cart reload karo — price update ho ya "price changed" message aaye
+
+## 5. Wishlist
+
+- [ ] Product wishlist mein add/remove karo
+- [ ] Wishlist page pe sahi products dikhein
+
+## 6. Checkout + Payment
+
+- [ ] Cart se checkout pe jao
+- [ ] Address add karo (ya saved address select karo)
+- [ ] Razorpay payment flow poora karo (test mode mein)
+- [ ] Payment success ke baad Order Confirmation page pe sahi order details dikhein
+- [ ] Cart automatically clear ho jaaye successful order ke baad
+- [ ] Failed/cancelled payment pe sahi error/retry flow ho
+
+## 7. Orders + Account
+
+- [ ] Order History page — poore purane orders sahi dikhein
+- [ ] Har order ka status sahi dikhe
+- [ ] Account/Profile page — naam, email, phone sahi dikhein
+- [ ] Address add/edit/delete/set-default kaam kare
+- [ ] Change password (logged-in state se) kaam kare
+
+## 8. B2B Catalog (naya banega — Codex ke B2B prompt ke baad test karna)
+
+- [ ] Bina password ke `/b2b/*` URL directly access karne ki koshish karo — block ho jaana chahiye
+- [ ] Admin se B2B password generate karo
+- [ ] Wahi password se B2B catalog access karo
+- [ ] Confirm — sirf 2 pages hain (catalog + product details), koi cart/wishlist/checkout button nahi dikhta
+- [ ] Gold products B2B price ke saath dikhein (making −₹50/gram wali calculation)
+- [ ] Silver products B2B mein na dikhein (ya "pricing soon" — jo bhi decide hua)
+- [ ] Admin se password revoke karo, confirm turant access block ho jaaye (already-open session bhi)
+
+## 9. Admin Panel
+
+### Products
+- [ ] Gold product create karo — pricing config, category (single-level), weight (14kt/18kt), diamonds (extensible categories), images (6), sizes, colors — sab save ho, live preview sahi price dikhaye
+- [ ] Silver-Moissanite product create karo — pricing config, Type→Subcategory, gross weight, moissanite carat weight — save ho, preview sahi
+- [ ] Silver-Polki product create karo (agar Polki formula client se aa gayi ho)
+- [ ] Product edit karo, changes save hon
+- [ ] Product delete karo, permanently DB se hat jaaye
+- [ ] Naya diamond category/sub-type add karo (extensible feature), confirm agli baar dropdown mein available ho
+
+### Categories
+- [ ] Naya sub-category add karo Gold/Silver ke under
+- [ ] Duplicate naam se create karne ki koshish karo — inline error aaye
+- [ ] Gold/Silver root ka Delete button disabled/hidden ho
+- [ ] Children waali category ka Delete disabled/hidden ho
+- [ ] Leaf category delete karo — kaam kare
+
+### Metal Rates / Universal Charge Settings
+- [ ] Gold 24kt rate change karo, site-wide reflect ho (header + product prices)
+- [ ] Silver rate change karo, reflect ho
+- [ ] Making charge rate change karo
+- [ ] Certificate charge rate change karo
+- [ ] Silver-Moissanite making rate change karo (naya field, Section C ke baad)
+- [ ] Silver-Polki making rate change karo (naya field)
+
+### Orders
+- [ ] Saare orders list mein dikhein
+- [ ] Order status update kar sako
+- [ ] Payment status sahi dikhe
+
+### Users
+- [ ] Registered users list dikhe
+- [ ] Ek user block karo, confirm wo login nahi kar paata
+- [ ] Unblock karo, confirm login wapas kaam kare
+
+### Reviews
+- [ ] Customer review submit hone ke baad admin ko dikhe
+- [ ] Approve/Reject/Delete kaam kare
+- [ ] Approved review hi product page pe dikhe
+
+### Banners
+- [ ] 3 fixed slots mein banner add/edit karo
+- [ ] Homepage pe sahi order mein dikhein
+
+### Announcements
+- [ ] Announcement add karo, site pe dikhe
+
+### Coupons
+- [ ] Coupon create karo (% aur fixed dono type)
+- [ ] Checkout pe coupon code apply karo, discount sahi lage
+- [ ] Expired coupon reject ho
+- [ ] Usage limit cross hone pe reject ho
+
+### B2B Password Management
+- [ ] (Section 8 mein already cover hua)
+
+### Dual-role
+- [ ] (Section 1 mein already cover hua)
+
+## 10. General/Cross-cutting
+
+- [ ] Poori site pe koi console error na aaye (F12 → Console, har page pe check karo)
+- [ ] Mobile/tablet view par layout na tooटे (basic responsive check)
+- [ ] Admin session 20+ min active rakho, force-logout na ho (silent refresh)
+
+---
+
+**Baaki, is list ke baad:**
+- WhatsApp OTP (MSG91) + Cart Reminder (MSG91) — implement + test, last mein
+- Admin Panel UI/UX redesign (P4) — cosmetic pass, sabse last
+
 
 

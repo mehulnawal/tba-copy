@@ -401,3 +401,15 @@ body.modal-open { overscroll-behavior: none; touch-action: none; }
 .catalog-page .text-amber-700 { color: var(--color-teal) !important; }
 .catalog-page .border-amber-800, .catalog-page .ring-amber-800 { border-color: var(--color-teal) !important; }
 @media (max-width: 1023px) { .catalog-page main { padding-top: 1.5rem; } }
+/* Product form validation and safe notification placement */
+.admin-editor { padding-bottom: calc(5.5rem + env(safe-area-inset-bottom)); }
+.admin-field--error .admin-input, .admin-field--error .admin-textarea { border-color:#b43b35; background:#fff7f6; box-shadow:0 0 0 3px #b43b3520; }
+.admin-field--error small, .admin-inline-error { color:#b43b35; font-weight:600; }
+.admin-media-card--error, .admin-media-grid[aria-invalid="true"] .admin-media-card:first-child { border-color:#b43b35; background:#fffafa; }
+.admin-error-summary { border:1px solid #b43b35; border-radius:10px; background:#fff5f4; color:#8e2823; padding:.8rem 1rem; font-weight:700; }
+.admin-section:has(.admin-field--error), .admin-section--error { border-color:#d98d89; }
+.admin-notice { top:calc(var(--navbar-height) + 1rem); bottom:auto; z-index:10001; }
+.admin-notice button { cursor:pointer; }
+@media(max-width:560px){ .admin-notice { top:12px; left:12px; right:12px; bottom:auto; } .admin-action-bar { padding-bottom:calc(.7rem + env(safe-area-inset-bottom)); } }
+.customer-toast-stack { top:calc(var(--navbar-height) + 20px); right:20px; z-index:10001; }
+@media (max-width:640px) { .customer-toast-stack { top:12px; bottom:auto; left:12px; right:12px; width:auto; } }
