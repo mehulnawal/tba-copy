@@ -1,9 +1,9 @@
-import React from "react";
-import { Shield, Award, CheckCircle } from "lucide-react";
+﻿import React from "react";
+import { Shield, Award } from "lucide-react";
 
 import cert1 from "../assets/whyChooseUs/IGILogo.png";
 import cert2 from "../assets/whyChooseUs/sglLogo.png";
-import cert3 from "../assets/whyChooseUs/bisLogo.png";
+
 
 export default function BrandPromise() {
     const credentials = [
@@ -27,16 +27,6 @@ export default function BrandPromise() {
             icon: <Shield className="w-5 h-5 text-[var(--color-cream)]" />,
             align: "md:pt-12" // Displace slightly lower for a designer boutique feel
         },
-        {
-            id: 3,
-            num: "03",
-            title: "BIS Gold Hallmarking (BIS)",
-            subtitle: "Bureau of Indian Standards (BIS)",
-            desc: "Official government-mandated laser-etched purity codes certifying absolute legal gold authenticity.",
-            img: cert3,
-            icon: <CheckCircle className="w-5 h-5 text-[var(--color-cream)]" />,
-            align: "md:pt-0"
-        }
     ];
 
     return (

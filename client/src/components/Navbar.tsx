@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+﻿import React, { useEffect, useMemo, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -90,7 +90,7 @@ export default function Navbar({
   const { data: metalRates, isLoading: isMetalLoading, isError: isMetalError } = useMetalRates();
 
 
-  // ── Close dropdowns on outside click ──────────────────────────────────────
+  // â”€â”€ Close dropdowns on outside click â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (
@@ -104,7 +104,7 @@ export default function Navbar({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // ── Escape key closes mobile menu ─────────────────────────────────────────
+  // â”€â”€ Escape key closes mobile menu â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") setIsMobileMenuOpen(false);
@@ -113,7 +113,7 @@ export default function Navbar({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  // ── Handlers ──────────────────────────────────────────────────────────────
+  // â”€â”€ Handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const handleDismissAnnouncement = () => {
     setIsAnnouncementVisible(false);
     sessionStorage.setItem("tba_ann_closed", "true");
@@ -158,11 +158,10 @@ export default function Navbar({
   };
 
   const fallbackAnnouncements = [
-    "✦ FREE SHIPPING ABOVE ₹25,000 ✦",
-    "✦ BIS HALLMARKED JEWELRY ✦",
-    "✦ LIFETIME EXCHANGE POLICY ✦",
-    "✦ CERTIFIED PURE GOLD ✦",
-    "✦ NO HIDDEN CHARGES ✦",
+    "FREE SHIPPING ABOVE INR 25,000",
+    "LIFETIME EXCHANGE POLICY",
+    "CERTIFIED PURE GOLD",
+    "NO HIDDEN CHARGES",
   ];
 
   const announcements =
@@ -184,7 +183,7 @@ export default function Navbar({
 
   return (
     <div className="w-full flex flex-col bg-[var(--color-bg)]">
-      {/* ── NON-STICKY SECTION (Announcement & Gold Bar) ────────────────── */}
+      {/* â”€â”€ NON-STICKY SECTION (Announcement & Gold Bar) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="w-full">
         {/* ROW 1: ANNOUNCEMENT BAR */}
         <AnimatePresence>
@@ -255,13 +254,13 @@ export default function Navbar({
               ) : (
                 <div className="flex gap-3 md:gap-5 text-[12px] md:text-sm whitespace-nowrap">
                   <span className="tracking-wider">
-                    Gold 18K: <strong className="font-mono">₹{Math.round((metalRates.gold24kt || 0) * 0.76).toLocaleString("en-IN")}</strong>
+                    Gold 18K: <strong className="font-mono">{"\u20B9"}{Math.round((metalRates.gold24kt || 0) * 0.76).toLocaleString("en-IN")}</strong>
                   </span>
                   <span className="tracking-wider">
-                    Gold 14K: <strong className="font-mono">₹{Math.round((metalRates.gold24kt || 0) * 0.60).toLocaleString("en-IN")}</strong>
+                    Gold 14K: <strong className="font-mono">{"\u20B9"}{Math.round((metalRates.gold24kt || 0) * 0.60).toLocaleString("en-IN")}</strong>
                   </span>
                   <span className="tracking-wider">
-                    Silver: <strong className="font-mono">₹{Number(metalRates.silver || 0).toLocaleString("en-IN")}</strong>
+                    Silver: <strong className="font-mono">{"\u20B9"}{Number(metalRates.silver || 0).toLocaleString("en-IN")}</strong>
                   </span>
                 </div>
               )}
@@ -280,7 +279,7 @@ export default function Navbar({
         </div>
       </div>
 
-      {/* ── STICKY SINGLE-ROW MAIN NAVBAR ───────────────────────────────── */}
+      {/* â”€â”€ STICKY SINGLE-ROW MAIN NAVBAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="sticky top-0 z-[var(--z-sticky)] w-full">
         <div
           className="w-full bg-[var(--color-white)] border-b border-[var(--color-border-subtle)] shadow-sm"
@@ -470,7 +469,7 @@ export default function Navbar({
         </div>
       </div>
 
-      {/* ── MOBILE MENU OVERLAY & ACCORDION DRAWER ─────────────────────── */}
+      {/* â”€â”€ MOBILE MENU OVERLAY & ACCORDION DRAWER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <>
@@ -535,8 +534,8 @@ export default function Navbar({
                                 transition={{ duration: 0.25 }}
                                 className="overflow-hidden flex flex-col pl-4 border-l border-white/20 mt-1 space-y-2 py-2"
                               >
-                                <button onClick={() => handleCategorySelect(null, item.metal)} className="text-left text-sm font-secondary tracking-wider uppercase py-1 cursor-pointer bg-transparent border-none text-white/70 hover:text-white">› All</button>
-                                {item.categories?.map((category) => category.children.length ? <div key={category.id} className="pt-2"><button onClick={() => handleCategorySelect(category, item.metal)} className="text-left text-sm font-secondary tracking-wider uppercase py-1 cursor-pointer bg-transparent border-none text-white font-bold">› {category.name}</button>{category.children.map((child) => <button key={child.id} onClick={() => handleCategorySelect({ ...child, parentId: category.id }, item.metal)} className="block text-left text-xs font-secondary tracking-wider uppercase py-1 pl-4 cursor-pointer bg-transparent border-none text-white/70 hover:text-white">› {child.name}</button>)}</div> : <button key={category.id} onClick={() => handleCategorySelect({ ...category, parentId: item.categoryId }, item.metal)} className="text-left text-sm font-secondary tracking-wider uppercase py-1 cursor-pointer bg-transparent border-none text-white/70 hover:text-white">› {category.name}</button>)}
+                                <button onClick={() => handleCategorySelect(null, item.metal)} className="text-left text-sm font-secondary tracking-wider uppercase py-1 cursor-pointer bg-transparent border-none text-white/70 hover:text-white">â€º All</button>
+                                {item.categories?.map((category) => category.children.length ? <div key={category.id} className="pt-2"><button onClick={() => handleCategorySelect(category, item.metal)} className="text-left text-sm font-secondary tracking-wider uppercase py-1 cursor-pointer bg-transparent border-none text-white font-bold">â€º {category.name}</button>{category.children.map((child) => <button key={child.id} onClick={() => handleCategorySelect({ ...child, parentId: category.id }, item.metal)} className="block text-left text-xs font-secondary tracking-wider uppercase py-1 pl-4 cursor-pointer bg-transparent border-none text-white/70 hover:text-white">â€º {child.name}</button>)}</div> : <button key={category.id} onClick={() => handleCategorySelect({ ...category, parentId: item.categoryId }, item.metal)} className="text-left text-sm font-secondary tracking-wider uppercase py-1 cursor-pointer bg-transparent border-none text-white/70 hover:text-white">â€º {category.name}</button>)}
                               </motion.div>
                             )}
                           </AnimatePresence>
@@ -566,3 +565,4 @@ export default function Navbar({
     </div>
   );
 }
+

@@ -511,10 +511,10 @@ Things left -
 1. WhatsOtp 
 2. Testing 
 3. Whatsapp Cart reminders 
-4. Razorpay integration + Order confirmation page 
-5. SEO - Every page should have basic + site logo 
-6. still there are some products are visible in backend 
-7. make tbajweles.in workable
+4. SEO - Every page should have basic + site logo 
+5. still there are some products are visible in backend 
+6. make tbajweles
+7. .in workable
 8. do basic SEO of the site
 9. Facebook Auth set up is left 
 10. Product image optimization taks - from Cloudinary is left

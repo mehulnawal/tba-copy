@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { AuthModal } from "./AuthModal";
 import { useAuth } from "../context/AuthContext";
@@ -11,6 +11,7 @@ import { RING_SIZES } from "../constants/product";
 import type { Product } from "../types";
 import { formatINR } from "../utils/currency";
 import PriceBreakup from "../components/PriceBreakup";
+import { Seo } from "../components/Seo";
 
 type Review = {
     _id: string;
@@ -167,6 +168,8 @@ export default function ProductDetails() {
     };
 
     return (
+        <>
+            <Seo title={`${product.title} | TBA Jewelry`} description={product.description || `Explore ${product.title} at TBA Jewelry, with product specifications and complete price details.`} />
         <div className="min-h-screen bg-[#FAF9F6] text-stone-900 antialiased font-sans pb-28 md:pb-12">
             <Navbar onSearchChange={() => { }} activeCategory="All" onCategoryChange={() => { }} />
 
@@ -379,7 +382,7 @@ export default function ProductDetails() {
                                                 className="text-2xl focus:outline-none transition-transform hover:scale-125"
                                             >
                                                 <span className={(hoverRating || rating) >= star ? "text-amber-500" : "text-stone-300"}>
-                                                    ★
+                                                    â˜…
                                                 </span>
                                             </button>
                                         ))}
@@ -418,7 +421,7 @@ export default function ProductDetails() {
                                     <article key={r._id} className="p-5 bg-white rounded-lg border border-stone-200 shadow-xs space-y-2">
                                         <div className="flex justify-between items-center text-xs">
                                             <span className="font-semibold text-stone-900">{r.user?.name || "Verified Client"}</span>
-                                            <span className="text-amber-500 font-bold">{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</span>
+                                            <span className="text-amber-500 font-bold">{"â˜…".repeat(r.rating)}{"â˜†".repeat(5 - r.rating)}</span>
                                         </div>
                                         <p className="text-xs text-stone-600">{r.text}</p>
                                     </article>
@@ -432,5 +435,7 @@ export default function ProductDetails() {
             <Footer onCategoryChange={() => { }} />
             <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} onAuthenticated={() => void addToCartMutation.mutateAsync({ productId: product.SKU, karat, color, size, quantity: 1 }).then(() => showToast("Item added to cart!", "success")).catch((error: unknown) => showToast(error instanceof Error ? error.message : "Failed to add to cart.", "error"))} />
         </div>
+        </>
     );
 }
+

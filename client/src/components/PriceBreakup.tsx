@@ -1,4 +1,4 @@
-import { useState } from "react";
+ï»¿import { useState } from "react";
 import type { PriceBreakdown, Product } from "../types";
 import { formatINR } from "../utils/currency";
 
@@ -9,13 +9,13 @@ const isShown = (price: PriceBreakdown, key: "showMaking" | "showCertificate" | 
 export default function PriceBreakup({ product, price, b2b = false, className = "" }: Props) {
   const [open, setOpen] = useState(true);
   const isGold = price.metal === "gold" || product.metal === "gold";
-  const metalLabel = isGold ? `${price.karat?.toUpperCase() || "Gold"} Hallmarked Gold` : "Fine Silver";
+  const metalLabel = isGold ? `${price.karat?.toUpperCase() || "Gold"} Gold` : "Fine Silver";
   const metalValue = isGold ? number(price.goldValue) : number(price.silverValue ?? price.metalValue);
   const makingValue = number(price.makingCharge ?? price.makingValue);
   const stoneValue = isGold ? number(price.diamondValue) : number(price.moissaniteValue ?? price.stoneValue);
   const stoneEntries = isGold
-    ? (product.diamonds || []).map((entry, index) => ({ key: `diamond-${index}`, component: entry.category || "Diamond", clarity: entry.colorClarity || "—", carat: number(entry.caratWeight), rate: number(entry.ratePerCt), value: number(entry.caratWeight) * number(entry.ratePerCt) }))
-    : (product.moissaniteEntries || (product.moissaniteCaratWeight === undefined ? [] : [{ caratWeight: product.moissaniteCaratWeight }])).map((entry, index) => ({ key: `moissanite-${index}`, component: "Moissanite", clarity: entry.colorClarity || "—", carat: number(entry.caratWeight), rate: number(price.moissaniteRatePerCarat), value: number(entry.caratWeight) * number(price.moissaniteRatePerCarat) }));
+    ? (product.diamonds || []).map((entry, index) => ({ key: `diamond-${index}`, component: entry.category || "Diamond", clarity: entry.colorClarity || "â€”", carat: number(entry.caratWeight), rate: number(entry.ratePerCt), value: number(entry.caratWeight) * number(entry.ratePerCt) }))
+    : (product.moissaniteEntries || (product.moissaniteCaratWeight === undefined ? [] : [{ caratWeight: product.moissaniteCaratWeight }])).map((entry, index) => ({ key: `moissanite-${index}`, component: "Moissanite", clarity: entry.colorClarity || "â€”", carat: number(entry.caratWeight), rate: number(price.moissaniteRatePerCarat), value: number(entry.caratWeight) * number(price.moissaniteRatePerCarat) }));
   const showMaking = isShown(price, "showMaking");
   const showCertificate = isShown(price, "showCertificate") && number(price.certificateCharges) > 0;
   const showGst = isShown(price, "showGst");
@@ -34,3 +34,4 @@ export default function PriceBreakup({ product, price, b2b = false, className = 
     </div>}
   </section>;
 }
+
