@@ -61,9 +61,16 @@ const listPricingConfigs = asyncHandler(async (req, res) => {
 });
 const updatePricingConfig = asyncHandler(async (req, res) => {
   const key = String(req.params.key || "").trim().toUpperCase();
-  const makingRatePerGram = Number(req.body?.makingRatePerGram);
-  if (!Number.isFinite(makingRatePerGram) || makingRatePerGram < 0) throw new ApiError(400, "makingRatePerGram must be a non-negative number");
-  const config = await CategoryPricingConfig.findOneAndUpdate({ key }, { makingRatePerGram }, { new: true, runValidators: true });
+  const update = {};
+  for (const field of ["makingRatePerGram", "moissaniteRatePerCarat", "polkiValuePerUnit", "silverB2BMakingChargeRate"]) {
+    if (req.body?.[field] === undefined) continue;
+    if (req.body[field] === null || req.body[field] === "") { update[field] = undefined; continue; }
+    const value = Number(req.body[field]);
+    if (!Number.isFinite(value) || value < 0) throw new ApiError(400, `${field} must be a non-negative number or blank`);
+    update[field] = value;
+  }
+  if (!Object.keys(update).length) throw new ApiError(400, "At least one pricing setting is required");
+  const config = await CategoryPricingConfig.findOneAndUpdate({ key }, { $set: update }, { new: true, runValidators: true });
   if (!config) throw new ApiError(404, "Pricing configuration not found");
   res.json(new ApiResponse(200, config, "Pricing configuration updated"));
 });

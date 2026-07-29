@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { apiRequest } from "../api/client";
 import Navbar from "../components/Navbar";
@@ -14,8 +14,6 @@ type OrderItem = {
 
 type Order = {
     _id: string;
-    orderStatus: "pending" | "confirmed" | "failed";
-    productionStatus?: string;
     amount: number;
     createdAt: string;
     items: OrderItem[];
@@ -36,12 +34,6 @@ export default function OrderHistory() {
             .finally(() => setIsLoading(false));
     }, []);
 
-    const formatStatus = (order: Order) => {
-        if (order.orderStatus === "failed") return { label: "Payment failed", color: "text-red-700 bg-red-50" };
-        if (order.orderStatus === "pending") return { label: "Payment processing", color: "text-amber-700 bg-amber-50" };
-        const workflow = order.productionStatus || "order_placed";
-        return { label: workflow.replaceAll("_", " "), color: "text-[var(--color-teal)] bg-[var(--color-bg-secondary)]" };
-    };
 
     return (
         <>
@@ -118,7 +110,6 @@ export default function OrderHistory() {
                         /* Orders List */
                         <div className="space-y-8">
                             {orders.map((o) => {
-                                const statusInfo = formatStatus(o);
                                 return (
                                     <div
                                         key={o._id}
@@ -128,21 +119,12 @@ export default function OrderHistory() {
                                         <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[var(--color-border-subtle)] pb-4 mb-6 gap-2">
                                             <div>
                                                 <span className="font-primary text-base uppercase tracking-wider text-[var(--color-teal)] block">
-                                                    Order #{o._id.slice(-8).toUpperCase()}
+                                                    Order #{String(o._id).slice(-8).toUpperCase()}
                                                 </span>
                                                 <span className="font-secondary text-xs text-[var(--color-text-muted)]">
                                                     Placed: {new Date(o.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}
                                                 </span>
-                                            </div>
-                                            <div className="flex items-center gap-3">
-                                                <span className={`text-[10px] uppercase tracking-widest px-3 py-1 font-secondary font-medium ${statusInfo.color}`}>
-                                                    Status: {statusInfo.label}
-                                                </span>
-                                                {o.orderStatus === "confirmed" && <span className="text-[10px] uppercase tracking-widest px-3 py-1 font-secondary font-medium text-[var(--color-teal)] bg-[var(--color-bg-secondary)]">
-                                                    {(o.productionStatus || "order_placed").replaceAll("_", " ")}
-                                                </span>}
-                                            </div>
-                                        </div>
+                                            </div></div>
 
                                         {/* Items List */}
                                         <div className="divide-y divide-[var(--color-border-subtle)]">
@@ -162,7 +144,7 @@ export default function OrderHistory() {
                                                                 Metal: <span className="uppercase text-[var(--color-text)] font-medium">{i.karat}</span>
                                                             </p>
                                                             {i.size && <p className="font-secondary text-xs text-[var(--color-text-muted)]">
-                                                                Ring size: <span className="text-[var(--color-text)] font-medium">{i.size}</span>
+                                                                Size: <span className="text-[var(--color-text)] font-medium">{i.size}</span>
                                                             </p>}
                                                             <p className="font-secondary text-xs text-[var(--color-text-muted)]">
                                                                 Qty: <span className="text-[var(--color-text)] font-medium">{i.quantity}</span>
@@ -178,7 +160,7 @@ export default function OrderHistory() {
                                             <div>
                                                 <span className="font-secondary text-xs uppercase tracking-wider text-[var(--color-text-muted)] block">Total</span>
                                                 <span className="font-primary text-lg text-[var(--color-teal)] font-semibold">
-                                                    ₹{Math.round(o.amount).toLocaleString("en-IN")}
+                                                    â‚¹{Math.round(o.amount).toLocaleString("en-IN")}
                                                 </span>
                                             </div>
                                             <Link
@@ -211,3 +193,4 @@ export default function OrderHistory() {
         </>
     );
 }
+

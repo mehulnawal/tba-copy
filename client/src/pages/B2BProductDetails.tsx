@@ -1,28 +1,16 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ApiRequestError, apiRequest } from "../api/client";
-import type { PriceBreakdown, Product } from "../types";
+import type { Product } from "../types";
 import { useB2BSessionGuard } from "../hooks/useB2BSessionGuard";
 import { responsiveImage } from "../utils/image";
 import { formatINR } from "../utils/currency";
+import PriceBreakup from "../components/PriceBreakup";
 
 const categoryName = (category?: Product["mainCategory"] | Product["subCategory"]) => typeof category === "string" ? "" : category?.name || "";
 const diamondWeight = (product: Product) => (product.diamonds || []).reduce((sum, diamond) => sum + Number(diamond.caratWeight || 0), 0);
 const weightFor = (value: Product["grossWeight"] | Product["netWeight"], karat?: string) => typeof value === "number" ? value : karat === "14kt" || karat === "18kt" ? value?.[karat] : undefined;
-
-function PriceCard({ product, price }: { product: Product; price: PriceBreakdown }) {
-  return <article className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-5 space-y-3">
-    <h2 className="font-primary text-xl text-[var(--color-teal)]">{price.karat?.toUpperCase() || product.metal?.toUpperCase()} trade price</h2>
-    <p className="flex justify-between text-sm"><span>Gross weight</span><b>{price.grossWeight} g</b></p>
-    {price.netWeight !== undefined && <p className="flex justify-between text-sm"><span>Net weight</span><b>{price.netWeight} g</b></p>}
-    {diamondWeight(product) > 0 && <p className="flex justify-between text-sm"><span>Diamond weight</span><b>{diamondWeight(product)} ct</b></p>}
-    {price.makingCharge !== undefined && <p className="flex justify-between text-sm"><span>Making charge</span><b>{formatINR(price.makingCharge)}</b></p>}
-    {price.certificateCharges !== undefined && <p className="flex justify-between text-sm"><span>Certificate charge</span><b>{formatINR(price.certificateCharges)}</b></p>}
-    <p className="flex justify-between text-sm"><span>GST</span><b>{formatINR(price.gst)}</b></p>
-    <p className="flex justify-between border-t border-[var(--color-border)] pt-3 font-semibold text-[var(--color-teal)]"><span>Final total</span><b>{formatINR(price.finalPrice)}</b></p>
-  </article>;
-}
 
 export default function B2BProductDetails() {
   useB2BSessionGuard();
@@ -48,7 +36,7 @@ export default function B2BProductDetails() {
     <div className="space-y-6"><div><p className="section-label">Private trade catalogue</p><h1 className="font-primary text-4xl text-[var(--color-teal)]">{product.title}</h1><p className="mt-2 text-sm text-[var(--color-text-muted)]">SKU: {product.SKU}</p>{product.description && <p className="mt-4 text-sm leading-6 text-[var(--color-text-muted)]">{product.description}</p>}</div>
       {product.colors?.length ? <div><h2 className="mb-2 text-sm font-semibold text-[var(--color-teal)]">Available finishes</h2><div className="flex flex-wrap gap-2">{product.colors.map((color) => <button key={color} type="button" onClick={() => setSelectedColor(color)} className={`rounded border px-3 py-2 text-sm ${selectedColor === color ? "border-[var(--color-teal)] bg-[var(--color-cream)]" : "border-[var(--color-border)]"}`}>{color}</button>)}</div></div> : null}
       <dl className="grid grid-cols-2 gap-3 rounded-[var(--radius-md)] border border-[var(--color-border)] p-4 text-sm">{specificationRows.map(([label, value]) => <div key={label}><dt className="text-[var(--color-text-muted)]">{label}</dt><dd className="font-semibold">{value}</dd></div>)}</dl>
-      {product.diamonds?.length ? <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] p-4"><h2 className="font-semibold text-[var(--color-teal)]">Diamond details</h2>{product.diamonds.map((diamond, index) => <p key={`${diamond.category}-${index}`} className="mt-2 text-sm">{diamond.category} {diamond.subType ? `• ${diamond.subType}` : ""}: {diamond.caratWeight} ct</p>)}</div> : null}
-      <div className="grid gap-4">{prices.map((price) => <PriceCard key={price.karat || product.metal} product={product} price={price} />)}</div>
+      {product.diamonds?.length ? <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] p-4"><h2 className="font-semibold text-[var(--color-teal)]">Diamond details</h2>{product.diamonds.map((diamond, index) => <p key={`${diamond.category}-${index}`} className="mt-2 text-sm">{diamond.category} {diamond.subType ? `� ${diamond.subType}` : ""}: {diamond.caratWeight} ct</p>)}</div> : null}
+      <div className="grid gap-4">{prices.map((price) => <PriceBreakup key={price.karat || product.metal} product={product} price={price} b2b />)}</div>
     </div></section></main>;
 }

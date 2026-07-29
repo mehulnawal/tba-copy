@@ -1,4 +1,4 @@
-import React, { FormEvent, useEffect, useState, useMemo, useCallback } from "react";
+﻿import React, { FormEvent, useEffect, useState, useMemo, useCallback } from "react";
 import { Navigate, NavLink, Route, Routes, useNavigate } from "react-router-dom";
 import { adminApi, type AdminUser, type BannerPayload, type Coupon, type ManagedUser, type B2BAccessStatus, type PricingConfig } from "../api/admin.api";
 import type { Banner } from "../api/banner.api";
@@ -775,11 +775,11 @@ function MetalRates() {
   const save = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault(); const f = new FormData(e.currentTarget);
     const body = { gold24kt: Number(f.get("gold24kt")), silver: Number(f.get("silver")), makingRatePerGram: Number(f.get("makingRatePerGram")), certificateRatePerGram: Number(f.get("certificateRatePerGram")) };
-    const moissanite = Number(f.get("silverMoissaniteMakingRate")); const polki = Number(f.get("silverPolkiMakingRate"));
-    try { const [nextRates] = await Promise.all([apiRequest<any>("/admin/metal-rates", { method: "PUT", body: JSON.stringify(body) }), adminApi.updatePricingConfig("SILVER_MOISSANITE", moissanite), adminApi.updatePricingConfig("SILVER_POLKI", polki)]); setRates(nextRates); await load(); setToast({ message: "Universal and Silver-specific rates updated.", type: "success" }); } catch (error) { setToast({ message: errorMessage(error), type: "error" }); }
+    const moissaniteMaking = Number(f.get("silverMoissaniteMakingRate")); const polkiMaking = Number(f.get("silverPolkiMakingRate")); const moissaniteRateRaw = String(f.get("moissaniteRatePerCarat") || "").trim();
+    try { const [nextRates] = await Promise.all([apiRequest<any>("/admin/metal-rates", { method: "PUT", body: JSON.stringify(body) }), adminApi.updatePricingConfig("SILVER_MOISSANITE", { makingRatePerGram: moissaniteMaking, moissaniteRatePerCarat: moissaniteRateRaw === "" ? null : Number(moissaniteRateRaw) }), adminApi.updatePricingConfig("SILVER_POLKI", { makingRatePerGram: polkiMaking })]); setRates(nextRates); await load(); setToast({ message: "Universal and Silver-specific rates updated.", type: "success" }); } catch (error) { setToast({ message: errorMessage(error), type: "error" }); }
   };
-  const configRate = (key: string, fallback: number) => configs.find(config => config.key === key)?.makingRatePerGram ?? fallback;
-  return <div className="space-y-8">{toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}<PageHeader title="Universal Charge Settings" subtitle="Live baseline metal rates and category-specific Silver making rates." /><form onSubmit={save} className="admin-form max-w-2xl"><b>Baseline Rate Configuration</b>{[["gold24kt", "Gold 24kt rate"], ["silver", "Fine silver rate"], ["makingRatePerGram", "Universal Gold making rate / gram"], ["certificateRatePerGram", "Certificate charge / carat"]].map(([key, label]) => <label key={key} className="uppercase">{label}<input className="admin-input" name={key} type="number" min="0" step="any" defaultValue={rates[key]} /></label>)}<div className="col-span-full border-t border-[var(--color-border)] pt-5"><b>Silver Category Making Rates</b><p className="mt-1 text-xs text-[var(--color-text-muted)]">These are read by the active CategoryPricingConfig on every Silver price calculation.</p></div><label className="uppercase">Silver-Moissanite making rate / gram<input className="admin-input" name="silverMoissaniteMakingRate" type="number" min="0" step="any" defaultValue={configRate("SILVER_MOISSANITE", 500)} /></label><label className="uppercase">Silver-Polki making rate / gram<input className="admin-input" name="silverPolkiMakingRate" type="number" min="0" step="any" defaultValue={configRate("SILVER_POLKI", 350)} /></label><div className="col-span-full flex items-center justify-between border-t border-[var(--color-border)] pt-4"><span className="text-xs text-[var(--color-text-muted)]">Last metal-rate update: {rates.updatedAt ? new Date(rates.updatedAt).toLocaleString() : "N/A"}</span><button className="admin-button cursor-pointer">Save live charge settings</button></div></form></div>;
+  const configRate = (key: string, fallback: number) => configs.find(config => config.key === key)?.makingRatePerGram ?? fallback; const moissaniteRate = configs.find(config => config.key === "SILVER_MOISSANITE")?.moissaniteRatePerCarat;
+  return <div className="space-y-8">{toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}<PageHeader title="Universal Charge Settings" subtitle="Live baseline metal rates and category-specific Silver making rates." /><form onSubmit={save} className="admin-form max-w-2xl"><b>Baseline Rate Configuration</b>{[["gold24kt", "Gold 24kt rate"], ["silver", "Fine silver rate"], ["makingRatePerGram", "Universal Gold making rate / gram"], ["certificateRatePerGram", "Certificate charge / carat"]].map(([key, label]) => <label key={key} className="uppercase">{label}<input className="admin-input" name={key} type="number" min="0" step="any" defaultValue={rates[key]} /></label>)}<div className="col-span-full border-t border-[var(--color-border)] pt-5"><b>Silver Category Making Rates</b><p className="mt-1 text-xs text-[var(--color-text-muted)]">These are read by the active CategoryPricingConfig on every Silver price calculation.</p></div><label className="uppercase">Silver-Moissanite making rate / gram<input className="admin-input" name="silverMoissaniteMakingRate" type="number" min="0" step="any" defaultValue={configRate("SILVER_MOISSANITE", 500)} /></label><label className="uppercase">Silver-Polki making rate / gram<input className="admin-input" name="silverPolkiMakingRate" type="number" min="0" step="any" defaultValue={configRate("SILVER_POLKI", 350)} /></label><label className="uppercase">Moissanite rate per carat <span className="text-amber-700">(required before pricing)</span><input className="admin-input" name="moissaniteRatePerCarat" type="number" min="0" step="any" defaultValue={moissaniteRate ?? ""} placeholder="Unset — pricing will be blocked" /></label><div className="col-span-full flex items-center justify-between border-t border-[var(--color-border)] pt-4"><span className="text-xs text-[var(--color-text-muted)]">Last metal-rate update: {rates.updatedAt ? new Date(rates.updatedAt).toLocaleString() : "N/A"}</span><button className="admin-button cursor-pointer">Save live charge settings</button></div></form></div>;
 }
 // --- CATEGORIES ---
 function Categories() {
@@ -820,7 +820,7 @@ function Categories() {
   const remove = async (id: string) => { if (!confirm("Delete category?")) return; try { await adminApi.deleteCategory(id); await load(); } catch (error) { setToast({ message: errorMessage(error), type: "error" }); } };
   const canDelete = (category: Category) => category.categoryKind !== "metal-root" && !items.some((item) => parentId(item) === category._id);
   const renderRow = (category: Category, nested = false) => <div key={category._id} className={`admin-row justify-between ${nested ? "ml-6 border-l-2 border-[var(--color-border)] pl-4" : ""}`}>
-    <div><p className="text-sm font-semibold text-[var(--color-charcoal)]">{nested && <span className="mr-2 text-[var(--color-text-muted)]" aria-hidden="true">↳</span>}{category.name}</p><small>{nested ? "Sub Category" : "Main Category"} · Order: {category.displayOrder}</small></div>
+    <div><p className="text-sm font-semibold text-[var(--color-charcoal)]">{nested && <span className="mr-2 text-[var(--color-text-muted)]" aria-hidden="true">â†³</span>}{category.name}</p><small>{nested ? "Sub Category" : "Main Category"} Â· Order: {category.displayOrder}</small></div>
     <div className="flex items-center gap-2"><Badge variant={category.isActive ? "success" : "neutral"}>{category.isActive ? "Active" : "Inactive"}</Badge><button onClick={() => startEdit(category)} className="cursor-pointer">Edit</button><button onClick={() => void toggle(category)} className="cursor-pointer">Toggle</button>{canDelete(category) && <button onClick={() => void remove(category._id)} className="text-red-700 cursor-pointer">Delete</button>}</div>
   </div>;
 
@@ -844,88 +844,51 @@ function Orders() {
   const [data, setData] = useState<any>({ orders: [] });
   const [search, setSearch] = useState("");
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
-
-  const load = useCallback(() =>
-    apiRequest<any>("/admin/orders?limit=25")
-      .then(setData)
-      .catch((e) => setToast({ message: errorMessage(e), type: "error" })), []);
-
+  const load = useCallback(() => apiRequest<any>("/admin/orders?limit=25").then(setData).catch((error) => setToast({ message: errorMessage(error), type: "error" })), []);
   useEffect(() => { void load(); }, [load]);
 
-  const updateProductionStatus = async (orderId: string, productionStatus: string) => {
-    try {
-      await adminApi.updateProductionStatus(orderId, productionStatus);
-      setToast({ message: "Production status updated", type: "success" });
-      void load();
-    } catch (error) {
-      setToast({ message: errorMessage(error), type: "error" });
-    }
-  };
-
-  const orders = data.orders || data || [];
-  const filtered = Array.isArray(orders)
-    ? orders.filter(
-      (o: any) =>
-        o._id?.toLowerCase().includes(search.toLowerCase()) ||
-        o.customer?.name?.toLowerCase().includes(search.toLowerCase()) ||
-        o.customer?.email?.toLowerCase().includes(search.toLowerCase())
-    )
-    : [];
+  const orders = Array.isArray(data.orders || data) ? data.orders || data : [];
+  const filtered = orders.filter((order: any) => `${order._id || ""} ${order.customer?.name || ""} ${order.customer?.email || ""}`.toLowerCase().includes(search.toLowerCase()));
+  const reference = (id: string) => `#${String(id).slice(-8).toUpperCase()}`;
 
   return (
     <div className="space-y-8">
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
-      <PageHeader title="Customer Orders" subtitle="Track and manage store purchases" />
-
-      <input
-        type="text"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="Search orders by ID or customer..."
-        className="admin-input max-w-xs"
-      />
-
-      {filtered.length === 0 ? (
-        <EmptyState title="No orders found" description="When customers place orders, they will appear here." icon={<Sparkles aria-hidden="true" />} />
-      ) : (
-        <div className="border border-[var(--color-border)] rounded-[var(--radius-md)] overflow-hidden bg-[var(--color-bg-secondary)] shadow-[var(--shadow-sm)]">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-[var(--color-border)] bg-[var(--color-cream-light)] text-xs uppercase font-semibold text-[var(--color-teal)] tracking-wider">
-                <th className="p-4">Order Reference</th>
-                <th className="p-4">Customer</th>
-                <th className="p-4">Items</th>
-                <th className="p-4">Amount</th>
-                <th className="p-4">Payment</th>
-                <th className="p-4">Order</th>
-                <th className="p-4">Production</th>
-                <th className="p-4">Date</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[var(--color-border)] text-xs text-[var(--color-charcoal)] font-secondary">
-              {filtered.map((o: any) => (
-                <tr key={o._id} className="hover:bg-[var(--color-cream-light)]/40 transition-colors">
-                  <td className="p-4 font-mono font-bold text-[var(--color-teal)]">#{o._id}</td>
-                  <td className="p-4">
-                    <p className="font-semibold text-[var(--color-teal)]">{o.customer?.name || "Guest User"}</p>
-                    <p className="text-[var(--color-text-muted)]">{o.customer?.email || "N/A"}</p>
-                  </td>
-                  <td className="p-4"><p>{o.items?.length || 0} item(s)</p><div className="mt-1 space-y-1 text-[11px] text-[var(--color-text-muted)]">{o.items?.map((item: any, index: number) => <p key={`${item.productSku || item.title}-${index}`}>{item.title || item.productSku || "Product"}{item.size ? ` · Size ${item.size}` : ""}</p>)}</div></td>
-                  <td className="p-4 font-semibold text-[var(--color-teal)]">{formatCurrency(o.amount || 0)}</td>
-                  <td className="p-4"><Badge variant="gold">{o.paymentStatus}</Badge></td>
-                  <td className="p-4"><Badge variant={o.orderStatus === "confirmed" ? "success" : o.orderStatus === "failed" ? "danger" : "warning"}>{o.orderStatus || "pending"}</Badge></td>
-                  <td className="p-4"><select aria-label={`Production status for order ${o._id}`} value={o.productionStatus || "order_placed"} disabled={o.paymentStatus !== "paid" || o.orderStatus !== "confirmed"} onChange={(e) => void updateProductionStatus(o._id, e.target.value)} className="admin-input min-w-36 py-1 text-xs disabled:opacity-50"><option value="order_placed">Order placed</option><option value="designing">Designing</option><option value="in_production">In production</option><option value="quality_check">Quality check</option><option value="ready_to_ship">Ready to ship</option><option value="shipped">Shipped</option><option value="delivered">Delivered</option></select></td>
-                  <td className="p-4 text-[var(--color-text-muted)]">{formatDate(o.createdAt)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <PageHeader title="Customer Orders" subtitle="A clear read-only record of every purchase." />
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search order reference, customer or email" className="admin-input w-full sm:max-w-md" />
+        <span className="text-xs text-[var(--color-text-muted)]">{filtered.length} order{filtered.length === 1 ? "" : "s"}</span>
+      </div>
+      {filtered.length === 0 ? <EmptyState title="No orders found" description="Placed orders will appear here." icon={<Sparkles aria-hidden="true" />} /> : (
+        <div className="space-y-5">
+          {filtered.map((order: any) => (
+            <article key={order._id} className="overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-secondary)] shadow-[var(--shadow-sm)]">
+              <header className="flex flex-col gap-4 border-b border-[var(--color-border)] bg-[var(--color-cream-light)]/60 p-5 md:flex-row md:items-center md:justify-between">
+                <div><p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-muted)]">Order reference</p><p className="mt-1 font-mono text-sm font-bold text-[var(--color-teal)]">{reference(order._id)}</p></div>
+                <div className="md:text-right"><p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-muted)]">Order total</p><p className="mt-1 text-lg font-bold text-[var(--color-teal)]">{formatCurrency(order.amount || 0)}</p></div>
+              </header>
+              <div className="grid gap-5 p-5 lg:grid-cols-[minmax(0,1fr)_220px]">
+                <section>
+                  <div className="mb-3 flex items-center justify-between gap-3"><h3 className="font-semibold text-[var(--color-charcoal)]">Purchased products</h3><span className="rounded-full bg-[var(--color-cream-light)] px-2.5 py-1 text-xs font-medium text-[var(--color-teal)]">{order.items?.length || 0} item{order.items?.length === 1 ? "" : "s"}</span></div>
+                  <div className="space-y-2">
+                    {(order.items || []).map((item: any, index: number) => (
+                      <div key={`${item.productSku || item.title}-${index}`} className="flex gap-3 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-white p-3">
+                        {item.image ? <img src={item.image} alt={item.title || "Product"} className="h-14 w-14 shrink-0 rounded object-cover" /> : <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded bg-[var(--color-cream-light)] text-[10px] text-[var(--color-text-muted)]">No image</div>}
+                        <div className="min-w-0 flex-1"><p className="truncate font-semibold text-[var(--color-charcoal)]">{item.title || item.productSku || "Product"}</p><p className="mt-1 text-xs text-[var(--color-text-muted)]">{[item.karat, item.color, item.size ? `Size ${item.size}` : null].filter(Boolean).join(" / ") || "Product details unavailable"}</p><p className="mt-1 text-xs font-medium text-[var(--color-teal)]">Quantity: {item.quantity || 1}</p></div>
+                        {item.priceSnapshot?.finalPrice != null && <p className="shrink-0 text-sm font-semibold text-[var(--color-charcoal)]">{formatCurrency(item.priceSnapshot.finalPrice * (item.quantity || 1))}</p>}
+                      </div>
+                    ))}
+                  </div>
+                </section>
+                <aside className="border-t border-[var(--color-border)] pt-4 lg:border-l lg:border-t-0 lg:pl-5 lg:pt-0"><p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-muted)]">Customer</p><p className="mt-2 font-semibold text-[var(--color-charcoal)]">{order.customer?.name || "Customer"}</p><p className="mt-1 break-all text-xs text-[var(--color-text-muted)]">{order.customer?.email || "No email available"}</p><p className="mt-5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-muted)]">Placed on</p><p className="mt-2 text-sm text-[var(--color-charcoal)]">{formatDate(order.createdAt)}</p></aside>
+              </div>
+            </article>
+          ))}
         </div>
       )}
     </div>
   );
 }
-
 // --- USERS ---
 function Users() {
   const [items, setItems] = useState<ManagedUser[]>([]);
@@ -1061,3 +1024,4 @@ export default function AdminApp() {
     </Routes>
   );
 }
+

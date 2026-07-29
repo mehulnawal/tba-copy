@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 
-const GOLD_KARATS = ["14kt", "18kt"];
 const PRODUCT_COLORS = ["Yellow Gold", "White Gold", "Rose Gold"];
 const DIAMOND_COLOR_CLARITY = "EF/VVSVS";
 const weightSchema = new mongoose.Schema({
@@ -13,6 +12,10 @@ const diamondEntrySchema = new mongoose.Schema({
   caratWeight: { type: Number, required: true, min: 0 },
   ratePerCt: { type: Number, min: 0 },
   colorClarity: { type: String, required: true, default: DIAMOND_COLOR_CLARITY, enum: [DIAMOND_COLOR_CLARITY] },
+}, { _id: false });
+const moissaniteEntrySchema = new mongoose.Schema({
+  caratWeight: { type: Number, required: true, min: 0 },
+  colorClarity: { type: String, default: "" }, // Optional/inactive pending client confirmation.
 }, { _id: false });
 const imageSchema = new mongoose.Schema({ url: { type: String, required: true }, source: { type: String, enum: ["link", "upload"], required: true } }, { _id: false });
 
@@ -31,14 +34,16 @@ const productSchema = new mongoose.Schema({
   videoLink: { type: String, default: "" },
   sizes: { type: [Number], default: [], validate: { validator: arr => arr.every(size => Number.isInteger(size) && size >= 5 && size <= 25), message: "Sizes must be whole numbers from 5 to 25" } },
   colors: { type: [String], enum: PRODUCT_COLORS, default: [] },
-  grossWeight: { type: mongoose.Schema.Types.Mixed, required: true },
-  netWeight: { type: mongoose.Schema.Types.Mixed },
+  // Gold has one gross/net weight per piece; the selected karat only changes rate.
+  grossWeight: { type: Number, required: true, min: 0 },
+  netWeight: { type: Number, min: 0, required: function () { return this.metal === "gold"; } },
+  // Legacy single-value field is retained for existing products; new Silver products use entries.
   moissaniteCaratWeight: { type: Number, min: 0 },
+  moissaniteEntries: { type: [moissaniteEntrySchema], default: [] },
   diamonds: { type: [diamondEntrySchema], default: [] },
   isActive: { type: Boolean, default: true },
 }, { timestamps: true });
 
 module.exports = mongoose.model("Product", productSchema);
-module.exports.GOLD_KARATS = GOLD_KARATS;
 module.exports.PRODUCT_COLORS = PRODUCT_COLORS;
 module.exports.DIAMOND_COLOR_CLARITY = DIAMOND_COLOR_CLARITY;

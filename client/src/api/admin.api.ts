@@ -4,7 +4,7 @@ import type { Banner } from "./banner.api";
 import type { Category, Product, PriceBreakdown } from "../types";
 
 export interface DiamondCategory { _id: string; name: string; subTypes: string[]; isActive: boolean; }
-export interface PricingConfig { _id: string; key: string; metal: "gold" | "silver"; categoryType: string; makingRatePerGram: number; weightBasis: "net" | "gross"; stoneRatePerUnit?: number; certificateApplies: boolean; usesLabGrownFixedDiamondRates: boolean; isActive: boolean; }
+export interface PricingConfig { _id: string; key: string; metal: "gold" | "silver"; categoryType: string; makingRatePerGram: number; weightBasis: "net" | "gross"; moissaniteRatePerCarat?: number; polkiValuePerUnit?: number; silverB2BMakingChargeRate?: number; certificateApplies: boolean; usesLabGrownFixedDiamondRates: boolean; b2bExcludeCharges?: boolean; isActive: boolean; }
 export interface B2BAccessStatus { active: boolean; lastChanged: string | null; }
 export interface AdminUser {
   id: string;
@@ -115,7 +115,7 @@ export const adminApi = {
     apiRequest<null>(`/admin/coupons/${id}`, { method: "DELETE" }),
   adminProducts: (search = "") => apiRequest<Product[]>(`/admin/products${search ? `?search=${encodeURIComponent(search)}` : ""}`), adminGetProduct: (id: string) => apiRequest<Product>(`/admin/products/${id}`), createProduct: (p: Partial<Product>) => apiRequest<Product>("/admin/products", { method: "POST", body: JSON.stringify(p) }), updateProduct: (id: string, p: Partial<Product>) => apiRequest<Product>(`/admin/products/${id}`, { method: "PATCH", body: JSON.stringify(p) }), deleteProduct: (id: string) => apiRequest<null>(`/admin/products/${id}`, { method: "DELETE" }), previewPrice: (p: Partial<Product>) => apiRequest<PriceBreakdown[]>("/admin/products/preview-price", { method: "POST", body: JSON.stringify(p) }), uploadImage: (file: File) => { const body = new FormData(); body.append("image", file); return apiRequest<{ url: string }>("/admin/upload-image", { method: "POST", body }); },
   pricingConfigs: () => apiRequest<PricingConfig[]>("/admin/pricing-configs"),
-  updatePricingConfig: (key: string, makingRatePerGram: number) => apiRequest<PricingConfig>("/admin/pricing-configs/" + encodeURIComponent(key), { method: "PATCH", body: JSON.stringify({ makingRatePerGram }) }),
+  updatePricingConfig: (key: string, changes: Partial<Pick<PricingConfig, "makingRatePerGram" | "moissaniteRatePerCarat" | "polkiValuePerUnit" | "silverB2BMakingChargeRate">>) => apiRequest<PricingConfig>("/admin/pricing-configs/" + encodeURIComponent(key), { method: "PATCH", body: JSON.stringify(changes) }),
   b2bAccessStatus: () => apiRequest<B2BAccessStatus>("/admin/b2b-access"),
   setB2BPassword: (password: string) => apiRequest<B2BAccessStatus>("/admin/b2b-access", { method: "PUT", body: JSON.stringify({ password }) }),
   revokeB2BPassword: () => apiRequest<B2BAccessStatus>("/admin/b2b-access", { method: "DELETE" }),
@@ -147,8 +147,6 @@ export const adminApi = {
     }),
   deleteCategory: (id: string) =>
     apiRequest<null>(`/admin/categories/${id}`, { method: "DELETE" }),
-  updateProductionStatus: (id: string, productionStatus: string) =>
-    apiRequest(`/admin/orders/${id}/production-status`, { method: "PATCH", body: JSON.stringify({ productionStatus }) }),
   reviews: () => apiRequest<AdminReview[]>("/admin/reviews"),
   moderateReview: (id: string, status: "approved" | "rejected") =>
     apiRequest<AdminReview>(`/admin/reviews/${id}`, { method: "PATCH", body: JSON.stringify({ status }) }),

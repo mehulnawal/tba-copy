@@ -2,6 +2,7 @@
 
 
 import { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { AVATAR_ASSETS } from "../constants/assets";
 import { Product, PrimeHotspot, FAQ, Testimonial } from "../types";
@@ -127,6 +128,8 @@ export default function HomePage() {
     const [testimonialIndex, setTestimonialIndex] = useState(0);
     const [faqOpenId, setFaqOpenId] = useState<string | null>(null);
     const [isAuthOpen, setIsAuthOpen] = useState(false);
+    const [authReturnTo, setAuthReturnTo] = useState("");
+    const navigate = useNavigate();
 
     const { isAuthenticated } = useAuth();
     const { showToast } = useToast();
@@ -199,7 +202,7 @@ export default function HomePage() {
 
     // Specifically resolve items that match best seller criteria flags
     const bestSellerProducts = useMemo(() => {
-        return products.filter(p => p.Is_Best_Seller).map(adaptApiProductToUI);
+        return products.filter(p => p.Is_Best_Seller === true || p.isBestSeller === true).map(adaptApiProductToUI);
     }, [products]);
 
     // Safely extract price based on product reference tracking IDs matching live engine maps
@@ -258,7 +261,7 @@ export default function HomePage() {
                 onSearchChange={setSearchQuery}
                 activeCategory={activeCategory}
                 onCategoryChange={setActiveCategory}
-                onAuthOpen={() => setIsAuthOpen(true)}
+                onAuthOpen={(returnTo) => { setAuthReturnTo(returnTo || ""); setIsAuthOpen(true); }}
             />
 
             <main className="flex-1 w-full flex flex-col gap-0">
@@ -605,7 +608,7 @@ export default function HomePage() {
             {/* 11. AuthModal system hooks */}
             <AnimatePresence>
                 {isAuthOpen && (
-                    <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
+                    <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} onAuthenticated={() => { if (authReturnTo) navigate(authReturnTo); }} />
                 )}
             </AnimatePresence>
         </div>

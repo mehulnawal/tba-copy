@@ -295,7 +295,7 @@ export default function CartPage() {
                                                                 {item.name}
                                                             </h3>
                                                             <div className="font-display text-xs text-[var(--color-text-muted)] pt-0.5">
-                                                                Ring size: {item.size || "Not selected"}
+                                                                Size: {item.size || "Not selected"}
                                                             </div>
                                                             <div className="font-display text-xs text-[var(--color-text-muted)] pt-0.5">
                                                                 Piece Value: {formatINR(item.price)}

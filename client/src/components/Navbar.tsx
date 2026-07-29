@@ -29,7 +29,7 @@ export default function Navbar({
   onSearchChange: (query: string) => void;
   activeCategory: string;
   onCategoryChange: (category: string) => void;
-  onAuthOpen?: () => void;
+  onAuthOpen?: (returnTo?: string) => void;
 }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -40,12 +40,12 @@ export default function Navbar({
   const cartCount =
     cartData?.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
 
-  const handleAuthAction = () => {
+  const handleAuthAction = (returnTo = "/") => {
     if (onAuthOpen) {
-      onAuthOpen();
+      onAuthOpen(returnTo);
       return;
     }
-    navigate("/auth");
+    navigate("/auth", { state: { from: returnTo } });
   };
 
   const handleProtectedNav = (path: string) => {
@@ -53,7 +53,7 @@ export default function Navbar({
       navigate(path);
       return;
     }
-    handleAuthAction();
+    handleAuthAction(path);
   };
 
   const handleCategoryClick = (category: NavCategory | null, metal?: "gold" | "silver") => {
@@ -70,69 +70,25 @@ export default function Navbar({
   const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
-  // Mobile Accordion States
-  const [mobileExpanded, setMobileExpanded] = useState<Record<string, boolean>>({
-    Gold: false,
-    Silver: false,
-  });
-
+  const [mobileExpanded, setMobileExpanded] = useState<Record<string, boolean>>({ Gold: false, Silver: false });
   const accountDropdownRef = useRef<HTMLDivElement>(null);
   const lenis = useLenis();
-
-  const toggleMobileAccordion = (title: string) => {
-    setMobileExpanded((prev) => ({
-      ...prev,
-      [title]: !prev[title],
-    }));
-  };
+  const toggleMobileAccordion = (title: string) => setMobileExpanded((prev) => ({ ...prev, [title]: !prev[title] }));
 
   useEffect(() => {
-    if (isMobileMenuOpen) {
-      lenis.stop();
-      document.body.style.overflow = "hidden";
-      document.documentElement.style.overflow = "hidden";
-    } else {
-      lenis.start();
-      document.body.style.overflow = "";
-      document.documentElement.style.overflow = "";
-    }
-    return () => {
-      lenis.start();
-      document.body.style.overflow = "";
-      document.documentElement.style.overflow = "";
-    };
+    if (isMobileMenuOpen) { lenis.stop(); document.body.style.overflow = "hidden"; document.documentElement.style.overflow = "hidden"; }
+    else { lenis.start(); document.body.style.overflow = ""; document.documentElement.style.overflow = ""; }
+    return () => { lenis.start(); document.body.style.overflow = ""; document.documentElement.style.overflow = ""; };
   }, [isMobileMenuOpen, lenis]);
 
   const { data: categories } = useCategories();
   const navStructure = useMemo(() => {
     if (!categories) return [];
-    const childrenOf = (parentId: string): NavCategory[] => categories
-      .filter((category) => (typeof category.parent === "string" ? category.parent : category.parent?._id) === parentId && category.isActive)
-      .sort((a, b) => a.displayOrder - b.displayOrder)
-      .map((category) => ({ id: category._id, name: category.name, children: childrenOf(category._id) }));
-    return categories.filter((category) => !category.parent && category.categoryKind === "metal-root" && category.isActive).map((main) => ({
-      title: main.name, metal: main.metal, hasDropdown: true, categoryId: main._id, path: undefined, categories: childrenOf(main._id),
-    }));
+    const childrenOf = (parentId: string): NavCategory[] => categories.filter((category) => (typeof category.parent === "string" ? category.parent : category.parent?._id) === parentId && category.isActive).sort((a, b) => a.displayOrder - b.displayOrder).map((category) => ({ id: category._id, name: category.name, children: childrenOf(category._id) }));
+    return categories.filter((category) => !category.parent && category.categoryKind === "metal-root" && category.isActive).map((main) => ({ title: main.name, metal: main.metal, hasDropdown: true, categoryId: main._id, path: undefined, categories: childrenOf(main._id) }));
   }, [categories]);
-  const {
-    data: metalRates,
-    isLoading: isMetalLoading,
-    isError: isMetalError,
-  } = useMetalRates();
+  const { data: metalRates, isLoading: isMetalLoading, isError: isMetalError } = useMetalRates();
 
-  // ── GSAP Marquee ──────────────────────────────────────────────────────────
-  useEffect(() => {
-    if (!isAnnouncementVisible) return;
-    const ctx = gsap.context(() => {
-      gsap.to(".ticker-track", {
-        x: "-50%",
-        duration: 30,
-        ease: "none",
-        repeat: -1,
-      });
-    });
-    return () => ctx.revert();
-  }, [isAnnouncementVisible]);
 
   // ── Close dropdowns on outside click ──────────────────────────────────────
   useEffect(() => {

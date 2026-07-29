@@ -39,7 +39,7 @@ const {
 } = require("../middlewares/admin.middleware");
 const upload = require("../middlewares/upload.middleware");
 const { authLimiter } = require("../middlewares/rateLimiter.middleware");
-const { listOrders, updateProductionStatus } = require("../controllers/admin.order.controller");
+const { listOrders } = require("../controllers/admin.order.controller");
 const {
   listAdmin,
   create: createCategory,
@@ -96,7 +96,7 @@ router.put("/b2b-access", setB2BPassword);
 router.delete("/b2b-access", revokeB2BPassword);
 
 router.get("/orders", listOrders);
-router.patch("/orders/:orderId/production-status", updateProductionStatus);
+
 router.post("/upload-image", upload.single("image"), uploadImageHandler);
 router.post("/products/preview-price", previewPrice);
 router.get("/pricing-configs", listPricingConfigs);

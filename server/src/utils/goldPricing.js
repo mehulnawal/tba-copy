@@ -2,12 +2,34 @@ const GOLD_18KT_FACTOR = 0.76;
 const GOLD_14KT_FACTOR = 0.60;
 const GST_RATE = 0.03;
 const B2B_MAKING_DISCOUNT_PER_GRAM = 50;
-const LAB_GROWN_DIAMOND_RATES = { B2C: { round: 7500, fancy: 9500 }, B2B: { round: 6500, fancy: 7500 } };
 const requiredNumber = (value, label) => { if (value === undefined || value === null || value === "" || !Number.isFinite(Number(value))) throw new Error(`${label} is required for pricing`); if (Number(value) < 0) throw new Error(`${label} cannot be negative`); return Number(value); };
 const karatValue = karat => { const value = String(karat || "14kt").toLowerCase().replace(/k$/, "kt"); if (!["14kt", "18kt"].includes(value)) throw new Error("Gold karat must be 14kt or 18kt"); return value; };
-const weight = (product, name, karat) => { const value = product?.[name]; return requiredNumber(value && typeof value === "object" ? value[karat] : value, `${name} (${karat})`); };
+// Supports old per-karat records while existing products are migrated. New entries use one weight per piece.
+const weight = (product, name, karat) => { const value = product?.[name]; return requiredNumber(value && typeof value === "object" ? value[karat] : value, name); };
 const entriesFor = product => Array.isArray(product?.diamonds) ? product.diamonds : [];
 const totalDiamondWeight = product => entriesFor(product).reduce((total, entry, index) => total + requiredNumber(entry.caratWeight, `Diamond ${index + 1} carat weight`), 0);
-const diamondValue = (product, buyer, fixed) => entriesFor(product).reduce((total, entry, index) => { const type = String(entry.subType || entry.type || entry.category || "").toLowerCase(); const fixedRate = fixed && ["round", "fancy"].includes(type) ? LAB_GROWN_DIAMOND_RATES[buyer]?.[type] : undefined; const rate = fixedRate === undefined ? requiredNumber(entry.ratePerCt, `Diamond ${index + 1} rate per ct`) : fixedRate; return total + requiredNumber(entry.caratWeight, `Diamond ${index + 1} carat weight`) * rate; }, 0);
-const calculateGoldPrice = ({ product, karat, buyer = "B2C", rates, config }) => { if (!config || config.metal !== "gold") throw new Error("Gold product requires a gold category pricing configuration"); const selectedKarat = karatValue(karat); const normalizedBuyer = String(buyer).toUpperCase(); if (!["B2C", "B2B"].includes(normalizedBuyer)) throw new Error("Buyer must be B2C or B2B"); const rate24 = requiredNumber(rates?.gold24kt, "24kt gold rate"); const goldRate = rate24 * (selectedKarat === "18kt" ? GOLD_18KT_FACTOR : GOLD_14KT_FACTOR); const grossWeight = weight(product, "grossWeight", selectedKarat); const netWeight = weight(product, "netWeight", selectedKarat); const makingRate = requiredNumber(rates?.makingRatePerGram, "Universal making rate per gram") - (normalizedBuyer === "B2B" ? B2B_MAKING_DISCOUNT_PER_GRAM : 0); if (makingRate < 0) throw new Error("B2B making rate cannot be negative"); const goldValue = goldRate * grossWeight; const makingCharge = makingRate * netWeight; const diamondTotal = diamondValue(product, normalizedBuyer, config.usesLabGrownFixedDiamondRates); const certificateCharges = config.certificateApplies ? requiredNumber(rates?.certificateRatePerGram, "Universal certificate rate per gram") * totalDiamondWeight(product) : 0; const totalCost = goldValue + makingCharge + diamondTotal + certificateCharges; const gst = totalCost * GST_RATE; return { metal: "gold", buyer: normalizedBuyer, karat: selectedKarat, goldRate, goldValue, grossWeight, netWeight, makingRatePerGram: makingRate, makingCharge, diamondValue: diamondTotal, certificateCharges, totalCost, gst, finalPrice: totalCost + gst, display: normalizedBuyer === "B2B" ? { showGoldWeight: true, showDiamondWeight: true, showMaking: config.usesLabGrownFixedDiamondRates ? false : Boolean(config.b2bDisplay?.showMaking), showCertificate: config.usesLabGrownFixedDiamondRates ? false : Boolean(config.b2bDisplay?.showCertificate), showGst: config.usesLabGrownFixedDiamondRates ? false : Boolean(config.b2bDisplay?.showGst) } : undefined }; };
-module.exports = { calculateGoldPrice, GOLD_18KT_FACTOR, GOLD_14KT_FACTOR, LAB_GROWN_DIAMOND_RATES };
+// Gold diamond rates are deliberately entered per product, including Lab-Grown products.
+const diamondValue = product => entriesFor(product).reduce((total, entry, index) => total + requiredNumber(entry.caratWeight, `Diamond ${index + 1} carat weight`) * requiredNumber(entry.ratePerCt, `Diamond ${index + 1} rate per ct`), 0);
+const calculateGoldPrice = ({ product, karat, buyer = "B2C", rates, config }) => {
+  if (!config || config.metal !== "gold") throw new Error("Gold product requires a gold category pricing configuration");
+  const selectedKarat = karatValue(karat);
+  const normalizedBuyer = String(buyer).toUpperCase();
+  if (!["B2C", "B2B"].includes(normalizedBuyer)) throw new Error("Buyer must be B2C or B2B");
+  const rate24 = requiredNumber(rates?.gold24kt, "24kt gold rate");
+  const goldRate = rate24 * (selectedKarat === "18kt" ? GOLD_18KT_FACTOR : GOLD_14KT_FACTOR);
+  const grossWeight = weight(product, "grossWeight", selectedKarat);
+  const netWeight = weight(product, "netWeight", selectedKarat);
+  // Gold Lab-Grown B2B is configuration-driven so charges can be enabled later without rebuilding.
+  const exemptB2BCharges = normalizedBuyer === "B2B" && Boolean(config.b2bExcludeCharges);
+  const baseMakingRate = requiredNumber(rates?.makingRatePerGram, "Universal making rate per gram");
+  const makingRate = exemptB2BCharges ? 0 : baseMakingRate - (normalizedBuyer === "B2B" ? B2B_MAKING_DISCOUNT_PER_GRAM : 0);
+  if (makingRate < 0) throw new Error("B2B making rate cannot be negative");
+  const goldValue = goldRate * grossWeight;
+  const makingCharge = makingRate * netWeight;
+  const diamondTotal = diamondValue(product);
+  const certificateCharges = !exemptB2BCharges && config.certificateApplies ? requiredNumber(rates?.certificateRatePerGram, "Universal certificate rate per carat") * totalDiamondWeight(product) : 0;
+  const totalCost = goldValue + makingCharge + diamondTotal + certificateCharges;
+  const gst = exemptB2BCharges ? 0 : totalCost * GST_RATE;
+  return { metal: "gold", buyer: normalizedBuyer, karat: selectedKarat, goldRate, goldValue, grossWeight, netWeight, totalDiamondWeight: totalDiamondWeight(product), makingRatePerGram: makingRate, makingCharge, diamondValue: diamondTotal, certificateCharges, totalCost, gst, finalPrice: totalCost + gst, display: normalizedBuyer === "B2B" ? { showGoldWeight: true, showDiamondWeight: true, showMaking: !exemptB2BCharges && Boolean(config.b2bDisplay?.showMaking), showCertificate: !exemptB2BCharges && Boolean(config.b2bDisplay?.showCertificate), showGst: !exemptB2BCharges && Boolean(config.b2bDisplay?.showGst) } : undefined };
+};
+module.exports = { calculateGoldPrice, GOLD_18KT_FACTOR, GOLD_14KT_FACTOR };

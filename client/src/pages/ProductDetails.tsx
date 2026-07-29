@@ -10,6 +10,7 @@ import { useAddToCart } from "../hooks/useCart";
 import { RING_SIZES } from "../constants/product";
 import type { Product } from "../types";
 import { formatINR } from "../utils/currency";
+import PriceBreakup from "../components/PriceBreakup";
 
 type Review = {
     _id: string;
@@ -132,7 +133,7 @@ export default function ProductDetails() {
 
     const handleAddToCart = async () => {
         if (!size) {
-            showToast("Select a ring size before adding this product.", "error");
+            showToast("Select a size before adding this product.", "error");
             return;
         }
         if (!isAuthenticated) { setIsAuthOpen(true); return; }
@@ -279,63 +280,10 @@ export default function ProductDetails() {
                                     </button>
                                 ))}
                             </div>
-                        </div>
+                        </div>                        {/* Price Breakdown Component */}
+                        <PriceBreakup product={product} price={activePriceObj} />
 
-                        {/* Price Breakdown Component */}
-                        <div className="bg-white border border-stone-200/90 rounded-lg p-4 space-y-3 shadow-xs">
-                            <div className="flex justify-between items-center pb-2 border-b border-stone-100">
-                                <h4 className="text-xs font-bold uppercase tracking-widest text-stone-700">
-                                    Transparent Price Breakdown
-                                </h4>
-                                <button
-                                    onClick={() => setIsPriceBreakupOpen(!isPriceBreakupOpen)}
-                                    className="text-[11px] font-medium uppercase text-amber-900 underline"
-                                >
-                                    {isPriceBreakupOpen ? "Hide Details" : "View Breakdown"}
-                                </button>
-                            </div>
 
-                            {isPriceBreakupOpen && (
-                                <div className="space-y-2 text-xs text-stone-600">
-                                    <div className="flex justify-between">
-                                        <span>Gold Value</span>
-                                        <span className="font-medium text-stone-900">{formatINR(computedGoldValue)}</span>
-                                    </div>
-
-                                    {/* Round Diamond */}
-                                    <div className="flex justify-between">
-                                        <span>Round Diamond ({roundCarat.toFixed(2)} ct)</span>
-                                        <span className="font-medium text-stone-900">Included</span>
-                                    </div>
-
-                                    {/* FIX 4: Fancy Diamond row guaranteed rendering */}
-                                    <div className="flex justify-between">
-                                        <span>Fancy Diamond ({fancyCarat.toFixed(2)} ct)</span>
-                                        <span className="font-medium text-stone-900">Included</span>
-                                    </div>
-
-                                    <div className="flex justify-between">
-                                        <span>Certificate Charges</span>
-                                        <span className="font-medium text-stone-900">{formatINR(certCharges)}</span>
-                                    </div>
-
-                                    <div className="flex justify-between">
-                                        <span>Making Charges</span>
-                                        <span className="font-medium text-stone-900">{formatINR(activePriceObj.makingCharge)}</span>
-                                    </div>
-
-                                    <div className="flex justify-between">
-                                        <span>GST (3%)</span>
-                                        <span className="font-medium text-stone-900">{formatINR(activePriceObj.gst)}</span>
-                                    </div>
-
-                                    <div className="flex justify-between pt-2 border-t border-stone-200 font-semibold text-stone-900 text-sm">
-                                        <span>Final Price</span>
-                                        <span className="font-serif">{formatINR(activePriceObj.finalPrice)}</span>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
 
                         {/* Specs */}
                         <div className="bg-stone-50 border border-stone-200/80 rounded-lg p-4 space-y-3">
@@ -380,7 +328,7 @@ export default function ProductDetails() {
                         </div>
 
                         <div className="space-y-2">
-                            <label htmlFor="ring-size" className="block text-xs uppercase tracking-widest font-semibold text-stone-600">Ring size</label>
+                            <label htmlFor="ring-size" className="block text-xs uppercase tracking-widest font-semibold text-stone-600">Size</label>
                             <select id="ring-size" value={size} onChange={(event) => setSize(event.target.value)} className="w-full rounded border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-800 focus:border-amber-800 focus:outline-none" aria-required="true">
                                 <option value="">Select size</option>
                                 {RING_SIZES.map((ringSize) => <option key={ringSize} value={ringSize}>{ringSize}</option>)}

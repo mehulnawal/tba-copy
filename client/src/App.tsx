@@ -92,7 +92,7 @@ export default function App() {
               <Route
                 path="/wishlist"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute allowedRoles={[]}>
                     <Deferred><WishlistPage /></Deferred>
                   </ProtectedRoute>
                 }
@@ -101,7 +101,7 @@ export default function App() {
               <Route
                 path="/cart"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute allowedRoles={[]}>
                     <Deferred><CartPage /></Deferred>
                   </ProtectedRoute>
                 }
@@ -110,7 +110,7 @@ export default function App() {
               <Route
                 path="/account"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute allowedRoles={[]}>
                     <Deferred><Account /></Deferred>
                   </ProtectedRoute>
                 }
@@ -128,14 +128,14 @@ export default function App() {
               <Route
                 path="/checkout"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute allowedRoles={[]}>
                     <Deferred><CheckoutPage /></Deferred>
                   </ProtectedRoute>
                 }
               />
 
-              <Route path="/orderConfirmation" element={<Deferred><OrderConfirmation /></Deferred>} />
-              <Route path="/orders" element={<ProtectedRoute><Deferred><OrderHistory /></Deferred></ProtectedRoute>} />
+              <Route path="/orderConfirmation" element={<ProtectedRoute allowedRoles={[]}><Deferred><OrderConfirmation /></Deferred></ProtectedRoute>} />
+              <Route path="/orders" element={<ProtectedRoute allowedRoles={[]}><Deferred><OrderHistory /></Deferred></ProtectedRoute>} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </BrowserRouter>
