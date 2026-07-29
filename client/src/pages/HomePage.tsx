@@ -1,4 +1,4 @@
-﻿// import {useEffect,useState} from "react";import {Link} from "react-router-dom";import {apiRequest} from "../api/client";import Navbar from "../components/Navbar";import Footer from "../components/Footer";type B={_id:string;image:string;order:number};type P={id:string;slug:string;Title:string;Category:string;prices:{karat:string;finalPrice:number}[];[key:string]:any};export default function HomePage(){const [products,setProducts]=useState<P[]>([]);const [banners,setBanners]=useState<B[]>([]);const [category,setCategory]=useState("All");const [search,setSearch]=useState("");useEffect(()=>{apiRequest<B[]>("/banners").then(setBanners);apiRequest<P[]>(`/products?search=${encodeURIComponent(search)}${category!=="All"?`&category=${encodeURIComponent(category)}`:""}`).then(setProducts)},[search,category]);return <><Navbar onSearchChange={setSearch} activeCategory={category} onCategoryChange={setCategory}/><main className="mx-auto max-w-7xl p-8"><h1 className="text-4xl">The Brilliance Atelier</h1><p>Discover our collection.</p><div className="my-6 grid gap-4">{banners.map(b=><img key={b._id} src={b.image} className="w-full object-cover" alt={`TBA banner ${b.order}`}/>)}</div><div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{products.slice(0,8).map(p=><Link key={p.id} to={`/product/${p.slug}`}><img className="aspect-square w-full object-cover" src={p["image_link-1"]}/><h2>{p.Title}</h2><p>â‚¹{Math.round(p.prices.find(x=>x.karat==="9kt")?.finalPrice||0).toLocaleString("en-IN")}</p></Link>)}</div></main><Footer onCategoryChange={setCategory}/></>}
+// import {useEffect,useState} from "react";import {Link} from "react-router-dom";import {apiRequest} from "../api/client";import Navbar from "../components/Navbar";import Footer from "../components/Footer";type B={_id:string;image:string;order:number};type P={id:string;slug:string;Title:string;Category:string;prices:{karat:string;finalPrice:number}[];[key:string]:any};export default function HomePage(){const [products,setProducts]=useState<P[]>([]);const [banners,setBanners]=useState<B[]>([]);const [category,setCategory]=useState("All");const [search,setSearch]=useState("");useEffect(()=>{apiRequest<B[]>("/banners").then(setBanners);apiRequest<P[]>(`/products?search=${encodeURIComponent(search)}${category!=="All"?`&category=${encodeURIComponent(category)}`:""}`).then(setProducts)},[search,category]);return <><Navbar onSearchChange={setSearch} activeCategory={category} onCategoryChange={setCategory}/><main className="mx-auto max-w-7xl p-8"><h1 className="text-4xl">The Brilliance Atelier</h1><p>Discover our collection.</p><div className="my-6 grid gap-4">{banners.map(b=><img key={b._id} src={b.image} className="w-full object-cover" alt={`TBA banner ${b.order}`}/>)}</div><div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{products.slice(0,8).map(p=><Link key={p.id} to={`/product/${p.slug}`}><img className="aspect-square w-full object-cover" src={p["image_link-1"]}/><h2>{p.Title}</h2><p>₹{Math.round(p.prices.find(x=>x.karat==="9kt")?.finalPrice||0).toLocaleString("en-IN")}</p></Link>)}</div></main><Footer onCategoryChange={setCategory}/></>}
 
 
 import { useState, useEffect, useMemo } from "react";
@@ -51,7 +51,7 @@ const HERO_SLIDES = [
 const TESTIMONIALS: Testimonial[] = [
     {
         id: "1", name: "Priya Mehta", location: "Mumbai", rating: 5, avatar: AVATAR_ASSETS.a1,
-        review: "TBA's craftsmanship is unmatched. The 22K necklace for my daughter's wedding was breathtaking â€” every detail perfect."
+        review: "TBA's craftsmanship is unmatched. The 22K necklace for my daughter's wedding was breathtaking — every detail perfect."
     },
     {
         id: "2", name: "Rajan Shah", location: "Surat", rating: 4.5, avatar: AVATAR_ASSETS.a2,
@@ -59,7 +59,7 @@ const TESTIMONIALS: Testimonial[] = [
     },
     {
         id: "3", name: "Kavita Desai", location: "Ahmedabad", rating: 5, avatar: AVATAR_ASSETS.a4,
-        review: "Purchased earrings as an anniversary gift. The packaging, finish, weight â€” all premium. Highly recommended."
+        review: "Purchased earrings as an anniversary gift. The packaging, finish, weight — all premium. Highly recommended."
     },
 ];
 
@@ -72,7 +72,7 @@ const FAQS: FAQ[] = [
     {
         id: "2",
         question: "Are Lab Grown Diamonds real?",
-        answer: "Yes, lab-grown diamonds are 100% real diamonds. A diamond is categorized by its chemical structure and compositionâ€”not its origin. Both lab-grown and mined diamonds possess the exact same crystalline structure of pure carbon atoms, ensuring that they share the identical properties of genuine diamonds."
+        answer: "Yes, lab-grown diamonds are 100% real diamonds. A diamond is categorized by its chemical structure and composition—not its origin. Both lab-grown and mined diamonds possess the exact same crystalline structure of pure carbon atoms, ensuring that they share the identical properties of genuine diamonds."
     },
     {
         id: "3",
@@ -87,7 +87,7 @@ const FAQS: FAQ[] = [
     {
         id: "5",
         question: "Do Lab-Grown Diamonds cost less than mined diamonds?",
-        answer: "Yes, they do. Lab-grown diamonds generally retail at a significant 60% to 90% discount compared to mined diamonds of equivalent quality. Despite the accessible price point, they are evaluated, graded, and priced using the exact same standard matrixâ€”Cut, Colour, Clarity, and Carat weight."
+        answer: "Yes, they do. Lab-grown diamonds generally retail at a significant 60% to 90% discount compared to mined diamonds of equivalent quality. Despite the accessible price point, they are evaluated, graded, and priced using the exact same standard matrix—Cut, Colour, Clarity, and Carat weight."
     },
     {
         id: "6",
@@ -573,7 +573,7 @@ export default function HomePage() {
                                                         <h5 className="font-primary text-sm font-semibold text-[var(--color-teal)]">{item.name}</h5>
                                                         <span className="font-secondary text-[10px] text-[var(--color-text-muted)] block">{item.category}</span>
                                                         <div className="font-mono text-xs font-bold text-[var(--color-teal)] mt-1.5">
-                                                            â‚¹{item.price.toLocaleString("en-IN")}
+                                                            ₹{item.price.toLocaleString("en-IN")}
                                                         </div>
                                                     </div>
 
@@ -614,4 +614,3 @@ export default function HomePage() {
         </div>
     );
 }
-

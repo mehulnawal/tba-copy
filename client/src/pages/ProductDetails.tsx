@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { AuthModal } from "./AuthModal";
 import { useAuth } from "../context/AuthContext";
@@ -382,7 +382,7 @@ export default function ProductDetails() {
                                                 className="text-2xl focus:outline-none transition-transform hover:scale-125"
                                             >
                                                 <span className={(hoverRating || rating) >= star ? "text-amber-500" : "text-stone-300"}>
-                                                    â˜…
+                                                    ★
                                                 </span>
                                             </button>
                                         ))}
@@ -421,7 +421,7 @@ export default function ProductDetails() {
                                     <article key={r._id} className="p-5 bg-white rounded-lg border border-stone-200 shadow-xs space-y-2">
                                         <div className="flex justify-between items-center text-xs">
                                             <span className="font-semibold text-stone-900">{r.user?.name || "Verified Client"}</span>
-                                            <span className="text-amber-500 font-bold">{"â˜…".repeat(r.rating)}{"â˜†".repeat(5 - r.rating)}</span>
+                                            <span className="text-amber-500 font-bold">{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</span>
                                         </div>
                                         <p className="text-xs text-stone-600">{r.text}</p>
                                     </article>
@@ -438,4 +438,3 @@ export default function ProductDetails() {
         </>
     );
 }
-

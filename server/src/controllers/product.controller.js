@@ -1,4 +1,4 @@
-﻿const Product = require("../models/product.model");
+const Product = require("../models/product.model");
 const Category = require("../models/category.model");
 const ApiError = require("../utils/ApiError");
 const ApiResponse = require("../utils/ApiResponse");
@@ -11,7 +11,16 @@ const populated = query => query.populate("mainCategory", "name").populate("subC
 const listForMetal = metal => asyncHandler(async (req, res) => {
   const { search = "", mainCategory, subCategory, minPrice, maxPrice, sort, karat } = req.query;
   const filter = { isActive: true, metal }; if (mainCategory) filter.mainCategory = mainCategory; if (subCategory) filter.subCategory = subCategory;
-  let products = await Promise.all((await populated(Product.find(filter))).map(toProductResponse));
+  const documents = await populated(Product.find(filter));
+  // One legacy product with incomplete pricing must not make the entire public
+  // catalogue (and consequently the Best Seller section) disappear.
+  let products = await Promise.all(documents.map(async product => {
+    try { return await toProductResponse(product); }
+    catch (error) {
+      const raw = product.toObject();
+      return { ...raw, id: String(raw._id), Title: raw.title, Description: raw.description, Category: raw.subCategory?.name || "", "image_link-1": raw.images?.[0]?.url || "", "image_link-2": raw.images?.[1]?.url || "", "image_link-3": raw.images?.[2]?.url || "", Is_Best_Seller: raw.isBestSeller, Is_New_Product: raw.isNewProduct, prices: [], pricingError: error.message };
+    }
+  }));
   products = products.filter(product => !search || `${product.title} ${product.SKU}`.toLowerCase().includes(String(search).toLowerCase()));
 const selectedKarat = karat ? String(karat).toLowerCase() : null;
   if (selectedKarat && !["14kt", "18kt"].includes(selectedKarat)) throw new ApiError(400, "karat must be 14kt or 18kt");
@@ -74,9 +83,13 @@ const adminGetProduct = asyncHandler(async (req, res) => { const product = await
 const createProduct = asyncHandler(async (req, res) => { await validateCategories(req.body); const product = await Product.create({ ...req.body, slug: slugify(req.body.title) }); res.status(201).json(new ApiResponse(201, await toProductResponse(await populated(Product.findById(product._id))), "Product created")); });
 const updateProduct = asyncHandler(async (req, res) => { const current = await Product.findById(req.params.productId); if (!current) throw new ApiError(404, "Product not found"); const update = { ...req.body }; if (update.title) update.slug = slugify(update.title); if (update.mainCategory || update.subCategory || update.metal) await validateCategories({ ...current.toObject(), ...update }); const product = await Product.findByIdAndUpdate(current._id, update, { new: true, runValidators: true }); res.json(new ApiResponse(200, await toProductResponse(await populated(Product.findById(product._id))), "Product updated")); });
 const deleteProduct = asyncHandler(async (req, res) => { const product = await Product.findByIdAndDelete(req.params.productId); if (!product) throw new ApiError(404, "Product not found"); res.json(new ApiResponse(200, null, "Product deleted")); });
-const previewPrice = asyncHandler(async (req, res) => { const karats = req.body.metal === "silver" ? [undefined] : ["14kt", "18kt"]; res.json(new ApiResponse(200, await Promise.all(karats.map(karat => calculatePrice(req.body, karat, req.body.buyer || "B2C"))), "Price preview")); });
+const previewPrice = asyncHandler(async (req, res) => {
+  const karats = req.body.metal === "silver" ? [undefined] : ["14kt", "18kt"];
+  const prices = await Promise.all(karats.map(async karat => {
+    const [b2c, b2b] = await Promise.all([calculatePrice(req.body, karat, "B2C"), calculatePrice(req.body, karat, "B2B")]);
+    return { ...b2c, b2bFinalPrice: b2b.finalPrice };
+  }));
+  res.json(new ApiResponse(200, prices, "Price preview"));
+});
 const uploadImageHandler = asyncHandler(async (req, res) => { const url = await uploadToCloudinary(req.file, "tba-products", { quality: "auto", fetch_format: "auto", width: 1600, crop: "limit" }); res.status(201).json(new ApiResponse(201, { url }, "Image uploaded")); });
 module.exports = { listProducts, listGoldProducts, listSilverProducts, getProduct, adminListProducts, adminGetProduct, listPricingConfigs, updatePricingConfig, createProduct, updateProduct, deleteProduct, previewPrice, uploadImageHandler };
-
-
-

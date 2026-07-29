@@ -1,4 +1,4 @@
-﻿import React, { FormEvent, useEffect, useState, useMemo, useCallback } from "react";
+import React, { FormEvent, useEffect, useState, useMemo, useCallback } from "react";
 import { Navigate, NavLink, Route, Routes, useNavigate } from "react-router-dom";
 import { adminApi, type AdminUser, type BannerPayload, type Coupon, type ManagedUser, type B2BAccessStatus, type PricingConfig } from "../api/admin.api";
 import type { Banner } from "../api/banner.api";
@@ -820,7 +820,7 @@ function Categories() {
   const remove = async (id: string) => { if (!confirm("Delete category?")) return; try { await adminApi.deleteCategory(id); await load(); } catch (error) { setToast({ message: errorMessage(error), type: "error" }); } };
   const canDelete = (category: Category) => category.categoryKind !== "metal-root" && !items.some((item) => parentId(item) === category._id);
   const renderRow = (category: Category, nested = false) => <div key={category._id} className={`admin-row justify-between ${nested ? "ml-6 border-l-2 border-[var(--color-border)] pl-4" : ""}`}>
-    <div><p className="text-sm font-semibold text-[var(--color-charcoal)]">{nested && <span className="mr-2 text-[var(--color-text-muted)]" aria-hidden="true">â†³</span>}{category.name}</p><small>{nested ? "Sub Category" : "Main Category"} Â· Order: {category.displayOrder}</small></div>
+    <div><p className="text-sm font-semibold text-[var(--color-charcoal)]">{nested && <span className="mr-2 text-[var(--color-text-muted)]" aria-hidden="true">↳</span>}{category.name}</p><small>{nested ? "Sub Category" : "Main Category"} · Order: {category.displayOrder}</small></div>
     <div className="flex items-center gap-2"><Badge variant={category.isActive ? "success" : "neutral"}>{category.isActive ? "Active" : "Inactive"}</Badge><button onClick={() => startEdit(category)} className="cursor-pointer">Edit</button><button onClick={() => void toggle(category)} className="cursor-pointer">Toggle</button>{canDelete(category) && <button onClick={() => void remove(category._id)} className="text-red-700 cursor-pointer">Delete</button>}</div>
   </div>;
 
@@ -1024,5 +1024,3 @@ export default function AdminApp() {
     </Routes>
   );
 }
-
-

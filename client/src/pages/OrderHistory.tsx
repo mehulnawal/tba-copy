@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { apiRequest } from "../api/client";
 import Navbar from "../components/Navbar";
@@ -160,7 +160,7 @@ export default function OrderHistory() {
                                             <div>
                                                 <span className="font-secondary text-xs uppercase tracking-wider text-[var(--color-text-muted)] block">Total</span>
                                                 <span className="font-primary text-lg text-[var(--color-teal)] font-semibold">
-                                                    â‚¹{Math.round(o.amount).toLocaleString("en-IN")}
+                                                    ‚‚¹{Math.round(o.amount).toLocaleString("en-IN")}
                                                 </span>
                                             </div>
                                             <Link
@@ -193,4 +193,3 @@ export default function OrderHistory() {
         </>
     );
 }
-

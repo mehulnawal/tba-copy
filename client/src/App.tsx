@@ -1,4 +1,4 @@
-﻿import React, { useEffect } from "react";
+import React, { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 
 import Loader from "./components/Loader";
@@ -44,7 +44,7 @@ const Account = React.lazy(() => import("./pages/Account"));
 const B2BAccess = React.lazy(() => import("./pages/B2BAccess"));
 const B2BCatalog = React.lazy(() => import("./pages/B2BCatalog"));
 const B2BProductDetails = React.lazy(() => import("./pages/B2BProductDetails"));
-const Deferred = ({ children }: { children: React.ReactNode }) => <React.Suspense fallback={<div className="min-h-screen grid place-items-center text-[var(--color-text-muted)]">Loadingâ€¦</div>}>{children}</React.Suspense>;
+const Deferred = ({ children }: { children: React.ReactNode }) => <React.Suspense fallback={<div className="min-h-screen grid place-items-center text-[var(--color-text-muted)]">Loading€€¦</div>}>{children}</React.Suspense>;
 
 function RouteSeo() {
   const { pathname } = useLocation();
@@ -175,4 +175,3 @@ export default function App() {
     </ReactQueryProvider>
   );
 }
-

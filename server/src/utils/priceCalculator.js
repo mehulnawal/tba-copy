@@ -1,4 +1,4 @@
-﻿const CategoryPricingConfig = require("../models/categoryPricingConfig.model");
+const CategoryPricingConfig = require("../models/categoryPricingConfig.model");
 const Category = require("../models/category.model");
 const { calculateGoldPrice } = require("./goldPricing");
 const { calculateSilverPrice } = require("./silverPricing");
@@ -17,8 +17,11 @@ const resolveSettings = async product => {
     ? mainCategoryName
     : /lab[\s-]*grown/i.test(`${mainCategoryName} ${subCategoryName}`) ? "Lab Grown" : "Standard";
   if (!categoryType) throw new Error("Product category is required for pricing");
-  const settings = await CategoryPricingConfig.findOne({ metal, categoryType: new RegExp(`^${escapeRegex(categoryType)}$`, "i"), isActive: true }).lean();
-  if (!settings) throw new Error(`Active charge settings for ${metal} ${categoryType} are required`);
+  // A category-specific entry can refine pricing, but a product never needs a matching entry.
+  // Any active configuration for the selected metal is the universal fallback.
+  const settings = await CategoryPricingConfig.findOne({ metal, categoryType: new RegExp(`^${escapeRegex(categoryType)}$`, "i"), isActive: true }).lean()
+    || await CategoryPricingConfig.findOne({ metal, isActive: true }).sort({ createdAt: 1 }).lean();
+  if (!settings) throw new Error(`Active universal pricing settings for ${metal} are required`);
   return settings;
 };
 

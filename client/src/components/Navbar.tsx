@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -90,7 +90,7 @@ export default function Navbar({
   const { data: metalRates, isLoading: isMetalLoading, isError: isMetalError } = useMetalRates();
 
 
-  // â”€â”€ Close dropdowns on outside click â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // €”€€”€ Close dropdowns on outside click €”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (
@@ -104,7 +104,7 @@ export default function Navbar({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // â”€â”€ Escape key closes mobile menu â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // €”€€”€ Escape key closes mobile menu €”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") setIsMobileMenuOpen(false);
@@ -113,7 +113,7 @@ export default function Navbar({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  // â”€â”€ Handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // €”€€”€ Handlers €”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€
   const handleDismissAnnouncement = () => {
     setIsAnnouncementVisible(false);
     sessionStorage.setItem("tba_ann_closed", "true");
@@ -183,7 +183,7 @@ export default function Navbar({
 
   return (
     <div className="w-full flex flex-col bg-[var(--color-bg)]">
-      {/* â”€â”€ NON-STICKY SECTION (Announcement & Gold Bar) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* €”€€”€ NON-STICKY SECTION (Announcement & Gold Bar) €”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€ */}
       <div className="w-full">
         {/* ROW 1: ANNOUNCEMENT BAR */}
         <AnimatePresence>
@@ -233,7 +233,7 @@ export default function Navbar({
             <div className="flex items-center gap-2 shrink-0">
               <span className="pulse-dot" />
               <span className="font-semibold tracking-wider text-[11px] uppercase hidden sm:inline">
-                Today's Live Gold Rate (Per Gram)
+                Today's Live Rate
               </span>
               <span className="font-semibold tracking-wider text-[11px] uppercase sm:hidden">
                 Live Rates
@@ -254,18 +254,18 @@ export default function Navbar({
               ) : (
                 <div className="flex gap-3 md:gap-5 text-[12px] md:text-sm whitespace-nowrap">
                   <span className="tracking-wider">
-                    Gold 18K: <strong className="font-mono">{"\u20B9"}{Math.round((metalRates.gold24kt || 0) * 0.76).toLocaleString("en-IN")}</strong>
+                    Gold 24K: <strong className="font-mono">{"\u20B9"}{Math.round((metalRates.gold24kt || 0) * 0.76).toLocaleString("en-IN")}</strong>
                   </span>
-                  <span className="tracking-wider">
+                  {/* <span className="tracking-wider">
                     Gold 14K: <strong className="font-mono">{"\u20B9"}{Math.round((metalRates.gold24kt || 0) * 0.60).toLocaleString("en-IN")}</strong>
-                  </span>
+                  </span> */}
                   <span className="tracking-wider">
-                    Silver: <strong className="font-mono">{"\u20B9"}{Number(metalRates.silver || 0).toLocaleString("en-IN")}</strong>
+                    Silver (999): <strong className="font-mono">{"\u20B9"}{Number(metalRates.silver || 0).toLocaleString("en-IN")}</strong>
                   </span>
                 </div>
               )}
 
-              {metalRates?.updatedAt && (
+              {/* {metalRates?.updatedAt && (
                 <span className="text-[12px] text-[var(--color-text-muted)] shrink-0 hidden lg:inline">
                   Updated:{" "}
                   {new Date(metalRates.updatedAt).toLocaleTimeString([], {
@@ -273,13 +273,13 @@ export default function Navbar({
                     minute: "2-digit",
                   })}
                 </span>
-              )}
+              )} */}
             </div>
           </div>
         </div>
       </div>
 
-      {/* â”€â”€ STICKY SINGLE-ROW MAIN NAVBAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* €”€€”€ STICKY SINGLE-ROW MAIN NAVBAR €”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€ */}
       <div className="sticky top-0 z-[var(--z-sticky)] w-full">
         <div
           className="w-full bg-[var(--color-white)] border-b border-[var(--color-border-subtle)] shadow-sm"
@@ -469,7 +469,7 @@ export default function Navbar({
         </div>
       </div>
 
-      {/* â”€â”€ MOBILE MENU OVERLAY & ACCORDION DRAWER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* €”€€”€ MOBILE MENU OVERLAY & ACCORDION DRAWER €”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€ */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <>
@@ -534,8 +534,8 @@ export default function Navbar({
                                 transition={{ duration: 0.25 }}
                                 className="overflow-hidden flex flex-col pl-4 border-l border-white/20 mt-1 space-y-2 py-2"
                               >
-                                <button onClick={() => handleCategorySelect(null, item.metal)} className="text-left text-sm font-secondary tracking-wider uppercase py-1 cursor-pointer bg-transparent border-none text-white/70 hover:text-white">â€º All</button>
-                                {item.categories?.map((category) => category.children.length ? <div key={category.id} className="pt-2"><button onClick={() => handleCategorySelect(category, item.metal)} className="text-left text-sm font-secondary tracking-wider uppercase py-1 cursor-pointer bg-transparent border-none text-white font-bold">â€º {category.name}</button>{category.children.map((child) => <button key={child.id} onClick={() => handleCategorySelect({ ...child, parentId: category.id }, item.metal)} className="block text-left text-xs font-secondary tracking-wider uppercase py-1 pl-4 cursor-pointer bg-transparent border-none text-white/70 hover:text-white">â€º {child.name}</button>)}</div> : <button key={category.id} onClick={() => handleCategorySelect({ ...category, parentId: item.categoryId }, item.metal)} className="text-left text-sm font-secondary tracking-wider uppercase py-1 cursor-pointer bg-transparent border-none text-white/70 hover:text-white">â€º {category.name}</button>)}
+                                <button onClick={() => handleCategorySelect(null, item.metal)} className="text-left text-sm font-secondary tracking-wider uppercase py-1 cursor-pointer bg-transparent border-none text-white/70 hover:text-white">€€º All</button>
+                                {item.categories?.map((category) => category.children.length ? <div key={category.id} className="pt-2"><button onClick={() => handleCategorySelect(category, item.metal)} className="text-left text-sm font-secondary tracking-wider uppercase py-1 cursor-pointer bg-transparent border-none text-white font-bold">€€º {category.name}</button>{category.children.map((child) => <button key={child.id} onClick={() => handleCategorySelect({ ...child, parentId: category.id }, item.metal)} className="block text-left text-xs font-secondary tracking-wider uppercase py-1 pl-4 cursor-pointer bg-transparent border-none text-white/70 hover:text-white">€€º {child.name}</button>)}</div> : <button key={category.id} onClick={() => handleCategorySelect({ ...category, parentId: item.categoryId }, item.metal)} className="text-left text-sm font-secondary tracking-wider uppercase py-1 cursor-pointer bg-transparent border-none text-white/70 hover:text-white">€€º {category.name}</button>)}
                               </motion.div>
                             )}
                           </AnimatePresence>
@@ -565,4 +565,3 @@ export default function Navbar({
     </div>
   );
 }
-

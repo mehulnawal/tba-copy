@@ -668,4 +668,48 @@ WhatsApp OTP + Cart Reminder aur Admin UI redesign is list mein NAHI hain — wo
 - Admin Panel UI/UX redesign (P4) — cosmetic pass, sabse last
 
 
+Gross weight - Diamond weight = net weight (gm)
+5ct = 1 gm = diamond wight ka formual 
 
+
+
+**GOLD =** 
+***B2C***
+First enter 24k gold value, making charges, certificate charges
+from it 14k, 18k values 
+
+Gold Value - Gold Rate × Gross Weight
+Making charges - Net Weight × Universal Making Rate
+Each Diamond value = ct * rate
+certificate charges = Total Diamond Weight × Certificate Rate
+GST = 3% * (Gold Value + Making charges + Total Diamond values + Certificate charges )
+Final price = Gold Value + Making charges + Total Diamond values + Certificate charges + GST
+
+***B2B***
+Making Charge = -50
+Baki sab same logic hai 
+
+**SILVER =**
+
+***B2C***
+First enter: Fine Silver Rate, Silver-Moissanite Making Rate, Silver-Polki Making Rate, Moissanite Rate Per Carat, 
+
+For Moissanite Products
+Silver Value = Fine Silver Rate × Gross Weight
+Making Charges = Gross Weight × Silver-Moissanite Making Rate
+Moissanite Value = Moissanite Carat Weight × Universal Moissanite Rate
+GST = 3% × (Silver Value + Making Charges + Moissanite Value)
+Final Price = Silver Value + Making Charges + Moissanite Value + GST
+
+
+For Polki Products
+Silver Value = Fine Silver Rate × Gross Weight
+Making Charges = Gross Weight × Silver-Polki Making Rate
+Polki Value = (Pending – client to provide final pricing formula)
+GST = 3% × (Silver Value + Making Charges + Polki Value)
+Final Price = Silver Value + Making Charges + Polki Value + GST
+
+***B2B***
+Pending
+Silver B2B pricing has not yet been finalized by the client.
+No separate B2B pricing logic should be implemented until approved.

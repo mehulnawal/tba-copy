@@ -1,4 +1,4 @@
-﻿import storeImg from "../assets/map/store_banner_homepage.webp";
+import storeImg from "../assets/map/store_banner_homepage.webp";
 
 export default function VisitStore() {
     return (
@@ -20,7 +20,7 @@ export default function VisitStore() {
             {/* Top: Image + Content */}
             <div className="grid grid-cols-1 sm:grid-cols-2 min-h-[380px]">
 
-                {/* Left â€” Store Image */}
+                {/* Left — Store Image */}
                 <div className="relative overflow-hidden min-h-[220px] sm:min-h-[380px]">
                     <img
                         src={storeImg}
@@ -48,12 +48,12 @@ export default function VisitStore() {
                         >
                             {/* Blinking dot */}
                             <span className="w-1.5 h-1.5 rounded-full bg-[#dbd5b5] animate-pulse" />
-                            Open Today Â· 10AM â€“ 8PM
+                            Open Today · 10AM – 8PM
                         </span>
                     </div>
                 </div>
 
-                {/* Right â€” Content */}
+                {/* Right — Content */}
                 <div
                     className="flex flex-col justify-center gap-8 px-8 md:px-12 py-12 sm:py-14"
                     style={{ borderLeft: "1px solid rgba(219,213,181,0.1)" }}
@@ -66,7 +66,7 @@ export default function VisitStore() {
                         margin: 0,
                         fontWeight: 600,
                     }}>
-                        The Brilliance Atelier Â· Surat
+                        The Brilliance Atelier · Surat
                     </p>
 
                     <h2
@@ -89,7 +89,7 @@ export default function VisitStore() {
                             letterSpacing: "0.02em",
                             marginTop: "4px",
                         }}>
-                            â€” come find yours.
+                            — come find yours.
                         </span>
                     </h2>
 
@@ -118,7 +118,7 @@ export default function VisitStore() {
 
                     {/* CTAs */}
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 mt-2">
-                        {/* Primary CTA â€” swap href to actual Google Maps URL */}
+                        {/* Primary CTA — swap href to actual Google Maps URL */}
                         <a
                             href="#"
                             target="_blank"
@@ -143,7 +143,7 @@ export default function VisitStore() {
                             </svg>
                         </a>
 
-                        {/* Secondary CTA â€” swap href to actual phone number */}
+                        {/* Secondary CTA — swap href to actual phone number */}
                         <a
                             href={import.meta.env.VITE_STORE_PHONE ? `tel:${import.meta.env.VITE_STORE_PHONE}` : "#"} aria-disabled={!import.meta.env.VITE_STORE_PHONE}
                             className="no-underline transition-all duration-300"
