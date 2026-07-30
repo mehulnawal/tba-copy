@@ -22,9 +22,9 @@ type Review = {
 
 function getSwatchHexColor(colorName: string): string {
     const normalized = colorName.toLowerCase();
+    if (normalized.includes("white") || normalized.includes("silver") || normalized.includes("platinum")) return "#F3F4F6";
     if (normalized.includes("rose") || normalized.includes("pink")) return "#E0A899";
     if (normalized.includes("yellow") || normalized.includes("gold")) return "#E5C158";
-    if (normalized.includes("white") || normalized.includes("silver") || normalized.includes("platinum")) return "#F3F4F6";
     return "#FFF";
 }
 

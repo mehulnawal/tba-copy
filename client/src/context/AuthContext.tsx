@@ -32,14 +32,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(refreshedUser);
       return refreshedUser;
     } catch {
-      try {
-        const currentUser = await authApi.getMe();
-        setUser(currentUser);
-        return currentUser;
-      } catch {
-        setUser(null);
-        return null;
-      }
+      setUser(null);
+      return null;
     }
   }, []);
 

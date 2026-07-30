@@ -259,6 +259,7 @@ export default function HomePage() {
                 activeCategory={activeCategory}
                 onCategoryChange={setActiveCategory}
                 onAuthOpen={(returnTo) => { setAuthReturnTo(returnTo || ""); setIsAuthOpen(true); }}
+                showMobileSearch={false}
             />
 
             <main className="flex-1 w-full flex flex-col gap-0">

@@ -25,11 +25,13 @@ export default function Navbar({
   activeCategory,
   onCategoryChange,
   onAuthOpen,
+  showMobileSearch = true,
 }: {
   onSearchChange: (query: string) => void;
   activeCategory: string;
   onCategoryChange: (category: string) => void;
   onAuthOpen?: (returnTo?: string) => void;
+  showMobileSearch?: boolean;
 }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -439,7 +441,7 @@ export default function Navbar({
         </div>
 
         {/* MOBILE SEARCH BAR */}
-        <div className="lg:hidden w-full bg-[var(--color-white)] border-b border-[var(--color-border-subtle)] py-2">
+        {showMobileSearch && <div className="lg:hidden w-full bg-[var(--color-white)] border-b border-[var(--color-border-subtle)] py-2">
           <div className="container px-4 sm:px-6">
             <div className="flex items-center gap-2 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-full px-3 py-1.5">
               <Search size={13} className="text-[var(--color-text-muted)] shrink-0" />
@@ -461,7 +463,7 @@ export default function Navbar({
               )}
             </div>
           </div>
-        </div>
+        </div>}
       </div>
 
       <AnimatePresence>

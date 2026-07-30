@@ -308,7 +308,7 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
               <div className="space-y-1.5"><div className="flex items-center justify-between"><label className="font-secondary text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] font-medium block">OTP</label><button type="button" onClick={() => showToast(phone ? "OTP sending will be available soon." : "Enter a mobile number first.", "info")} className="font-secondary text-[11px] text-[var(--color-teal)] hover:underline">Send OTP</button></div><input type="text" inputMode="numeric" value={otp} onChange={(e) => setOtp(e.target.value)} placeholder="Enter OTP" className="w-full bg-[var(--color-bg-secondary)] border border-[var(--color-border)] py-2.5 px-4 font-secondary text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)]/50 focus:outline-none focus:border-[var(--color-teal)] transition-colors" /></div>
             </>
           )}
-          {authMode === "login" && (
+          {authMode === "login" && loginMethod === "email" && (
             <div className="text-right">
               <button
                 type="button"
