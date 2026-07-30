@@ -232,7 +232,7 @@ export default function Navbar({
                 Today's Live Rate
               </span>
               <span className="font-semibold tracking-wider text-[11px] uppercase sm:hidden">
-                Live Rates
+                Today's Live Rates
               </span>
             </div>
 

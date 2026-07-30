@@ -69,7 +69,7 @@ const FAQS: FAQ[] = [
     {
         id: "2",
         question: "Are Lab Grown Diamonds real?",
-        answer: "Yes, lab-grown diamonds are 100% real diamonds. A diamond is categorized by its chemical structure and composition—not its origin. Both lab-grown and mined diamonds possess the exact same crystalline structure of pure carbon atoms, ensuring that they share the identical properties of genuine diamonds."
+        answer: "A diamond is categorized by its chemical structure and composition—not its origin. Both lab-grown and mined diamonds possess the exact same crystalline structure of pure carbon atoms, ensuring that they share the identical properties of genuine diamonds."
     },
     {
         id: "3",
@@ -78,8 +78,8 @@ const FAQS: FAQ[] = [
     },
     {
         id: "4",
-        question: "Are Lab-Grown Diamonds worth buying and do you offer buyback?",
-        answer: "Absolutely. Lab-grown diamonds are worth buying because they are real diamonds that last forever. Just like traditional jewellers offer terms on natural diamonds, TBA offers a reliable value-assurance policy including an 80% buyback and a 100% exchange policy on our lab-grown diamond collections."
+        question: "Are Lab-Grown Diamonds worth buying?",
+        answer: "Absolutely. Lab-grown diamonds are worth buying because they are LIKE real diamonds that last forever. TBA offers wholesale price to the customers, beacuse of whoch it is not reasonablr to provide buy back. exchange can be done at any point of time."
     },
     {
         id: "5",
@@ -89,7 +89,7 @@ const FAQS: FAQ[] = [
     {
         id: "6",
         question: "Are Lab-Grown Diamonds graded and certified?",
-        answer: "Yes. Lab-grown diamonds undergo the same rigorous grading procedures as mined diamonds. They are certified by leading global gemological laboratories, such as IGI, SGL, and EGL. Every single lab-grown diamond piece used by TBA is carefully graded and certified by these renowned, third-party organizations."
+        answer: "Yes. Lab-grown diamonds undergo the same rigorous grading procedures as mined diamonds. They are certified by leading global gemological laboratories, such as IGI, SGL, and GCI. Every single lab-grown diamond piece used by TBA is carefully graded and certified by these renowned, third-party organizations."
     },
     {
         id: "7",
@@ -333,16 +333,13 @@ export default function HomePage() {
                     </div>
                 </section>
 
-                <section className="bg-[var(--color-bg)] px-4 pb-6 pt-2 text-center md:px-6">
-                    <h1 className="font-primary text-3xl text-[var(--color-teal)] sm:text-4xl">Fine Gold, Silver &amp; Lab Grown Diamond Jewellery</h1>
-                </section>
                 {/* 2. PrimeSelection Component */}
                 <PrimeSelection />
 
                 {/* 3. Best Seller Showcase */}
                 {bestSellerProducts.length > 0 && <section className="reveal-section py-3 bg-[var(--color-bg)]" id="collection-grid">
                     <div className="container">
-                        <div className="flex flex-col items-center mb-16 text-center">
+                        <div className="flex flex-col items-center mb-5 text-center">
                             <span className="section-label">Selected Statement Masterpieces</span>
                             <h2 className="font-primary text-3xl md:text-4xl text-[var(--color-text)] tracking-wide font-light">
                                 The Best Seller Showcase
@@ -368,14 +365,12 @@ export default function HomePage() {
                 {/* 5. Testimonials static section */}
                 <section className="section-padding bg-[var(--color-bg)] overflow-hidden" id="testimonials-section">
                     <div className="container flex flex-col items-center gap-12">
-                        <div className="text-center reveal-section">
+                        <div className="flex flex-col items-center mb-5 text-center">
                             <span className="section-label">Testimonials</span>
-                            <h2 className="text-4xl md:text-5xl font-primary text-[var(--color-teal)] font-normal tracking-wide">
+                            <h2 className="font-primary text-3xl md:text-4xl text-[var(--color-text)] tracking-wide font-light">
                                 Customer Reviews
                             </h2>
-                            <p className="mt-3 font-secondary text-sm text-[var(--color-text-muted)] max-w-lg mx-auto">
-                                Read the stories from our clients who have acquired pieces of unmatched brilliance.
-                            </p>
+                            <div className="w-12 h-[1px] bg-[var(--color-cream)] mt-4" />
                         </div>
 
                         <div className="w-full max-w-2xl relative flex flex-col items-center reveal-section min-h-[300px]">

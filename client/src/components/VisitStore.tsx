@@ -89,14 +89,14 @@ export default function VisitStore() {
                             letterSpacing: "0.02em",
                             marginTop: "4px",
                         }}>
-                            — come find yours.
+                            - come find yours.
                         </span>
                     </h2>
 
                     {/* Info Pills */}
                     <div className="flex flex-wrap gap-2">
                         {[
-                            { icon: "ðŸ“", label: "Surat, Gujarat" },
+                            { icon: "", label: "Surat, Gujarat" },
                         ].map((item) => (
                             <span
                                 key={item.label}
@@ -120,7 +120,7 @@ export default function VisitStore() {
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 mt-2">
                         {/* Primary CTA — swap href to actual Google Maps URL */}
                         <a
-                            href="#"
+                            href="https://maps.app.goo.gl/ShPZbLJnxrnBdHEE9"
                             target="_blank"
                             rel="noopener noreferrer"
                             aria-label="Get directions to TBA store on Google Maps"
@@ -144,7 +144,7 @@ export default function VisitStore() {
                         </a>
 
                         {/* Secondary CTA — swap href to actual phone number */}
-                        <a
+                        {/* <a
                             href={import.meta.env.VITE_STORE_PHONE ? `tel:${import.meta.env.VITE_STORE_PHONE}` : "#"} aria-disabled={!import.meta.env.VITE_STORE_PHONE}
                             className="no-underline transition-all duration-300"
                             style={{
@@ -166,7 +166,7 @@ export default function VisitStore() {
                             }}
                         >
                             Call Us Instead
-                        </a>
+                        </a> */}
                     </div>
                 </div>
             </div>

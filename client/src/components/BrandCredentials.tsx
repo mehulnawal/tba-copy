@@ -3,6 +3,7 @@ import { Shield, Award } from "lucide-react";
 
 import cert1 from "../assets/whyChooseUs/IGILogo.png";
 import cert2 from "../assets/whyChooseUs/sglLogo.png";
+import cert3 from "../assets/whyChooseUs/gciLogo.png";
 
 
 export default function BrandPromise() {
@@ -27,18 +28,29 @@ export default function BrandPromise() {
             icon: <Shield className="w-5 h-5 text-[var(--color-cream)]" />,
             align: "md:pt-12" // Displace slightly lower for a designer boutique feel
         },
+        {
+            id: 3,
+            num: "03",
+            title: "Gemological Centers Identification (GCI)",
+            subtitle: "International Gemological Institute (IGI)",
+            desc: "Every single diamond is meticulously screened to authenticate precision grading on the global 4Cs matrix.",
+            img: cert3,
+            icon: <Award className="w-5 h-5 text-[var(--color-cream)]" />,
+            align: "md:pt-0" // Natural staggered alignment
+        },
     ];
 
     return (
         <>
-            {/* Part 1: Why Choose Us (Existing Cards) */}
+            {/* Part 1: Why Choose Us */}
             <section className="bg-[var(--color-bg-secondary)]" id="brand-promise-section">
                 <div className="section-padding container">
-                    <div className="text-center mb-16 reveal-section">
+                    <div className="flex flex-col items-center mb-5 text-center">
                         <span className="section-label">Our Promise</span>
-                        <h2 className="text-4xl md:text-5xl font-primary text-[var(--color-teal)] font-normal tracking-wide">
+                        <h2 className="font-primary text-3xl md:text-4xl text-[var(--color-text)] tracking-wide font-light">
                             Why Choose TBA
                         </h2>
+                        <div className="w-12 h-[1px] bg-[var(--color-cream)] mt-4" />
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 max-w-5xl mx-auto">
@@ -77,7 +89,7 @@ export default function BrandPromise() {
                     <div className="container max-w-5xl mx-auto px-4 relative z-10">
 
                         {/* Section Header */}
-                        <div className="text-center mb-16 md:mb-10">
+                        <div className="text-center mb-7 md:mb-5">
                             <span className="text-[var(--color-cream)] font-secondary text-[10px] md:text-xs tracking-[0.35em] uppercase block mb-3">
                                 Guaranteed Authenticity
                             </span>
@@ -114,9 +126,9 @@ export default function BrandPromise() {
                                     </div>
 
                                     {/* Subtitle */}
-                                    <span className="font-primary italic text-[var(--color-cream)] text-sm opacity-90 block mb-3">
+                                    {/* <span className="font-primary italic text-[var(--color-cream)] text-sm opacity-90 block mb-3">
                                         {item.subtitle}
-                                    </span>
+                                    </span> */}
 
                                     {/* Paragraph Description */}
                                     <p className="font-secondary text-xs text-white/70 leading-relaxed font-light mb-6 max-w-xs">

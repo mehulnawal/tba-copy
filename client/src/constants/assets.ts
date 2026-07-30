@@ -43,7 +43,7 @@ export const AVATAR_ASSETS = {
 } as const;
 
 export const SOCIAL_LINKS = {
-  whatsapp: "https://wa.me/+918780316413",
+  whatsapp: "https://wa.me/+918160797411",
   instagram: "https://instagram.com/tbajewels",
 } as const;
 

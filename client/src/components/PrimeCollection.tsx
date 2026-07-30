@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ShoppingBag, ChevronLeft, ChevronRight } from "lucide-react";
-import primeCollection from '../assets/primeCollection/img1.webp';
+import primeCollection from '../assets/primeCollection/img1.png';
 
 interface Product {
     id: string;
@@ -35,9 +35,9 @@ const PRIME_LOOKS: Look[] = [
             {
                 id: "spot-necklace",
                 x: 49.5,
-                y: 64.0,
+                y: 54.0,
                 anchorX: 49.5,
-                anchorY: 82.0,
+                anchorY: 72.0,
                 label: "Diamond Tier Necklace",
                 products: [
                     {
@@ -155,9 +155,10 @@ export default function PrimeSelection() {
             <div className="container mx-auto px-4 flex flex-col items-center w-full">
 
                 {/* Section Titles */}
-                <div className="flex flex-col items-center mb-6 text-center">
+                <div className="flex flex-col items-center mb-5 text-center">
+                    <span className="section-label">Selected Statement Masterpieces</span>
                     <h2 className="font-primary text-3xl md:text-4xl text-[var(--color-text)] tracking-wide font-light">
-                        Prime Collection
+                        Prime collection
                     </h2>
                     <div className="w-12 h-[1px] bg-[var(--color-cream)] mt-4" />
                 </div>
