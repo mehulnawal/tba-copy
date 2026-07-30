@@ -3,7 +3,7 @@ import logo from "../assets/logo/logo.png";
 
 type StructuredData = Record<string, unknown> | Array<Record<string, unknown>>;
 type SeoProps = { title: string; description: string; image?: string; type?: "website" | "product"; noIndex?: boolean; structuredData?: StructuredData };
-const configuredSiteUrl = import.meta.env.VITE_SITE_URL || "https://thebrillianceatelier.com";
+const configuredSiteUrl = "https://www.thebrillianceatelier.com";
 
 function absoluteUrl(value: string, siteUrl: string) {
   try { return new URL(value, siteUrl).href; } catch { return siteUrl; }

@@ -49,10 +49,10 @@ const Deferred = ({ children }: { children: React.ReactNode }) => <React.Suspens
 function RouteSeo() {
   const { pathname } = useLocation();
   const pages: Array<{ match: (path: string) => boolean; title: string; description: string; noIndex?: boolean }> = [
-    { match: (path) => path === "/", title: "TBA Jewelry | Fine Gold, Silver & Diamond Jewellery", description: "Discover TBA Jewelry collections of fine gold, silver, diamond and custom-crafted jewellery." },
+    { match: (path) => path === "/", title: "The Brilliance Atelier | Gold, Silver & Lab Grown Diamond Jewellery", description: "Shop fine gold, silver and lab grown diamond jewellery at The Brilliance Atelier. Explore elegant rings, earrings, necklaces and custom jewellery designs." },
     { match: (path) => path === "/products", title: "Gold Jewellery Collection | TBA Jewelry", description: "Browse TBA's curated gold jewellery collection, including rings, earrings, necklaces and bracelets." },
-    { match: (path) => path === "/gold-jewellery", title: "Gold Jewellery | TBA Jewelry", description: "Explore TBA gold jewellery crafted in available karats, colours and sizes." },
-    { match: (path) => path === "/silver-jewellery", title: "Silver Jewellery | TBA Jewelry", description: "Explore TBA silver jewellery, including Moissanite and Polki collections." },
+    { match: (path) => path === "/gold-jewellery", title: "Gold Jewellery Online | Rings, Earrings & Necklaces | TBA", description: "Explore gold jewellery online at The Brilliance Atelier, including gold rings, earrings, necklaces and bracelets in elegant modern designs." },
+    { match: (path) => path === "/silver-jewellery", title: "Silver Jewellery Online | Rings, Earrings & Necklaces | TBA", description: "Shop silver jewellery online at The Brilliance Atelier. Discover silver rings, earrings, necklaces, Moissanite and Polki jewellery collections." },
     { match: (path) => path.startsWith("/product/"), title: "Jewellery Details | TBA Jewelry", description: "View jewellery specifications, available options and the complete price breakup at TBA Jewelry." },
     { match: (path) => path === "/wishlist", title: "Wishlist | TBA Jewelry", description: "Review your saved TBA Jewelry pieces and return to them whenever you are ready." },
     { match: (path) => path === "/cart", title: "Shopping Cart | TBA Jewelry", description: "Review your selected TBA Jewelry items before checkout." },
@@ -116,7 +116,7 @@ export default function App() {
                 }
               />
 
-              <Route path="/products" element={<Deferred><ProductsPage metal="gold" /></Deferred>} />
+              <Route path="/products" element={<Navigate to="/gold-jewellery" replace />} />
               <Route path="/gold-jewellery" element={<Deferred><ProductsPage metal="gold" /></Deferred>} />
               <Route path="/silver-jewellery" element={<Deferred><ProductsPage metal="silver" /></Deferred>} />
               <Route path="/product/:slug" element={<Deferred><ProductDetailPage /></Deferred>} />

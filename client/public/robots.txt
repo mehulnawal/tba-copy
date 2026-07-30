@@ -10,4 +10,4 @@ Disallow: /orders
 Disallow: /orderConfirmation
 Disallow: /reset-password
 
-Sitemap: https://thebrillianceatelier.com/sitemap.xml
+Sitemap: https://www.thebrillianceatelier.com/sitemap.xml

@@ -149,8 +149,10 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
                 <div className="catalog-title-bar border-b pb-5 sm:flex sm:items-center sm:justify-between">
                     <div>
                         <h1 className="text-3xl font-serif font-semibold tracking-tight text-gray-900">{metal === "gold" ? "Gold Jewellery" : "Silver Jewellery"}</h1>
-                        <p className="mt-2 text-sm text-gray-500">
-                            {metal === "gold" ? "Explore our dedicated gold collection." : "Explore our dedicated silver collection."}
+                        <p className="mt-2 max-w-3xl text-sm leading-6 text-gray-500">
+                            {metal === "gold"
+                                ? "Explore fine gold jewellery online at The Brilliance Atelier, thoughtfully selected for everyday elegance and memorable occasions. Our collection brings together modern gold rings, refined gold earrings, graceful gold necklaces and versatile gold bracelets, with details designed to complement your personal style. Whether you are choosing a meaningful gift or adding a signature piece to your collection, discover fine gold jewellery that balances timeless craftsmanship with a contemporary finish. Browse styles made for celebrations, daily wear and everything in between."
+                                : "Shop silver jewellery online at The Brilliance Atelier for pieces that bring modern polish to everyday dressing and special occasions. Discover silver rings, silver earrings, silver necklaces and versatile silver jewellery designed with thoughtful detail. The collection also includes distinctive Moissanite jewellery and Polki jewellery for those seeking extra sparkle, texture and character. Whether you are finding a gift or choosing a new signature piece, explore elegant designs that make silver jewellery easy to wear, layer and enjoy."}
                         </p>
                     </div>
                     <div className="mt-3 sm:mt-0 sm:ml-4">

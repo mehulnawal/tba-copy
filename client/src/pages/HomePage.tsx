@@ -333,6 +333,9 @@ export default function HomePage() {
                     </div>
                 </section>
 
+                <section className="bg-[var(--color-bg)] px-4 pb-6 pt-2 text-center md:px-6">
+                    <h1 className="font-primary text-3xl text-[var(--color-teal)] sm:text-4xl">Fine Gold, Silver &amp; Lab Grown Diamond Jewellery</h1>
+                </section>
                 {/* 2. PrimeSelection Component */}
                 <PrimeSelection />
 
