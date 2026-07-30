@@ -41,7 +41,8 @@ const configuredClientOrigins = [process.env.CLIENT_URL, process.env.CLIENT_URL_
 app.use(
   cors({
     origin(origin, callback) {
-      if (!origin || allowedOrigins.has(origin)) return callback(null, true);
+      const isDevelopmentLanOrigin = process.env.NODE_ENV !== "production" && /^http:\/\/(?:localhost|127\.0\.0\.1|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}):\d+$/.test(origin || "");
+      if (!origin || allowedOrigins.has(origin) || isDevelopmentLanOrigin) return callback(null, true);
       return callback(new Error("CORS origin not allowed"));
     },
     credentials: true,

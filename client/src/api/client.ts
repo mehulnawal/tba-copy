@@ -1,4 +1,4 @@
-﻿export interface ApiSuccessResponse<T> {
+export interface ApiSuccessResponse<T> {
   statusCode: number;
   data: T;
   message: string;
@@ -25,7 +25,8 @@ export class ApiRequestError extends Error {
   }
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api/v1";
+const developmentApiBaseUrl = typeof window !== "undefined" ? `${window.location.protocol}//${window.location.hostname}:8000/api/v1` : "http://localhost:8000/api/v1";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || developmentApiBaseUrl;
 let adminRefreshInFlight: Promise<boolean> | null = null;
 let customerRefreshInFlight: Promise<boolean> | null = null;
 

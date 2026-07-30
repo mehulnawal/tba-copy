@@ -48,7 +48,7 @@ export default function VisitStore() {
                         >
                             {/* Blinking dot */}
                             <span className="w-1.5 h-1.5 rounded-full bg-[#dbd5b5] animate-pulse" />
-                            Open Today · 10AM – 8PM
+                            OPEN · MONDAY TO SATURDAY · 10AM – 8PM
                         </span>
                     </div>
                 </div>
@@ -177,7 +177,7 @@ export default function VisitStore() {
                 style={{ borderTop: "1px solid rgba(219,213,181,0.1)" }}
             >
                 {[
-                    { num: "10+", label: "Years of Craft" },
+                    { num: "10+", label: "YEARS PERFECTING THE CRAFT" },
                 ].map((stat, i) => (
                     <div
                         key={stat.label}

@@ -9,6 +9,7 @@ import { AuthModal } from "./AuthModal";
 import { useToast } from "../context/ToastContext";
 import { useAuth } from "../context/AuthContext";
 import type { Category, Product } from "../types";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const PRICE_BUCKETS = [
     { label: "Under INR 20,000", min: "0", max: "20000" },
@@ -179,11 +180,11 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
                                 >
                                     All Categories
                                 </button>
-                                {categories.map((cat) => (
+                                {categories.filter((cat) => cat.categoryKind !== "metal-root").map((cat) => (
                                     <button
                                         key={cat._id}
                                         onClick={() => selectCategory(cat)}
-                                        className={`block text-sm text-left w-full transition ${selectedSubCategory === cat._id || selectedMainCategory === cat._id ? "text-amber-700 font-semibold" : "text-gray-600 hover:text-gray-900"}`}
+                                        className={`block text-sm text-left w-full transition ${cat.categoryKind === "type" ? "font-semibold text-gray-900" : "ml-4 border-l border-gray-200 pl-3"} ${selectedSubCategory === cat._id || selectedMainCategory === cat._id ? "text-amber-700 font-semibold" : "text-gray-600 hover:text-gray-900"}`}
                                     >
                                         {cat.name}
                                     </button>
@@ -309,7 +310,7 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
                                 <div>
                                     <h3 className="text-sm font-semibold text-gray-900 mb-2">Categories</h3>
                                     {categories.map((c) => (
-                                        <button key={c._id} onClick={() => { selectCategory(c); setIsFilterMobileOpen(false); }} className={`block py-1 text-sm text-left w-full ${selectedSubCategory === c._id || selectedMainCategory === c._id ? "text-amber-700 font-bold" : "text-gray-600"}`}>
+                                        <button key={c._id} onClick={() => { selectCategory(c); setIsFilterMobileOpen(false); }} className={`block py-1 text-sm text-left w-full ${c.categoryKind === "type" ? "font-semibold text-gray-900" : "ml-4 border-l border-gray-200 pl-3"} ${selectedSubCategory === c._id || selectedMainCategory === c._id ? "text-amber-700 font-bold" : "text-gray-600"}`}>
                                             {c.name}
                                         </button>
                                     ))}
@@ -409,6 +410,7 @@ function ProductCard({ product, defaultKarat, onWishlistToggle }: { product: Pro
     const productPrices = Array.isArray(product.prices) ? product.prices : [];
     const targetPriceObj = productPrices.find((p) => p.karat === activeKarat) || productPrices[0];
     const displaysPrice = targetPriceObj ? Math.round(targetPriceObj.finalPrice) : 0;
+    const isSilver = product.metal === "silver";
 
     return (
         <div
@@ -445,7 +447,7 @@ function ProductCard({ product, defaultKarat, onWishlistToggle }: { product: Pro
                     </svg>
                 </button>
 
-                {displaysCarousel && (<><button type="button" onClick={() => setCurrentImgIndex((current) => (current - 1 + images.length) % images.length)} className="absolute left-3 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/90 px-3 py-2 text-sm text-gray-700 shadow" aria-label="Previous product image">Previous</button><button type="button" onClick={() => setCurrentImgIndex((current) => (current + 1) % images.length)} className="absolute right-3 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/90 px-3 py-2 text-sm text-gray-700 shadow" aria-label="Next product image">Next</button><div className="absolute inset-x-0 bottom-3 flex justify-center space-x-1.5 pointer-events-none">
+                {displaysCarousel && (<><button type="button" onClick={() => setCurrentImgIndex((current) => (current - 1 + images.length) % images.length)} className="absolute left-3 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/90 p-2 text-gray-700 shadow" aria-label="Previous product image"><ChevronLeft className="h-4 w-4" /></button><button type="button" onClick={() => setCurrentImgIndex((current) => (current + 1) % images.length)} className="absolute right-3 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/90 p-2 text-gray-700 shadow" aria-label="Next product image"><ChevronRight className="h-4 w-4" /></button><div className="absolute inset-x-0 bottom-3 flex justify-center space-x-1.5 pointer-events-none">
                         {images.map((_, idx) => (
                             <span
                                 key={idx}
@@ -469,12 +471,12 @@ function ProductCard({ product, defaultKarat, onWishlistToggle }: { product: Pro
                     <span className="text-base font-bold text-gray-900">
                         {"\u20B9"}{displaysPrice.toLocaleString("en-IN")}
                     </span>
-                    <span className="text-xs text-gray-400 font-normal">
+                    {!isSilver && <span className="text-xs text-gray-400 font-normal">
                         ({activeKarat})
-                    </span>
+                    </span>}
                 </div>
 
-                <div className="pt-3 mt-auto border-t border-gray-100 flex items-center justify-between">
+                {!isSilver && <div className="pt-3 mt-auto border-t border-gray-100 flex items-center justify-between">
                     <span className="text-[11px] font-medium text-gray-500">Purity:</span>
                     <div className="flex space-x-1">
                         {(["14kt", "18kt"] as const).map((kt) => {
@@ -496,7 +498,7 @@ function ProductCard({ product, defaultKarat, onWishlistToggle }: { product: Pro
                             );
                         })}
                     </div>
-                </div>
+                </div>}
             </div>
         </div>
     );

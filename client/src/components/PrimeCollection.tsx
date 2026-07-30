@@ -151,12 +151,12 @@ export default function PrimeSelection() {
     };
 
     return (
-        <section ref={containerRef} className="my-3 reveal-section py-12 bg-[var(--color-bg)] w-full relative" id="prime-selection-section">
+        <section ref={containerRef} className="my-0 reveal-section py-8 md:py-12 bg-[var(--color-bg)] w-full relative" id="prime-selection-section">
             <div className="container mx-auto px-4 flex flex-col items-center w-full">
 
                 {/* Section Titles */}
                 <div className="flex flex-col items-center mb-5 text-center">
-                    <span className="section-label">Selected Statement Masterpieces</span>
+                    <span className="section-label">CRAFTED FOR TIMELESS MOMENTS</span>
                     <h2 className="font-primary text-3xl md:text-4xl text-[var(--color-text)] tracking-wide font-light">
                         Prime collection
                     </h2>
@@ -259,7 +259,7 @@ export default function PrimeSelection() {
 
                     {/* DESKTOP HOUSING STRUCTURE: Vertically Centered, Height till content only, Locked inside Section Section boundary */}
                     {isDesktop && selectedHotspot && (
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2 w-[350px] z-40 pointer-events-none flex items-center">
+                        <div className="absolute right-6 top-1/2 -translate-y-1/2 w-[440px] xl:w-[500px] z-40 pointer-events-none flex items-center">
                             <AnimatePresence>
                                 {showDrawer && (
                                     <motion.div
@@ -268,7 +268,7 @@ export default function PrimeSelection() {
                                         animate={{ x: 0, opacity: 1 }}
                                         exit={{ x: "40px", opacity: 0 }}
                                         transition={{ type: "spring", damping: 30, stiffness: 240 }}
-                                        className="bg-white w-full h-auto max-h-[90%] rounded-xl p-5 shadow-2xl border border-zinc-100/80 pointer-events-auto flex flex-col z-50"
+                                        className="bg-white w-full h-auto max-h-[92%] rounded-xl p-6 shadow-2xl border border-zinc-100/80 pointer-events-auto flex flex-col z-50"
                                     >
                                         <div className="mb-4 flex items-center justify-between border-b border-zinc-100 pb-3 shrink-0">
                                             <h3 className="font-secondary text-xs font-semibold tracking-wider uppercase text-zinc-800">
@@ -331,7 +331,7 @@ export default function PrimeSelection() {
                                 animate={{ y: 0 }}
                                 exit={{ y: "100%" }}
                                 transition={{ type: "spring", damping: 28, stiffness: 220 }}
-                                className="relative bg-white w-full h-[45%] max-h-[50vh] rounded-t-2xl p-5 shadow-[0_-8px_32px_rgba(0,0,0,0.15)] z-50 overflow-hidden flex flex-col"
+                                className="relative bg-white w-full max-h-[70dvh] rounded-t-2xl px-5 pb-5 pt-3 shadow-[0_-8px_32px_rgba(0,0,0,0.15)] z-50 overflow-hidden flex flex-col"
                             >
                                 <div className="w-12 h-1 bg-zinc-200 rounded-full mx-auto mb-4 shrink-0" />
 

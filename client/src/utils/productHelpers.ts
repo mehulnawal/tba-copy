@@ -45,7 +45,9 @@ export function adaptApiProductToUI(apiProduct: ApiProduct): Product {
     category: apiProduct.Category,
     karat: derivedKarat,
     image: apiProduct["image_link-1"],
+    images: Array.isArray(apiProduct.images) ? apiProduct.images : [],
     tags: tags,
+    prices: apiProduct.prices || [],
   };
 }
 
