@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /b2b/
+Disallow: /account
+Disallow: /auth
+Disallow: /cart
+Disallow: /checkout
+Disallow: /orders
+Disallow: /orderConfirmation
+Disallow: /reset-password
+
+Sitemap: https://thebrillianceatelier.com/sitemap.xml

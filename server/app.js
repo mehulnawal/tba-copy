@@ -1,4 +1,4 @@
-﻿require("dotenv").config();
+require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
@@ -26,6 +26,8 @@ const { apiLimiter } = require("./src/middlewares/rateLimiter.middleware");
 const ApiError = require("./src/utils/ApiError");
 
 const app = express();
+
+app.use((req, res, next) => { res.charset = 'utf-8'; next(); });
 
 app.set("trust proxy", 1);
 

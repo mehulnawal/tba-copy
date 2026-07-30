@@ -8,9 +8,24 @@ const { calculatePrice } = require("../utils/priceCalculator");
 const { uploadToCloudinary } = require("../utils/cloudinaryUpload");
 const CategoryPricingConfig = require("../models/categoryPricingConfig.model");
 const populated = query => query.populate("mainCategory", "name").populate("subCategory", "name");
+const sharedDiamondWeightGrams = diamonds => (Array.isArray(diamonds) ? diamonds : []).reduce((total, diamond) => total + Number(diamond?.caratWeight || 0), 0) / 5;
+const normalizeGoldWeights = (body, metal = body?.metal) => {
+  if (metal !== "gold" || !body?.grossWeight || typeof body.grossWeight !== "object" || Array.isArray(body.grossWeight)) return body;
+  const diamondWeight = sharedDiamondWeightGrams(body.diamonds);
+  const grossWeight = {};
+  const netWeight = {};
+  for (const karat of ["14kt", "18kt"]) {
+    const gross = Number(body.grossWeight[karat]);
+    if (!Number.isFinite(gross) || gross < 0) throw new ApiError(400, `${karat} gross weight must be a non-negative number`);
+    if (gross < diamondWeight) throw new ApiError(400, `${karat} gross weight cannot be less than the shared diamond weight`);
+    grossWeight[karat] = gross;
+    netWeight[karat] = gross - diamondWeight;
+  }
+  return { ...body, grossWeight, netWeight };
+};
 const listForMetal = metal => asyncHandler(async (req, res) => {
   const { search = "", mainCategory, subCategory, minPrice, maxPrice, sort, karat } = req.query;
-  const filter = { isActive: true, metal }; if (mainCategory) filter.mainCategory = mainCategory; if (subCategory) filter.subCategory = subCategory;
+  const filter = { isActive: true, metal }; if (subCategory) { filter.subCategory = subCategory; } else if (mainCategory) { const children = await Category.find({ parent: mainCategory }).select("_id").lean(); const childIds = children.map((category) => category._id); filter.$or = [{ mainCategory }, { subCategory: { $in: childIds } }]; }
   const documents = await populated(Product.find(filter));
   // One legacy product with incomplete pricing must not make the entire public
   // catalogue (and consequently the Best Seller section) disappear.
@@ -80,13 +95,14 @@ const updatePricingConfig = asyncHandler(async (req, res) => {
   res.json(new ApiResponse(200, config, "Charge settings updated"));
 });
 const adminGetProduct = asyncHandler(async (req, res) => { const product = await populated(Product.findById(req.params.productId)); if (!product) throw new ApiError(404, "Product not found"); res.json(new ApiResponse(200, await toProductResponse(product), "Product fetched")); });
-const createProduct = asyncHandler(async (req, res) => { await validateCategories(req.body); const product = await Product.create({ ...req.body, slug: slugify(req.body.title) }); res.status(201).json(new ApiResponse(201, await toProductResponse(await populated(Product.findById(product._id))), "Product created")); });
-const updateProduct = asyncHandler(async (req, res) => { const current = await Product.findById(req.params.productId); if (!current) throw new ApiError(404, "Product not found"); const update = { ...req.body }; if (update.title) update.slug = slugify(update.title); if (update.mainCategory || update.subCategory || update.metal) await validateCategories({ ...current.toObject(), ...update }); const product = await Product.findByIdAndUpdate(current._id, update, { new: true, runValidators: true }); res.json(new ApiResponse(200, await toProductResponse(await populated(Product.findById(product._id))), "Product updated")); });
+const createProduct = asyncHandler(async (req, res) => { const body = normalizeGoldWeights(req.body); await validateCategories(body); const product = await Product.create({ ...body, slug: slugify(body.title) }); res.status(201).json(new ApiResponse(201, await toProductResponse(await populated(Product.findById(product._id))), "Product created")); });
+const updateProduct = asyncHandler(async (req, res) => { const current = await Product.findById(req.params.productId); if (!current) throw new ApiError(404, "Product not found"); const update = normalizeGoldWeights({ ...req.body, grossWeight: req.body.grossWeight === undefined ? current.grossWeight : req.body.grossWeight, diamonds: req.body.diamonds === undefined ? current.diamonds : req.body.diamonds }, req.body.metal || current.metal); if (update.title) update.slug = slugify(update.title); if (update.mainCategory || update.subCategory || update.metal) await validateCategories({ ...current.toObject(), ...update }); const product = await Product.findByIdAndUpdate(current._id, update, { new: true, runValidators: true }); res.json(new ApiResponse(200, await toProductResponse(await populated(Product.findById(product._id))), "Product updated")); });
 const deleteProduct = asyncHandler(async (req, res) => { const product = await Product.findByIdAndDelete(req.params.productId); if (!product) throw new ApiError(404, "Product not found"); res.json(new ApiResponse(200, null, "Product deleted")); });
 const previewPrice = asyncHandler(async (req, res) => {
-  const karats = req.body.metal === "silver" ? [undefined] : ["14kt", "18kt"];
+  const previewProduct = normalizeGoldWeights(req.body);
+  const karats = previewProduct.metal === "silver" ? [undefined] : ["14kt", "18kt"];
   const prices = await Promise.all(karats.map(async karat => {
-    const [b2c, b2b] = await Promise.all([calculatePrice(req.body, karat, "B2C"), calculatePrice(req.body, karat, "B2B")]);
+    const [b2c, b2b] = await Promise.all([calculatePrice(previewProduct, karat, "B2C"), calculatePrice(previewProduct, karat, "B2B")]);
     return { ...b2c, b2bFinalPrice: b2b.finalPrice };
   }));
   res.json(new ApiResponse(200, prices, "Price preview"));

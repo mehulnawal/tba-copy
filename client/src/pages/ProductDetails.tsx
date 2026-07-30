@@ -24,7 +24,7 @@ function getSwatchHexColor(colorName: string): string {
     const normalized = colorName.toLowerCase();
     if (normalized.includes("rose") || normalized.includes("pink")) return "#E0A899";
     if (normalized.includes("yellow") || normalized.includes("gold")) return "#E5C158";
-    if (normalized.includes("white") || normalized.includes("silver") || normalized.includes("platinum")) return "#FFFFFF";
+    if (normalized.includes("white") || normalized.includes("silver") || normalized.includes("platinum")) return "#F3F4F6";
     return "#FFF";
 }
 
@@ -63,7 +63,7 @@ export default function ProductDetails() {
         apiRequest<Product>(`/products/${slug}`)
             .then((p) => {
                 setProduct(p);
-                const defaultColors = p.colors && p.colors.length > 0 ? p.colors : ["Yellow", "Rose", "White"];
+                const defaultColors = p.metal === "silver" ? (p.colors || ["White"]).filter((item) => !item.toLowerCase().includes("rose")) : (p.colors && p.colors.length > 0 ? p.colors : ["Yellow", "Rose", "White"]);
                 setColor(defaultColors[0]);
                 setSize("");
 
@@ -111,11 +111,30 @@ export default function ProductDetails() {
         return category._id ?? "";
     };
 
+    const isGold = product.metal === "gold";
+    const isRing = [categoryName(product.mainCategory), categoryName(product.subCategory)].some((name) => /ring/i.test(name));
     const mediaList = product.images.map((image) => ({ type: "image" as const, url: image.url }));
 
-    const availableColors = (product.colors && product.colors.length > 0)
-        ? (product.colors.some(c => c.toLowerCase().includes("white")) ? product.colors : [...product.colors, "White"])
-        : ["Yellow", "Rose", "White"];
+    const availableColors = (product.colors && product.colors.length > 0 ? product.colors : ["Yellow", "Rose", "White"]).filter((finish) => isGold || !finish.toLowerCase().includes("rose"));
+    const siteUrl = (import.meta.env.VITE_SITE_URL || "https://thebrillianceatelier.com").replace(/\/+$/, "");
+    const productPath = `/product/${product.slug || slug}`;
+    const productSchema = {
+        "@context": "https://schema.org", "@type": "Product", name: product.title,
+        description: product.description || `TBA Jewelry ${product.title}`, sku: product.SKU,
+        image: product.images.map((item) => item.url),
+        brand: { "@type": "Brand", name: "TBA Jewelry" },
+        category: [categoryName(product.mainCategory), categoryName(product.subCategory)].filter(Boolean).join(" > "),
+        material: isGold ? "Gold" : "Silver",
+        offers: { "@type": "Offer", priceCurrency: "INR", price: Number(activePriceObj.finalPrice || 0).toFixed(2), availability: "https://schema.org/InStock", url: `${siteUrl}${productPath}`, itemCondition: "https://schema.org/NewCondition" },
+    };
+    const breadcrumbSchema = {
+        "@context": "https://schema.org", "@type": "BreadcrumbList",
+        itemListElement: [
+            { "@type": "ListItem", position: 1, name: "Home", item: siteUrl },
+            { "@type": "ListItem", position: 2, name: categoryName(product.mainCategory), item: `${siteUrl}/${isGold ? "gold-jewellery" : "silver-jewellery"}` },
+            { "@type": "ListItem", position: 3, name: product.title, item: `${siteUrl}${productPath}` },
+        ],
+    };
 
     // FIX 2: Fancy Diamond & Round Diamond display logic
     const roundCarat = product.diamond?.roundCarat ?? 0;
@@ -133,7 +152,7 @@ export default function ProductDetails() {
     };
 
     const handleAddToCart = async () => {
-        if (!size) {
+        if (isRing && !size) {
             showToast("Select a size before adding this product.", "error");
             return;
         }
@@ -169,8 +188,8 @@ export default function ProductDetails() {
 
     return (
         <>
-            <Seo title={`${product.title} | TBA Jewelry`} description={product.description || `Explore ${product.title} at TBA Jewelry, with product specifications and complete price details.`} />
-        <div className="min-h-screen bg-[#FAF9F6] text-stone-900 antialiased font-sans pb-28 md:pb-12">
+            <Seo title={`${product.title} | TBA Jewelry`} description={product.description || `Explore ${product.title} at TBA Jewelry, with product specifications and complete price details.`} image={product.images[0]?.url} type="product" structuredData={[productSchema, breadcrumbSchema]} />
+        <div className="min-h-screen bg-[#FAF9F6] text-stone-900 antialiased font-sans pb-0">
             <Navbar onSearchChange={() => { }} activeCategory="All" onCategoryChange={() => { }} />
 
             <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-6 pb-16">
@@ -265,7 +284,7 @@ export default function ProductDetails() {
                         </div>
 
                         {/* Purity Selection */}
-                        <div className="space-y-2">
+                        {isGold && <div className="space-y-2">
                             <label className="block text-xs uppercase tracking-widest font-semibold text-stone-600">
                                 Select Purity Standard: <span className="text-stone-900">{karat.toUpperCase()} Gold</span>
                             </label>
@@ -283,7 +302,7 @@ export default function ProductDetails() {
                                     </button>
                                 ))}
                             </div>
-                        </div>                        {/* Price Breakdown Component */}
+                        </div>}                        {/* Price Breakdown Component */}
                         <PriceBreakup product={product} price={activePriceObj} />
 
 
@@ -330,13 +349,13 @@ export default function ProductDetails() {
                             </div>
                         </div>
 
-                        <div className="space-y-2">
-                            <label htmlFor="ring-size" className="block text-xs uppercase tracking-widest font-semibold text-stone-600">Size</label>
+                        {isRing && <div className="space-y-2">
+                            <label htmlFor="ring-size" className="block text-xs uppercase tracking-widest font-semibold text-stone-600">Ring Size</label>
                             <select id="ring-size" value={size} onChange={(event) => setSize(event.target.value)} className="w-full rounded border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-800 focus:border-amber-800 focus:outline-none" aria-required="true">
                                 <option value="">Select size</option>
                                 {RING_SIZES.map((ringSize) => <option key={ringSize} value={ringSize}>{ringSize}</option>)}
                             </select>
-                        </div>
+                        </div>}
 
                         {/* CTA Buttons */}
                         <div className="flex gap-4 pt-2">

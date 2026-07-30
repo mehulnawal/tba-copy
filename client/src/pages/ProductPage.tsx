@@ -11,10 +11,10 @@ import { useAuth } from "../context/AuthContext";
 import type { Category, Product } from "../types";
 
 const PRICE_BUCKETS = [
-    { label: "Under ₹20,000", min: "0", max: "20000" },
-    { label: "₹20,000 - ₹50,000", min: "20000", max: "50000" },
-    { label: "₹50,000 - ₹1,000,000", min: "50000", max: "100000" },
-    { label: "Above ₹1,000,000", min: "100000", max: "99999999" },
+    { label: "Under INR 20,000", min: "0", max: "20000" },
+    { label: "INR 20,000 - INR 50,000", min: "20000", max: "50000" },
+    { label: "INR 50,000 - INR 1,000,000", min: "50000", max: "100000" },
+    { label: "Above INR 1,000,000", min: "100000", max: "99999999" },
 ];
 
 const KARAT_OPTIONS = [
@@ -133,7 +133,7 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
         }
     };
 
-    const filteredProducts = products.filter((product) => (!selectedMainCategory || categoryId(product.mainCategory) === selectedMainCategory) && (!selectedSubCategory || categoryId(product.subCategory) === selectedSubCategory));
+    const filteredProducts = products.filter((product) => (!selectedMainCategory || categoryId(product.mainCategory) === selectedMainCategory || (!selectedSubCategory && categoryId(product.subCategory) === selectedMainCategory)) && (!selectedSubCategory || categoryId(product.subCategory) === selectedSubCategory));
     const clearFilters = () => { setParams(new URLSearchParams()); };
 
     return (
@@ -368,7 +368,7 @@ function FilterSection({ title, children }: { title: string; children: React.Rea
             <button onClick={() => setIsOpen(!isOpen)} className="flex w-full items-center justify-between text-sm text-gray-400 hover:text-gray-500">
                 <span className="font-medium text-gray-900">{title}</span>
                 <span className="ml-6 flex items-center transform transition-transform duration-200 text-gray-600">
-                    {isOpen ? "−" : "+"}
+                    {isOpen ? "-" : "+"}
                 </span>
             </button>
             {isOpen && <div className="pt-4 transition-all duration-300">{children}</div>}
@@ -448,8 +448,7 @@ function ProductCard({ product, defaultKarat, onWishlistToggle }: { product: Pro
                     </svg>
                 </button>
 
-                {displaysCarousel && (
-                    <div className="absolute inset-x-0 bottom-3 flex justify-center space-x-1.5 pointer-events-none">
+                {displaysCarousel && (<><button type="button" onClick={() => setCurrentImgIndex((current) => (current - 1 + images.length) % images.length)} className="absolute left-3 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/90 px-3 py-2 text-sm text-gray-700 shadow" aria-label="Previous product image">Previous</button><button type="button" onClick={() => setCurrentImgIndex((current) => (current + 1) % images.length)} className="absolute right-3 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/90 px-3 py-2 text-sm text-gray-700 shadow" aria-label="Next product image">Next</button><div className="absolute inset-x-0 bottom-3 flex justify-center space-x-1.5 pointer-events-none">
                         {images.map((_, idx) => (
                             <span
                                 key={idx}
@@ -457,7 +456,7 @@ function ProductCard({ product, defaultKarat, onWishlistToggle }: { product: Pro
                             />
                         ))}
                     </div>
-                )}
+                </>)}
             </div>
 
             <div className="flex flex-1 flex-col p-4 space-y-2">
@@ -471,7 +470,7 @@ function ProductCard({ product, defaultKarat, onWishlistToggle }: { product: Pro
 
                 <div className="flex items-baseline space-x-1.5 pt-1">
                     <span className="text-base font-bold text-gray-900">
-                        ₹{displaysPrice.toLocaleString("en-IN")}
+                        {"\u20B9"}{displaysPrice.toLocaleString("en-IN")}
                     </span>
                     <span className="text-xs text-gray-400 font-normal">
                         ({activeKarat})

@@ -44,11 +44,11 @@ const Account = React.lazy(() => import("./pages/Account"));
 const B2BAccess = React.lazy(() => import("./pages/B2BAccess"));
 const B2BCatalog = React.lazy(() => import("./pages/B2BCatalog"));
 const B2BProductDetails = React.lazy(() => import("./pages/B2BProductDetails"));
-const Deferred = ({ children }: { children: React.ReactNode }) => <React.Suspense fallback={<div className="min-h-screen grid place-items-center text-[var(--color-text-muted)]">Loading€€¦</div>}>{children}</React.Suspense>;
+const Deferred = ({ children }: { children: React.ReactNode }) => <React.Suspense fallback={<div className="min-h-screen grid place-items-center text-[var(--color-text-muted)]">Loading...</div>}>{children}</React.Suspense>;
 
 function RouteSeo() {
   const { pathname } = useLocation();
-  const pages: Array<{ match: (path: string) => boolean; title: string; description: string }> = [
+  const pages: Array<{ match: (path: string) => boolean; title: string; description: string; noIndex?: boolean }> = [
     { match: (path) => path === "/", title: "TBA Jewelry | Fine Gold, Silver & Diamond Jewellery", description: "Discover TBA Jewelry collections of fine gold, silver, diamond and custom-crafted jewellery." },
     { match: (path) => path === "/products", title: "Gold Jewellery Collection | TBA Jewelry", description: "Browse TBA's curated gold jewellery collection, including rings, earrings, necklaces and bracelets." },
     { match: (path) => path === "/gold-jewellery", title: "Gold Jewellery | TBA Jewelry", description: "Explore TBA gold jewellery crafted in available karats, colours and sizes." },
@@ -72,8 +72,9 @@ function RouteSeo() {
     { match: (path) => path.startsWith("/admin/metal-rates"), title: "Metal Rates | TBA Admin", description: "Manage current TBA Jewelry metal rates." },
     { match: (path) => path.startsWith("/admin"), title: "Administration | TBA Jewelry", description: "Manage TBA Jewelry catalogue and store operations." },
   ];
-  const page = pages.find(({ match }) => match(pathname)) || { title: "Page Not Found | TBA Jewelry", description: "The requested TBA Jewelry page could not be found." };
-  return <Seo {...page} />;
+  const page: { title: string; description: string; noIndex?: boolean } = pages.find(({ match }) => match(pathname)) || { title: "Page Not Found | TBA Jewelry", description: "The requested TBA Jewelry page could not be found." };
+  const noIndex = ["/admin", "/b2b", "/wishlist", "/cart", "/checkout", "/account", "/orders", "/orderConfirmation", "/auth", "/reset-password"].some((path) => pathname === path || pathname.startsWith(`${path}/`));
+  return <Seo {...page} noIndex={noIndex || page.noIndex} />;
 }
 function ScrollToTop() {
   const { pathname } = useLocation();

@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { X, Mail, Lock, User, Phone, ArrowRight, Eye, EyeOff } from "lucide-react"; // Imported Eye and EyeOff icons
 import { useLocation, useNavigate } from "react-router-dom";
@@ -6,6 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { authApi } from "../api/auth.api";
 import { ApiRequestError } from "../api/client";
+import logo from "../assets/logo/logo.png";
 
 interface LuxuryAuthModalProps {
   isOpen: boolean;
@@ -27,6 +28,8 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [loginMethod, setLoginMethod] = useState<"email" | "otp">("email");
+  const [otp, setOtp] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false); // Visibility state for password
 
@@ -64,6 +67,10 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
       }
 
       if (authMode === "login") {
+        if (loginMethod === "otp") {
+          showToast(otp ? "OTP sign-in will be available soon." : "Enter your mobile number, then send an OTP.", "info");
+          return;
+        }
         await login(email, password);
         showToast("Welcome back", "success");
       } else {
@@ -226,6 +233,7 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {authMode === "login" && <div className="grid grid-cols-2 rounded border border-[var(--color-border)] p-1"><button type="button" onClick={() => setLoginMethod("email")} className={`py-2 text-xs font-semibold tracking-widest ${loginMethod === "email" ? "bg-[var(--color-teal)] text-white" : "text-[var(--color-text-muted)]"}`}>EMAIL</button><button type="button" onClick={() => setLoginMethod("otp")} className={`py-2 text-xs font-semibold tracking-widest ${loginMethod === "otp" ? "bg-[var(--color-teal)] text-white" : "text-[var(--color-text-muted)]"}`}>OTP</button></div>}
           {authMode === "register" && (
             <div className="space-y-1.5">
               <label className="font-secondary text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] font-medium block">
@@ -251,7 +259,7 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
               <div className="relative"><Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-muted)]" /><input type="tel" required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+91 98765 43210" className="w-full bg-[var(--color-bg-secondary)] border border-[var(--color-border)] py-2.5 pl-10 pr-4 font-secondary text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)]/50 focus:outline-none focus:border-[var(--color-teal)] transition-colors" /></div>
             </div>
           )}
-          <div className="space-y-1.5">
+          {(authMode !== "login" || loginMethod === "email") && <div className="space-y-1.5">
             <label className="font-secondary text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] font-medium block">
               Email Address
             </label>
@@ -266,9 +274,9 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
                 className="w-full bg-[var(--color-bg-secondary)] border border-[var(--color-border)] py-2.5 pl-10 pr-4 font-secondary text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)]/50 focus:outline-none focus:border-[var(--color-teal)] transition-colors"
               />
             </div>
-          </div>
+          </div>}
 
-          {authMode !== "forgot" && (
+          {(authMode !== "forgot" && (authMode !== "login" || loginMethod === "email")) && (
             <div className="space-y-1.5">
               <label className="font-secondary text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] font-medium block">
                 Password
@@ -294,6 +302,12 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
             </div>
           )}
 
+          {authMode === "login" && loginMethod === "otp" && (
+            <>
+              <div className="space-y-1.5"><label className="font-secondary text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] font-medium block">Mobile Number</label><div className="relative"><Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-muted)]" /><input type="tel" required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+91 98765 43210" className="w-full bg-[var(--color-bg-secondary)] border border-[var(--color-border)] py-2.5 pl-10 pr-4 font-secondary text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)]/50 focus:outline-none focus:border-[var(--color-teal)] transition-colors" /></div></div>
+              <div className="space-y-1.5"><div className="flex items-center justify-between"><label className="font-secondary text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] font-medium block">OTP</label><button type="button" onClick={() => showToast(phone ? "OTP sending will be available soon." : "Enter a mobile number first.", "info")} className="font-secondary text-[11px] text-[var(--color-teal)] hover:underline">Send OTP</button></div><input type="text" inputMode="numeric" value={otp} onChange={(e) => setOtp(e.target.value)} placeholder="Enter OTP" className="w-full bg-[var(--color-bg-secondary)] border border-[var(--color-border)] py-2.5 px-4 font-secondary text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)]/50 focus:outline-none focus:border-[var(--color-teal)] transition-colors" /></div>
+            </>
+          )}
           {authMode === "login" && (
             <div className="text-right">
               <button
@@ -315,7 +329,7 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
               {isSubmitting
                 ? "Please wait..."
                 : authMode === "login"
-                  ? "Sign In"
+                  ? loginMethod === "otp" ? "Continue with OTP" : "Sign In"
                   : authMode === "register"
                     ? "Register Now"
                     : "Send Reset Link"}

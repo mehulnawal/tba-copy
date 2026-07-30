@@ -25,6 +25,7 @@ export default function OrderHistory() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState("");
     const [activeCategory, setActiveCategory] = useState<string>("All");
+    const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
 
     useEffect(() => {
         setIsLoading(true);
@@ -64,7 +65,7 @@ export default function OrderHistory() {
                             Personal Details
                         </button>
                         <button
-                            onClick={() => navigate("/account")}
+                            onClick={() => navigate("/account?tab=addresses")}
                             className="font-secondary pb-2 text-sm uppercase tracking-widest text-[var(--color-text-muted)] hover:text-[var(--color-teal)] transition-all duration-300 relative"
                         >
                             Address Book
@@ -126,8 +127,7 @@ export default function OrderHistory() {
                                                 </span>
                                             </div></div>
 
-                                        {/* Items List */}
-                                        <div className="divide-y divide-[var(--color-border-subtle)]">
+                                        {expandedOrder === o._id && <><div className="divide-y divide-[var(--color-border-subtle)]">
                                             {o.items.map((i, n) => (
                                                 <div key={n} className="py-4 first:pt-0 last:pb-0 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                                                     <div className="flex items-center gap-4">
@@ -153,22 +153,17 @@ export default function OrderHistory() {
                                                     </div>
                                                 </div>
                                             ))}
-                                        </div>
+                                        </div></>}
 
                                         {/* Card Footer Summary & Action */}
                                         <div className="mt-6 pt-4 border-t border-[var(--color-border-subtle)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                             <div>
                                                 <span className="font-secondary text-xs uppercase tracking-wider text-[var(--color-text-muted)] block">Total</span>
                                                 <span className="font-primary text-lg text-[var(--color-teal)] font-semibold">
-                                                    ‚‚¹{Math.round(o.amount).toLocaleString("en-IN")}
+                                                    ₹{Math.round(o.amount).toLocaleString("en-IN")}
                                                 </span>
                                             </div>
-                                            <Link
-                                                to={`/orderConfirmation?orderId=${o._id}`}
-                                                className="inline-center justify-center text-center bg-transparent border border-[var(--color-teal)] text-[var(--color-teal)] hover:bg-[var(--color-teal)] hover:text-white px-6 py-2.5 text-xs uppercase tracking-widest font-secondary transition-all duration-300"
-                                            >
-                                                View Details
-                                            </Link>
+                                            <button type="button" onClick={() => setExpandedOrder(expandedOrder === o._id ? null : o._id)} className="inline-center justify-center text-center bg-transparent border border-[var(--color-teal)] text-[var(--color-teal)] hover:bg-[var(--color-teal)] hover:text-white px-6 py-2.5 text-xs uppercase tracking-widest font-secondary transition-all duration-300">{expandedOrder === o._id ? "Hide details" : "Show details"}</button>
                                         </div>
                                     </div>
                                 );

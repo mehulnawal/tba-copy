@@ -90,7 +90,6 @@ export default function Navbar({
   const { data: metalRates, isLoading: isMetalLoading, isError: isMetalError } = useMetalRates();
 
 
-  // €”€€”€ Close dropdowns on outside click €”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (
@@ -104,7 +103,6 @@ export default function Navbar({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // €”€€”€ Escape key closes mobile menu €”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") setIsMobileMenuOpen(false);
@@ -113,7 +111,6 @@ export default function Navbar({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  // €”€€”€ Handlers €”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€
   const handleDismissAnnouncement = () => {
     setIsAnnouncementVisible(false);
     sessionStorage.setItem("tba_ann_closed", "true");
@@ -183,7 +180,6 @@ export default function Navbar({
 
   return (
     <div className="w-full flex flex-col bg-[var(--color-bg)]">
-      {/* €”€€”€ NON-STICKY SECTION (Announcement & Gold Bar) €”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€ */}
       <div className="w-full">
         {/* ROW 1: ANNOUNCEMENT BAR */}
         <AnimatePresence>
@@ -254,7 +250,7 @@ export default function Navbar({
               ) : (
                 <div className="flex gap-3 md:gap-5 text-[12px] md:text-sm whitespace-nowrap">
                   <span className="tracking-wider">
-                    Gold 24K: <strong className="font-mono">{"\u20B9"}{Math.round((metalRates.gold24kt || 0) * 0.76).toLocaleString("en-IN")}</strong>
+                    Gold 24K: <strong className="font-mono">{"\u20B9"}{Number(metalRates.gold24kt || 0).toLocaleString("en-IN")}</strong>
                   </span>
                   {/* <span className="tracking-wider">
                     Gold 14K: <strong className="font-mono">{"\u20B9"}{Math.round((metalRates.gold24kt || 0) * 0.60).toLocaleString("en-IN")}</strong>
@@ -279,7 +275,6 @@ export default function Navbar({
         </div>
       </div>
 
-      {/* €”€€”€ STICKY SINGLE-ROW MAIN NAVBAR €”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€ */}
       <div className="sticky top-0 z-[var(--z-sticky)] w-full">
         <div
           className="w-full bg-[var(--color-white)] border-b border-[var(--color-border-subtle)] shadow-sm"
@@ -469,7 +464,6 @@ export default function Navbar({
         </div>
       </div>
 
-      {/* €”€€”€ MOBILE MENU OVERLAY & ACCORDION DRAWER €”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€€”€ */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <>
@@ -488,7 +482,7 @@ export default function Navbar({
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 28, stiffness: 220 }}
-              className="fixed top-0 right-0 bottom-0 w-[80%] max-w-[340px] bg-[var(--color-teal)] z-[var(--z-overlay)] overflow-y-auto overscroll-contain"
+              className="fixed top-0 right-0 bottom-0 w-full max-w-none sm:w-[80%] sm:max-w-[420px] bg-[var(--color-teal)] z-[var(--z-overlay)] overflow-y-auto overscroll-contain"
               role="dialog"
               aria-modal="true"
               aria-label="Navigation menu"
@@ -534,8 +528,8 @@ export default function Navbar({
                                 transition={{ duration: 0.25 }}
                                 className="overflow-hidden flex flex-col pl-4 border-l border-white/20 mt-1 space-y-2 py-2"
                               >
-                                <button onClick={() => handleCategorySelect(null, item.metal)} className="text-left text-sm font-secondary tracking-wider uppercase py-1 cursor-pointer bg-transparent border-none text-white/70 hover:text-white">€€º All</button>
-                                {item.categories?.map((category) => category.children.length ? <div key={category.id} className="pt-2"><button onClick={() => handleCategorySelect(category, item.metal)} className="text-left text-sm font-secondary tracking-wider uppercase py-1 cursor-pointer bg-transparent border-none text-white font-bold">€€º {category.name}</button>{category.children.map((child) => <button key={child.id} onClick={() => handleCategorySelect({ ...child, parentId: category.id }, item.metal)} className="block text-left text-xs font-secondary tracking-wider uppercase py-1 pl-4 cursor-pointer bg-transparent border-none text-white/70 hover:text-white">€€º {child.name}</button>)}</div> : <button key={category.id} onClick={() => handleCategorySelect({ ...category, parentId: item.categoryId }, item.metal)} className="text-left text-sm font-secondary tracking-wider uppercase py-1 cursor-pointer bg-transparent border-none text-white/70 hover:text-white">€€º {category.name}</button>)}
+                                <button onClick={() => handleCategorySelect(null, item.metal)} className="text-left text-sm font-secondary tracking-wider uppercase py-2 cursor-pointer bg-transparent border-none text-white/70 hover:text-white">All</button>
+                                {item.categories?.map((category) => category.children.length ? <div key={category.id} className="pt-2"><button onClick={() => handleCategorySelect(category, item.metal)} className="text-left text-base font-semibold tracking-wider uppercase py-2 cursor-pointer bg-transparent border-none text-white">{category.name}</button>{category.children.map((child) => <button key={child.id} onClick={() => handleCategorySelect({ ...child, parentId: category.id }, item.metal)} className="block w-full text-left text-sm font-secondary tracking-wider uppercase py-2 pl-5 cursor-pointer bg-transparent border-none text-white/75 hover:text-white">{child.name}</button>)}</div> : <button key={category.id} onClick={() => handleCategorySelect({ ...category, parentId: item.categoryId }, item.metal)} className="text-left text-base font-medium tracking-wider uppercase py-2 cursor-pointer bg-transparent border-none text-white/75 hover:text-white">{category.name}</button>)}
                               </motion.div>
                             )}
                           </AnimatePresence>

@@ -1,4 +1,4 @@
-﻿const mongoose = require("mongoose");
+const mongoose = require("mongoose");
 
 const PRODUCT_COLORS = ["Yellow Gold", "White Gold", "Rose Gold"];
 const DIAMOND_COLOR_CLARITY = "EF/VVSVS";
@@ -33,9 +33,10 @@ const productSchema = new mongoose.Schema({
   videoLink: { type: String, default: "" },
   sizes: { type: [Number], default: [], validate: { validator: arr => arr.every(size => Number.isInteger(size) && size >= 5 && size <= 25), message: "Sizes must be whole numbers from 5 to 25" } },
   colors: { type: [String], enum: PRODUCT_COLORS, default: [] },
-  // Gold has one gross/net weight per piece; the selected karat only changes rate.
-  grossWeight: { type: Number, required: true, min: 0 },
-  netWeight: { type: Number, min: 0, required: function () { return this.metal === "gold"; } },
+  // Existing products retain their scalar weights. New Gold products store separate
+  // 14kt/18kt weights; Mixed keeps the rollout backward compatible.
+  grossWeight: { type: mongoose.Schema.Types.Mixed, required: true, validate: { validator: value => typeof value === "number" ? value >= 0 : value && ["14kt", "18kt"].every(karat => Number.isFinite(Number(value[karat])) && Number(value[karat]) >= 0), message: "Gross weight must be a non-negative number or valid 14kt/18kt weights" } },
+  netWeight: { type: mongoose.Schema.Types.Mixed, validate: { validator: value => value === undefined || typeof value === "number" ? value === undefined || value >= 0 : value && ["14kt", "18kt"].every(karat => Number.isFinite(Number(value[karat])) && Number(value[karat]) >= 0), message: "Net weight must be a non-negative number or valid 14kt/18kt weights" }, required: function () { return this.metal === "gold"; } },
   // Legacy single-value field is retained for existing products; new Silver products use entries.
   moissaniteCaratWeight: { type: Number, min: 0 },
   moissaniteEntries: { type: [moissaniteEntrySchema], default: [] },

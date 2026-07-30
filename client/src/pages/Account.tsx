@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { userApi } from "../api/user.api";
 import { useAuth } from "../context/AuthContext";
@@ -41,7 +41,9 @@ export default function Account() {
     const { showToast } = useToast();
 
     // Active Tab: 'profile' or 'addresses'
-    const [activeTab, setActiveTab] = useState<"profile" | "addresses">("profile");
+    const [searchParams] = useSearchParams();
+    const [activeTab, setActiveTab] = useState<"profile" | "addresses">(searchParams.get("tab") === "addresses" ? "addresses" : "profile");
+    useEffect(() => { setActiveTab(searchParams.get("tab") === "addresses" ? "addresses" : "profile"); }, [searchParams]);
 
     // --- Profile Queries & Mutations ---
     const { data: profile, isLoading: isProfileLoading } = useQuery({
