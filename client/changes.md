@@ -709,6 +709,36 @@ Polki Value = (Pending – client to provide final pricing formula)
 GST = 3% × (Silver Value + Making Charges + Polki Value)
 Final Price = Silver Value + Making Charges + Polki Value + GST
 
+
+
+31-07-2026 
+
+Product Page - 
+1. Gold - add a option to show certificate charges on frontend - show a tick and untick , y defualt tick 
+
+2. add a option to show certificate - 3 certificates, whichever tick it will show on product page under title Certification of Authenticity
+
+Home page - 
+
+1. remove SGL certificate and add hallmark in certificate 
+
+Hallmark text - Experience trustworthy gold hallmarking services, delivering accurate testing and authentic jewellery certification.
+
+2. https://onyadiamonds.com/ - add a categories section with cover image - and make it dynamic 
+
+3. add a pop up - if user is purchaing first time then show him discount of 1000rs off and if user is purchasing second time then another discount - UI design https://onyadiamonds.com/
+and if user is third time then don't show the pop up
+
+4. add a call option in floating button - click to call directly (office number)
+
+Silver product page - 
+
+1. remove dupliacete total directly show gst and then total amt
+2. remove the ring size option from all - only show in ring categories - silver also 
+ 
+
+bangle sizing - 
+
 ***B2B***
 Pending
 Silver B2B pricing has not yet been finalized by the client.
