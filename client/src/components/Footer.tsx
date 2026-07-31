@@ -2,7 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { SOCIAL_LINKS } from "../constants/assets";
 import { Phone, Mail, MapPin, Instagram, Heart, Shield, Award } from "lucide-react";
-import logo from "../assets/logo/logo2.png";
+import logo from "../assets/logo/footer-logo.png";
 
 export default function Footer({ onCategoryChange }: { onCategoryChange: (category: string) => void }) {
   const handleExploreClick = (category: string) => {

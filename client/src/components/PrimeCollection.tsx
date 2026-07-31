@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ShoppingBag, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, ShoppingBag, ChevronLeft, ChevronRight, Heart } from "lucide-react";
 import primeCollection from '../assets/primeCollection/img1.png';
 
 interface Product {
     id: string;
     code: string;
     name: string;
-    price: string;
-    image: string;
+    category: string;
+    tags: string[];
+    prices: { karat: string; finalPrice: number }[];
+    images: string[];
 }
 
 interface Hotspot {
@@ -44,8 +46,10 @@ const PRIME_LOOKS: Look[] = [
                         id: "p-neck-1",
                         code: "#NK-409",
                         name: "Masterpiece Tiered Pear-Cut Diamond Necklace",
-                        price: "₹4,50,000.00",
-                        image: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=500&q=80"
+                        category: "Diamond Necklace",
+                        tags: ["BESTSELLER", "NEW ARRIVAL"],
+                        prices: [{ karat: "14kt", finalPrice: 450000 }, { karat: "18kt", finalPrice: 485000 }],
+                        images: ["https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=500&q=80", "https://images.unsplash.com/photo-1617038220319-276d3cfab638?w=500&q=80"]
                     }
                 ]
             }
@@ -61,6 +65,9 @@ export default function PrimeSelection() {
     const [startCoords, setStartCoords] = useState<{ x: number; y: number } | null>(null);
     const [endCoords, setEndCoords] = useState<{ x: number; y: number } | null>(null);
     const [isDesktop, setIsDesktop] = useState(false);
+    const [imageIndices, setImageIndices] = useState<Record<string, number>>({});
+    const [selectedKarats, setSelectedKarats] = useState<Record<string, string>>({});
+    const [wishlistedProducts, setWishlistedProducts] = useState<Record<string, boolean>>({});
 
     const containerRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLDivElement>(null);
@@ -150,6 +157,13 @@ export default function PrimeSelection() {
         setEndCoords(null);
     };
 
+    const CompactProductCard = ({ product }: { product: Product }) => {
+        const imageIndex = imageIndices[product.id] || 0;
+        const selectedKarat = selectedKarats[product.id] || product.prices[0]?.karat;
+        const selectedPrice = product.prices.find((price) => price.karat === selectedKarat)?.finalPrice || 0;
+        const isWishlisted = Boolean(wishlistedProducts[product.id]);
+        return <article className="group relative flex gap-3 rounded-lg border border-[var(--color-border-subtle)] bg-white p-2.5 shadow-sm"><div className="relative h-28 w-24 shrink-0 overflow-hidden rounded-md bg-[var(--color-bg-secondary)] sm:h-32 sm:w-28"><img src={product.images[imageIndex]} alt={product.name} loading="lazy" decoding="async" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />{product.images.length > 1 && <><button type="button" onClick={() => setImageIndices((current) => ({ ...current, [product.id]: (imageIndex - 1 + product.images.length) % product.images.length }))} className="absolute left-1 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-1 text-[var(--color-teal)] shadow" aria-label="Previous product image"><ChevronLeft className="h-3 w-3" /></button><button type="button" onClick={() => setImageIndices((current) => ({ ...current, [product.id]: (imageIndex + 1) % product.images.length }))} className="absolute right-1 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-1 text-[var(--color-teal)] shadow" aria-label="Next product image"><ChevronRight className="h-3 w-3" /></button></>}<div className="absolute left-1.5 top-1.5 flex flex-col gap-1">{product.tags.map((tag) => <span key={tag} className={`rounded-sm px-1.5 py-0.5 text-[7px] font-semibold tracking-wider text-white ${tag === "BESTSELLER" ? "bg-[var(--color-teal)]" : "bg-amber-700"}`}>{tag}</span>)}</div></div><div className="min-w-0 flex flex-1 flex-col py-0.5"><div className="flex items-start gap-2"><div className="min-w-0 flex-1"><p className="font-mono text-[9px] uppercase tracking-wider text-[var(--color-text-muted)]">{product.code}</p><h4 className="mt-0.5 line-clamp-2 font-primary text-sm leading-tight text-[var(--color-text)]">{product.name}</h4><p className="mt-1 text-[10px] tracking-wide text-[var(--color-text-muted)]">{product.category}</p></div><button type="button" onClick={() => setWishlistedProducts((current) => ({ ...current, [product.id]: !isWishlisted }))} aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"} className="rounded-full border border-[var(--color-border-subtle)] bg-white p-1.5 text-[var(--color-text-muted)] hover:text-rose-600"><Heart className={`h-3.5 w-3.5 ${isWishlisted ? "fill-rose-600 stroke-rose-600" : ""}`} /></button></div><div className="mt-auto border-t border-[var(--color-border-subtle)] pt-2"><div className="flex items-end justify-between gap-2"><div><p className="text-[8px] uppercase tracking-widest text-[var(--color-text-muted)]">Estimated Price</p><p className="text-xs font-semibold text-[var(--color-text)]">{"₹"}{selectedPrice.toLocaleString("en-IN")}</p></div><div className="flex gap-1">{product.prices.map((price) => <button key={price.karat} type="button" onClick={() => setSelectedKarats((current) => ({ ...current, [product.id]: price.karat }))} className={`rounded border px-1.5 py-0.5 text-[8px] font-semibold ${selectedKarat === price.karat ? "border-[var(--color-teal)] bg-[var(--color-cream-light)] text-[var(--color-teal)]" : "border-[var(--color-border-subtle)] text-[var(--color-text-muted)]"}`}>{price.karat.toUpperCase()}</button>)}</div></div><button type="button" className="mt-2 flex w-full items-center justify-center gap-1.5 rounded bg-[var(--color-teal)] px-3 py-1.5 text-[9px] font-medium uppercase tracking-widest text-white transition-colors hover:bg-[var(--color-teal-light)]"><ShoppingBag className="h-3 w-3" />Add to Cart</button></div></div></article>;
+    };
     return (
         <section ref={containerRef} className="my-0 reveal-section py-8 md:py-12 bg-[var(--color-bg)] w-full relative" id="prime-selection-section">
             <div className="container mx-auto px-4 flex flex-col items-center w-full">
@@ -285,24 +299,7 @@ export default function PrimeSelection() {
 
                                         <div className="flex flex-col gap-4 overflow-y-auto no-scrollbar flex-1">
                                             {selectedHotspot.products.map((product) => (
-                                                <div key={product.id} className="flex gap-4 rounded-xl border border-zinc-100 p-2 bg-white shrink-0">
-                                                    <div className="w-20 h-20 rounded-lg overflow-hidden bg-zinc-50 shrink-0">
-                                                        <img src={product.image} alt={product.name} loading="lazy" decoding="async" className="h-full w-full object-cover" />
-                                                    </div>
-                                                    <div className="flex flex-col flex-1 justify-between py-1">
-                                                        <div>
-                                                            <span className="text-[10px] uppercase tracking-wider text-zinc-400 block font-mono">{product.code}</span>
-                                                            <h4 className="text-xs font-medium text-zinc-800 line-clamp-2 mt-0.5 font-secondary">{product.name}</h4>
-                                                        </div>
-                                                        <div className="flex items-center justify-between gap-2 mt-2 pt-1.5 border-t border-zinc-50">
-                                                            <span className="text-xs font-bold text-zinc-900 font-secondary">{product.price}</span>
-                                                            <button type="button" className="flex items-center gap-1.5 rounded bg-zinc-900 hover:bg-[var(--color-teal,#1c3b48)] px-4 py-2 text-[10px] font-medium tracking-wider text-white uppercase transition-colors cursor-pointer border-none">
-                                                                <ShoppingBag size={12} />
-                                                                <span>Add</span>
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                                <CompactProductCard key={product.id} product={product} />
                                             ))}
                                         </div>
                                     </motion.div>
@@ -350,24 +347,7 @@ export default function PrimeSelection() {
 
                                 <div className="flex flex-col gap-4 overflow-y-auto no-scrollbar flex-1">
                                     {selectedHotspot.products.map((product) => (
-                                        <div key={product.id} className="flex gap-4 rounded-xl border border-zinc-100 p-2 bg-white shrink-0">
-                                            <div className="w-20 h-20 rounded-lg overflow-hidden bg-zinc-50 shrink-0">
-                                                <img src={product.image} alt={product.name} loading="lazy" decoding="async" className="h-full w-full object-cover" />
-                                            </div>
-                                            <div className="flex flex-col flex-1 justify-between py-1">
-                                                <div>
-                                                    <span className="text-[10px] uppercase tracking-wider text-zinc-400 block font-mono">{product.code}</span>
-                                                    <h4 className="text-xs font-medium text-zinc-800 line-clamp-2 mt-0.5 font-secondary">{product.name}</h4>
-                                                </div>
-                                                <div className="flex items-center justify-between gap-2 mt-2 pt-1.5 border-t border-zinc-50">
-                                                    <span className="text-xs font-bold text-zinc-900 font-secondary">{product.price}</span>
-                                                    <button type="button" className="flex items-center gap-1.5 rounded bg-zinc-900 hover:bg-[var(--color-teal,#1c3b48)] px-4 py-2 text-[10px] font-medium tracking-wider text-white uppercase transition-colors cursor-pointer border-none">
-                                                        <ShoppingBag size={12} />
-                                                        <span>Add</span>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        <CompactProductCard key={product.id} product={product} />
                                     ))}
                                 </div>
                             </motion.div>

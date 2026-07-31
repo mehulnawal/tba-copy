@@ -48,11 +48,11 @@ const Deferred = ({ children }: { children: React.ReactNode }) => <React.Suspens
 
 function RouteSeo() {
   const { pathname } = useLocation();
-  const pages: Array<{ match: (path: string) => boolean; title: string; description: string; noIndex?: boolean }> = [
-    { match: (path) => path === "/", title: "The Brilliance Atelier | Gold, Silver & Lab Grown Diamond Jewellery", description: "Shop fine gold, silver and lab grown diamond jewellery at The Brilliance Atelier. Explore elegant rings, earrings, necklaces and custom jewellery designs." },
+  const pages: Array<{ match: (path: string) => boolean; title: string; description: string; keywords?: string[]; noIndex?: boolean }> = [
+    { match: (path) => path === "/", title: "The Brilliance Atelier | Gold, Silver & Lab Grown Diamond Jewellery", description: "Shop fine gold, silver and lab grown diamond jewellery at The Brilliance Atelier. Explore elegant rings, earrings, necklaces and custom jewellery designs.", keywords: ["The Brilliance Atelier", "TBA Jewelry", "gold jewellery", "silver jewellery", "lab grown diamond jewellery", "diamond jewellery", "fine jewellery", "gold rings", "diamond rings", "gold necklaces", "gold earrings", "custom jewellery", "jewellery online India"] },
     { match: (path) => path === "/products", title: "Gold Jewellery Collection | TBA Jewelry", description: "Browse TBA's curated gold jewellery collection, including rings, earrings, necklaces and bracelets." },
-    { match: (path) => path === "/gold-jewellery", title: "Gold Jewellery Online | Rings, Earrings & Necklaces | TBA", description: "Explore gold jewellery online at The Brilliance Atelier, including gold rings, earrings, necklaces and bracelets in elegant modern designs." },
-    { match: (path) => path === "/silver-jewellery", title: "Silver Jewellery Online | Rings, Earrings & Necklaces | TBA", description: "Shop silver jewellery online at The Brilliance Atelier. Discover silver rings, earrings, necklaces, Moissanite and Polki jewellery collections." },
+    { match: (path) => path === "/gold-jewellery", title: "Gold Jewellery Online | Rings, Earrings & Necklaces | TBA", description: "Explore gold jewellery online at The Brilliance Atelier, including gold rings, earrings, necklaces and bracelets in elegant modern designs.", keywords: ["gold jewellery", "gold jewellery online", "gold rings", "gold earrings", "gold necklaces", "gold bracelets", "gold pendant", "18kt gold jewellery", "14kt gold jewellery", "diamond gold jewellery", "gold jewellery India"] },
+    { match: (path) => path === "/silver-jewellery", title: "Silver Jewellery Online | Rings, Earrings & Necklaces | TBA", description: "Shop silver jewellery online at The Brilliance Atelier. Discover silver rings, earrings, necklaces, Moissanite and Polki jewellery collections.", keywords: ["silver jewellery", "silver jewellery online", "silver rings", "silver earrings", "silver necklaces", "silver bracelets", "moissanite jewellery", "polki jewellery", "sterling silver jewellery", "silver jewellery India"] },
     { match: (path) => path.startsWith("/product/"), title: "Jewellery Details | TBA Jewelry", description: "View jewellery specifications, available options and the complete price breakup at TBA Jewelry." },
     { match: (path) => path === "/wishlist", title: "Wishlist | TBA Jewelry", description: "Review your saved TBA Jewelry pieces and return to them whenever you are ready." },
     { match: (path) => path === "/cart", title: "Shopping Cart | TBA Jewelry", description: "Review your selected TBA Jewelry items before checkout." },
@@ -72,7 +72,7 @@ function RouteSeo() {
     { match: (path) => path.startsWith("/admin/metal-rates"), title: "Metal Rates | TBA Admin", description: "Manage current TBA Jewelry metal rates." },
     { match: (path) => path.startsWith("/admin"), title: "Administration | TBA Jewelry", description: "Manage TBA Jewelry catalogue and store operations." },
   ];
-  const page: { title: string; description: string; noIndex?: boolean } = pages.find(({ match }) => match(pathname)) || { title: "Page Not Found | TBA Jewelry", description: "The requested TBA Jewelry page could not be found." };
+  const page: { title: string; description: string; keywords?: string[]; noIndex?: boolean } = pages.find(({ match }) => match(pathname)) || { title: "Page Not Found | TBA Jewelry", description: "The requested TBA Jewelry page could not be found." };
   const noIndex = ["/admin", "/b2b", "/wishlist", "/cart", "/checkout", "/account", "/orders", "/orderConfirmation", "/auth", "/reset-password"].some((path) => pathname === path || pathname.startsWith(`${path}/`));
   return <Seo {...page} noIndex={noIndex || page.noIndex} />;
 }

@@ -115,7 +115,6 @@ export default function Loader() {
       {/* CENTER PIECE BRAND ARCHITECTURE BLOCK */}
       <div className="text-center select-none px-8 flex flex-col items-center relative z-10">
 
-        {/* Monogram Wrapped in a Text Clipping Mask Zone */}
         <div className="overflow-hidden py-1 mb-2">
           <div
             ref={monogramLettersRef}
