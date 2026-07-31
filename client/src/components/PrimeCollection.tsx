@@ -47,7 +47,7 @@ const PRIME_LOOKS: Look[] = [
                         code: "#NK-409",
                         name: "Masterpiece Tiered Pear-Cut Diamond Necklace",
                         category: "Diamond Necklace",
-                        tags: ["BESTSELLER", "NEW ARRIVAL"],
+                        tags: ["BESTSELLER", "NEW ARRIVAL", "PRIME COLLECTION"],
                         prices: [{ karat: "14kt", finalPrice: 450000 }, { karat: "18kt", finalPrice: 485000 }],
                         images: ["https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=500&q=80", "https://images.unsplash.com/photo-1617038220319-276d3cfab638?w=500&q=80"]
                     }
@@ -198,7 +198,7 @@ export default function PrimeSelection() {
                                 <line
                                     key={`static-${hotspot.id}`}
                                     x1={`${hotspot.x}%`}
-                                    y1={`${hotspot.y}%`}
+                                    y1={`${hotspot.y + 1}%`}
                                     x2={`${hotspot.anchorX}%`}
                                     y2={`${hotspot.anchorY}%`}
                                     stroke="white"

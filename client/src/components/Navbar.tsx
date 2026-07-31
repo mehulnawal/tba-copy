@@ -303,7 +303,7 @@ export default function Navbar({
                 <img
                   src={logo}
                   alt="TBA"
-                  className="w-24 sm:w-28 md:w-32 lg:w-36 h-auto object-contain"
+                  className="w-23 sm:w-28 md:w-30 lg:w-30 h-auto object-contain"
                 />
               </a>
             </div>

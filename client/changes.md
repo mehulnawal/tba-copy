@@ -731,13 +731,31 @@ and if user is third time then don't show the pop up
 
 4. add a call option in floating button - click to call directly (office number)
 
+5. add a point why choose - point Highest Clarity & Cut, VVS-EF Ideal cut diamonds = https://onyadiamonds.com/
+
+6. add a banner - https://onyadiamonds.com/ - the women working on laptop - add that 
+
+7. add a pop up - text is yet to decided 
+
+8. change login & register pop up  - https://onyadiamonds.com/ 
+
 Silver product page - 
 
 1. remove dupliacete total directly show gst and then total amt
 2. remove the ring size option from all - only show in ring categories - silver also 
  
+Admin panel products - 
+
+1. Add a option to download all the products in the db
+2. add all shapes in diamond category 
+
+
+make all the product bg to white - make them 
 
 bangle sizing - 
+
+
+
 
 ***B2B***
 Pending

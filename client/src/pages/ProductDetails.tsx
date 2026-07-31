@@ -112,7 +112,7 @@ export default function ProductDetails() {
     };
 
     const isGold = product.metal === "gold";
-    const isRing = [categoryName(product.mainCategory), categoryName(product.subCategory)].some((name) => /ring/i.test(name));
+    const isRing = [categoryName(product.mainCategory), categoryName(product.subCategory)].some((name) => /\brings?\b/i.test(name));
     const mediaList = product.images.map((image) => ({ type: "image" as const, url: image.url }));
 
     const availableColors = (product.colors && product.colors.length > 0 ? product.colors : ["Yellow", "Rose", "White"]).filter((finish) => isGold || !finish.toLowerCase().includes("rose"));
