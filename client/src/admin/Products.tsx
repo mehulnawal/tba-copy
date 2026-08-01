@@ -1,4 +1,4 @@
-import { ChangeEvent, DragEvent, FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+﻿import { ChangeEvent, DragEvent, FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as XLSX from "xlsx";
 import { adminApi, type CertificateOption, type DiamondCategory, type DiamondClarity } from "../api/admin.api";
 import { useToast } from "../context/ToastContext";
@@ -41,7 +41,7 @@ const productExportRows = (products: Product[]) => products.map((product) => {
     "Gross Weight (g)": grossWeight,
     "14KT Gross Weight (g)": goldWeight?.["14kt"] ?? "",
     "18KT Gross Weight (g)": goldWeight?.["18kt"] ?? "",
-    "Diamond Details": (product.diamonds || []).map((diamond) => [diamond.category, diamond.subType, diamond.colorClarity, `${diamond.caratWeight} ct`, diamond.ratePerCt ? `INR ${diamond.ratePerCt}/ct` : ""].filter(Boolean).join(" Ã‚Â· ")).join(" | "),
+    "Diamond Details": (product.diamonds || []).map((diamond) => [diamond.category, diamond.subType, diamond.colorClarity, `${diamond.caratWeight} ct`, diamond.ratePerCt ? `INR ${diamond.ratePerCt}/ct` : ""].filter(Boolean).join(" \u00B7 ")).join(" | "),
     Colours: (product.colors || []).join(", "),
     Certificates: (product.certificates || []).map((certificate) => typeof certificate === "string" ? certificate : certificate.name).join(", "),
     "Primary Image URL": product.images?.[0]?.url || "",

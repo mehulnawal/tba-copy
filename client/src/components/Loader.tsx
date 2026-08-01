@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
-import logo from "../assets/logo/logo.png";
+import logo from "../assets/logo/logo2.png";
 
 export default function Loader() {
   const [show, setShow] = useState(true);

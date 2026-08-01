@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+﻿import { useEffect, useState, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router-dom";
 import { apiRequest } from "../api/client";
@@ -310,6 +310,7 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
                             <div className="mt-4 space-y-6 flex-grow">
                                 <div>
                                     <h3 className="text-sm font-semibold text-gray-900 mb-2">Categories</h3>
+                                    <button onClick={() => { selectCategory(null); setIsFilterMobileOpen(false); }} className={`block py-1 text-sm text-left w-full ${!selectedMainCategory ? "text-amber-700 font-bold" : "text-gray-600"}`}>All Categories</button>
                                     {categories.filter((c) => c.categoryKind !== "metal-root").map((c) => (
                                         <button key={c._id} onClick={() => { selectCategory(c); setIsFilterMobileOpen(false); }} className={`block py-1 text-sm text-left w-full ${c.categoryKind === "type" ? "font-semibold text-gray-900" : "ml-4 border-l border-gray-200 pl-3"} ${selectedSubCategory === c._id || selectedMainCategory === c._id ? "text-amber-700 font-bold" : "text-gray-600"}`}>
                                             {c.name}
@@ -460,16 +461,16 @@ function ProductCard({ product, defaultKarat, onWishlistToggle }: { product: Pro
             </div>
 
             <div className="flex flex-1 flex-col p-4 space-y-2">
-                <span className="text-[10px] tracking-wider text-gray-400 uppercase font-semibold">{categoryName(product.subCategory)}</span>
+                <span className="text-xs sm:text-[10px] tracking-wider text-gray-400 uppercase font-semibold">{categoryName(product.subCategory)}</span>
 
                 <Link to={`/product/${product.slug}`} className="block">
-                    <h3 className="text-sm font-medium text-gray-900 hover:text-amber-700 line-clamp-2 min-h-[40px] transition">
+                    <h3 className="text-base sm:text-sm font-medium text-gray-900 hover:text-amber-700 line-clamp-2 min-h-[40px] transition">
                         {product.title}
                     </h3>
                 </Link>
 
                 <div className="flex items-baseline space-x-1.5 pt-1">
-                    <span className="text-base font-bold text-gray-900">
+                    <span className="text-lg sm:text-base font-bold text-gray-900">
                         {"\u20B9"}{displaysPrice.toLocaleString("en-IN")}
                     </span>
                     {!isSilver && <span className="text-xs text-gray-400 font-normal">

@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import type { PriceBreakdown, Product } from "../types";
 import { formatINR } from "../utils/currency";
 
@@ -14,8 +14,8 @@ export default function PriceBreakup({ product, price, b2b = false, className = 
   const makingValue = number(price.makingCharge ?? price.makingValue);
   const stoneValue = isGold ? number(price.diamondValue) : number(price.moissaniteValue ?? price.stoneValue);
   const stoneEntries = isGold
-    ? (product.diamonds || []).map((entry, index) => ({ key: `diamond-${index}`, component: entry.category || "Diamond", clarity: entry.colorClarity || "—", carat: number(entry.caratWeight), rate: number(entry.ratePerCt), value: number(entry.caratWeight) * number(entry.ratePerCt) }))
-    : (product.moissaniteEntries || (product.moissaniteCaratWeight === undefined ? [] : [{ caratWeight: product.moissaniteCaratWeight }])).map((entry, index) => ({ key: `moissanite-${index}`, component: "Moissanite", clarity: entry.colorClarity || "—", carat: number(entry.caratWeight), rate: number(price.moissaniteRatePerCarat), value: number(entry.caratWeight) * number(price.moissaniteRatePerCarat) }));
+    ? (product.diamonds || []).map((entry, index) => ({ key: `diamond-${index}`, component: entry.category || "Diamond", clarity: entry.colorClarity || "\u2014", carat: number(entry.caratWeight), rate: number(entry.ratePerCt), value: number(entry.caratWeight) * number(entry.ratePerCt) }))
+    : (product.moissaniteEntries || (product.moissaniteCaratWeight === undefined ? [] : [{ caratWeight: product.moissaniteCaratWeight }])).map((entry, index) => ({ key: `moissanite-${index}`, component: "Moissanite", clarity: entry.colorClarity || "\u2014", carat: number(entry.caratWeight), rate: number(price.moissaniteRatePerCarat), value: number(entry.caratWeight) * number(price.moissaniteRatePerCarat) }));
   const showMaking = isShown(price, "showMaking");
   const showCertificate = isShown(price, "showCertificate") && number(price.certificateCharges) > 0;
   const showGst = isShown(price, "showGst");

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { AuthModal } from "./AuthModal";
 import { useAuth } from "../context/AuthContext";
@@ -10,6 +10,7 @@ import { useAddToCart } from "../hooks/useCart";
 import { RING_SIZES } from "../constants/product";
 import type { Product } from "../types";
 import { formatINR } from "../utils/currency";
+import { publicAssetUrl } from "../utils/image";
 import PriceBreakup from "../components/PriceBreakup";
 import { Seo } from "../components/Seo";
 import { Heart, Share2 } from "lucide-react";
@@ -29,6 +30,9 @@ function getSwatchHexColor(colorName: string): string {
     return "#FFF";
 }
 
+function ShippingHandling() {
+    return <section className="border-t border-stone-200 pt-4"><h3 className="text-base font-bold uppercase tracking-widest text-stone-700 lg:text-xs">Shipping &amp; Handling</h3><ul className="mt-3 list-disc space-y-1.5 pl-5 text-base leading-relaxed text-stone-600 lg:text-xs"><li>Free shipping perks on all orders within India</li><li>Avail your items within 15 business days</li><li>Inspect your package carefully before signing off</li><li>Package will be sealed and wrapped in bubble wrap, small box, or padded envelope</li></ul></section>;
+}
 function formatFinishLabel(colorName: string): string {
     const normalized = colorName.toLowerCase();
     if (normalized.includes("yellow")) return "Yellow";
@@ -267,8 +271,8 @@ export default function ProductDetails() {
 
                             {/* FIX 3: Description relocated under the image */}
                             <div className="bg-white p-5 border border-stone-200/80 rounded-lg shadow-xs space-y-2">
-                                <h3 className="text-xs font-bold uppercase tracking-widest text-stone-700">Description</h3>
-                                <p className="text-xs leading-relaxed text-stone-600">{product.description}</p>{(product.certificates || []).length > 0 && <div className="hidden lg:block border-t pt-4"><h3 className="text-xs font-bold uppercase tracking-widest text-stone-700">Certificates of Authenticity</h3><div className="mt-3 flex gap-3">{product.certificates?.map((certificate) => <div key={certificate._id} className="flex items-center gap-2 text-xs"><img src={certificate.logoUrl || "https://placehold.co/48x48?text=C"} alt="" className="h-8 w-8 object-contain" />{certificate.name}</div>)}</div></div>}
+                                <h3 className="text-base font-bold uppercase tracking-widest text-stone-700 lg:text-xs">Description</h3>
+                                <p className="text-base leading-relaxed text-stone-600 lg:text-xs">{product.description}</p>{(product.certificates || []).length > 0 && <div className="hidden lg:block border-t pt-4"><h3 className="text-base font-bold uppercase tracking-widest text-stone-700 lg:text-xs">Certificates of Authenticity</h3><div className="mt-3 flex gap-3">{product.certificates?.map((certificate) => <div key={certificate._id} className="flex items-center gap-3 text-lg lg:text-sm"><img src={publicAssetUrl(certificate.logoUrl)} alt="" className="h-14 w-14 object-contain lg:h-10 lg:w-10" />{certificate.name}</div>)}</div></div>}<div className="hidden lg:block"><ShippingHandling /></div>
                             </div>
                         </div>
 
@@ -336,15 +340,16 @@ export default function ProductDetails() {
 
                             <PriceBreakup product={product} price={activePriceObj} />{(product.certificates || []).length > 0 && <div className="lg:hidden border border-stone-200 bg-white p-4">
 
-                                <h3 className="text-lg font-bold uppercase tracking-widest text-stone-700">Certificates of Authenticity</h3>
+                                <h3 className="text-xl font-bold uppercase tracking-widest text-stone-700 lg:text-xs">Certificates of Authenticity</h3>
 
                                 <div className="mt-3 flex gap-3">{product.certificates?.map((certificate) => <div key={certificate._id} className="flex items-center gap-2 text-xs">
-                                    <img src={certificate.logoUrl || "https://placehold.co/48x48?text=C"} alt="" className="h-8 w-8 object-contain" />{certificate.name}
+                                    <img src={publicAssetUrl(certificate.logoUrl)} alt="" className="h-14 w-14 object-contain lg:h-10 lg:w-10" />{certificate.name}
                                 </div>
                                 )}
                                 </div>
                             </div>
                             }
+                            <div className="lg:hidden"><ShippingHandling /></div>
 
                             {/* Metal Finish Swatches with Proper White Color */}
                             <div className="space-y-2">
@@ -423,7 +428,7 @@ export default function ProductDetails() {
                                                     className="text-2xl focus:outline-none transition-transform hover:scale-125"
                                                 >
                                                     <span className={(hoverRating || rating) >= star ? "text-amber-500" : "text-stone-300"}>
-                                                        â˜…
+                                                        {"\u2605"}
                                                     </span>
                                                 </button>
                                             ))}
@@ -462,7 +467,7 @@ export default function ProductDetails() {
                                         <article key={r._id} className="p-5 bg-white rounded-lg border border-stone-200 shadow-xs space-y-2">
                                             <div className="flex justify-between items-center text-xs">
                                                 <span className="font-semibold text-stone-900">{r.user?.name || "Verified Client"}</span>
-                                                <span className="text-amber-500 font-bold">{"â˜…".repeat(r.rating)}{"â˜†".repeat(5 - r.rating)}</span>
+                                                <span className="text-amber-500 font-bold">{"\u2605".repeat(r.rating)}{"\u2606".repeat(5 - r.rating)}</span>
                                             </div>
                                             <p className="text-xs text-stone-600">{r.text}</p>
                                         </article>
