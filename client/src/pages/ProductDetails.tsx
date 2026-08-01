@@ -342,8 +342,8 @@ export default function ProductDetails() {
 
                                 <h3 className="text-xl font-bold uppercase tracking-widest text-stone-700 lg:text-xs">Certificates of Authenticity</h3>
 
-                                <div className="mt-3 flex gap-3">{product.certificates?.map((certificate) => <div key={certificate._id} className="flex items-center gap-2 text-xs">
-                                    <img src={publicAssetUrl(certificate.logoUrl)} alt="" className="h-14 w-14 object-contain lg:h-10 lg:w-10" />{certificate.name}
+                                <div className="mt-3 flex flex-col gap-3">{product.certificates?.map((certificate) => <div key={certificate._id} className="flex min-w-0 items-center gap-2 text-xs">
+                                    <img src={publicAssetUrl(certificate.logoUrl)} alt="" className="h-14 w-14 shrink-0 object-contain lg:h-10 lg:w-10" /><span className="min-w-0 break-words">{certificate.name}</span>
                                 </div>
                                 )}
                                 </div>
