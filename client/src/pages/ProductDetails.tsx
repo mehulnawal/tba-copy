@@ -268,7 +268,7 @@ export default function ProductDetails() {
                             {/* FIX 3: Description relocated under the image */}
                             <div className="bg-white p-5 border border-stone-200/80 rounded-lg shadow-xs space-y-2">
                                 <h3 className="text-xs font-bold uppercase tracking-widest text-stone-700">Description</h3>
-                                <p className="text-xs leading-relaxed text-stone-600">{product.description}</p>{isGold && (product.certificates || []).length > 0 && <div className="hidden lg:block border-t pt-4"><h3 className="text-xs font-bold uppercase tracking-widest text-stone-700">Certificates of Authenticity</h3><div className="mt-3 flex gap-3">{product.certificates?.map((certificate) => <div key={certificate._id} className="flex items-center gap-2 text-xs"><img src={certificate.logoUrl || "https://placehold.co/48x48?text=C"} alt="" className="h-8 w-8 object-contain" />{certificate.name}</div>)}</div></div>}
+                                <p className="text-xs leading-relaxed text-stone-600">{product.description}</p>{(product.certificates || []).length > 0 && <div className="hidden lg:block border-t pt-4"><h3 className="text-xs font-bold uppercase tracking-widest text-stone-700">Certificates of Authenticity</h3><div className="mt-3 flex gap-3">{product.certificates?.map((certificate) => <div key={certificate._id} className="flex items-center gap-2 text-xs"><img src={certificate.logoUrl || "https://placehold.co/48x48?text=C"} alt="" className="h-8 w-8 object-contain" />{certificate.name}</div>)}</div></div>}
                             </div>
                         </div>
 
@@ -290,11 +290,25 @@ export default function ProductDetails() {
                                     <span className="text-3xl font-serif text-stone-900">
                                         {formatINR(activePriceObj.finalPrice)}
                                     </span>
-                                    <span className="text-[11px] text-stone-500 block">Inclusive of all taxes & 3% GST</span><span className="text-[11px] text-stone-500 block">*This is an estimated price, actual price may differ as per actual weights.</span>
+                                    <span className="text-[11px] text-stone-500 block">Inclusive of all taxes</span><span className="text-[11px] text-stone-500 block">*This is an estimated price, actual price may differ as per actual weights.</span>
                                 </div>
                                 {/* <span className="text-xs font-semibold uppercase tracking-widest text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded">
                                 In Stock & Ready to Ship
                             </span> */}
+                            </div>
+
+                            {/* Specs */}
+                            <div className="bg-stone-50 border border-stone-200/80 rounded-lg p-4 space-y-3">
+                                <h4 className="text-[11px] font-bold uppercase tracking-widest text-stone-700">
+                                    Weight Specifications
+                                </h4>
+                                <div className="grid grid-cols-2 gap-4 text-xs">
+                                    <div className="bg-white p-3 rounded border border-stone-100">
+                                        <span className="block text-[10px] text-stone-400 uppercase">Gross Weight</span>
+                                        <span className="text-sm font-serif font-semibold text-stone-900">{activePriceObj.grossWeight} g</span>
+                                    </div>
+                                    {isGold && <div className="bg-white p-3 rounded border border-stone-100"><span className="block text-[10px] text-stone-400 uppercase">Net Weight</span><span className="text-sm font-serif font-semibold text-stone-900">{activePriceObj.netWeight} g</span></div>}
+                                </div>
                             </div>
 
                             <div className="flex gap-2"><button type="button" onClick={() => navigator.share ? void navigator.share({ title: product.title, url: window.location.href }) : void navigator.clipboard.writeText(window.location.href).then(() => showToast("Product link copied.", "success"))} className="inline-flex items-center gap-3 py-3 text-sm text-stone-700 cursor-pointer"><Share2 size={22} />Share</button><button type="button" onClick={() => isAuthenticated ? window.location.assign("/wishlist") : setIsAuthOpen(true)} className="inline-flex items-center gap-3 py-3 text-sm text-stone-700"><Heart size={22} />Add to Wishlist</button></div>
@@ -318,24 +332,19 @@ export default function ProductDetails() {
                                         </button>
                                     ))}
                                 </div>
-                            </div>}                        {/* Price Breakdown Component */}
-                            <PriceBreakup product={product} price={activePriceObj} />{isGold && (product.certificates || []).length > 0 && <div className="lg:hidden border border-stone-200 bg-white p-4"><h3 className="text-xs font-bold uppercase tracking-widest text-stone-700">Certificates of Authenticity</h3><div className="mt-3 flex gap-3">{product.certificates?.map((certificate) => <div key={certificate._id} className="flex items-center gap-2 text-xs"><img src={certificate.logoUrl || "https://placehold.co/48x48?text=C"} alt="" className="h-8 w-8 object-contain" />{certificate.name}</div>)}</div></div>}
+                            </div>}
 
+                            <PriceBreakup product={product} price={activePriceObj} />{(product.certificates || []).length > 0 && <div className="lg:hidden border border-stone-200 bg-white p-4">
 
+                                <h3 className="text-lg font-bold uppercase tracking-widest text-stone-700">Certificates of Authenticity</h3>
 
-                            {/* Specs */}
-                            <div className="bg-stone-50 border border-stone-200/80 rounded-lg p-4 space-y-3">
-                                <h4 className="text-[11px] font-bold uppercase tracking-widest text-stone-700">
-                                    Weight & Authenticity Specifications
-                                </h4>
-                                <div className="grid grid-cols-2 gap-4 text-xs">
-                                    <div className="bg-white p-3 rounded border border-stone-100">
-                                        <span className="block text-[10px] text-stone-400 uppercase">Gross Weight</span>
-                                        <span className="text-sm font-serif font-semibold text-stone-900">{activePriceObj.grossWeight} g</span>
-                                    </div>
-                                    {isGold && <div className="bg-white p-3 rounded border border-stone-100"><span className="block text-[10px] text-stone-400 uppercase">Net Weight</span><span className="text-sm font-serif font-semibold text-stone-900">{activePriceObj.netWeight} g</span></div>}
+                                <div className="mt-3 flex gap-3">{product.certificates?.map((certificate) => <div key={certificate._id} className="flex items-center gap-2 text-xs">
+                                    <img src={certificate.logoUrl || "https://placehold.co/48x48?text=C"} alt="" className="h-8 w-8 object-contain" />{certificate.name}
+                                </div>
+                                )}
                                 </div>
                             </div>
+                            }
 
                             {/* Metal Finish Swatches with Proper White Color */}
                             <div className="space-y-2">
@@ -414,7 +423,7 @@ export default function ProductDetails() {
                                                     className="text-2xl focus:outline-none transition-transform hover:scale-125"
                                                 >
                                                     <span className={(hoverRating || rating) >= star ? "text-amber-500" : "text-stone-300"}>
-                                                        ★
+                                                        â˜…
                                                     </span>
                                                 </button>
                                             ))}
@@ -453,7 +462,7 @@ export default function ProductDetails() {
                                         <article key={r._id} className="p-5 bg-white rounded-lg border border-stone-200 shadow-xs space-y-2">
                                             <div className="flex justify-between items-center text-xs">
                                                 <span className="font-semibold text-stone-900">{r.user?.name || "Verified Client"}</span>
-                                                <span className="text-amber-500 font-bold">{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</span>
+                                                <span className="text-amber-500 font-bold">{"â˜…".repeat(r.rating)}{"â˜†".repeat(5 - r.rating)}</span>
                                             </div>
                                             <p className="text-xs text-stone-600">{r.text}</p>
                                         </article>

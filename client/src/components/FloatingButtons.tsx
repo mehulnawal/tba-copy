@@ -1,11 +1,30 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { SOCIAL_LINKS } from "../constants/assets";
-import { Instagram } from "lucide-react";
+import { Instagram, Phone } from "lucide-react";
 
 export default function FloatingButtons() {
   return (
     <div className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-[var(--z-float)] flex flex-col gap-3">
+
+      {/* Calling */}
+      <motion.a
+        href={`tel:${SOCIAL_LINKS.phone}`}
+        initial={{ x: 80, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{ delay: 1.5, duration: 0.5, ease: [0.34, 1.56, 0.64, 1] }}
+        whileHover={{ scale: 1.12 }}
+        className="group relative w-11 h-11 md:w-13 md:h-13 rounded-full flex items-center justify-center shadow-lg hover:shadow-[var(--shadow-cream)] transition-all cursor-pointer bg-[var(--color-teal)]"
+        id="floating-call-btn"
+      >
+        <Phone className="w-5 h-5 md:w-5.5 md:h-5.5 text-white" />
+
+        {/* Tooltip */}
+        <span className="absolute right-[calc(100%+12px)] top-1/2 -translate-y-1/2 bg-[var(--color-teal)] text-white text-[10px] md:text-xs font-secondary tracking-wider py-1 px-3 rounded-sm opacity-0 group-hover:opacity-100 translate-x-3 group-hover:translate-x-0 pointer-events-none transition-all duration-300 shadow-md whitespace-nowrap">
+          Call Us
+        </span>
+      </motion.a>
+
       {/* INSTAGRAM PORT */}
       <motion.a
         href={SOCIAL_LINKS.instagram}
@@ -55,6 +74,7 @@ export default function FloatingButtons() {
           Chat on WhatsApp
         </span>
       </motion.a>
+
     </div>
   );
 }

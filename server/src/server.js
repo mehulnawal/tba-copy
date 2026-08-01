@@ -9,11 +9,13 @@ const {
   initializeCategoryStructure,
 } = require("./controllers/category.controller");
 const { initializePricingConfigs } = require("./config/pricingConfigBootstrap");
+const { synchronizeCertificates } = require("./config/certificates");
 
 const startServer = async () => {
   await connectDB();
   await initializeMetalRates();
   await initializePricingConfigs();
+  await synchronizeCertificates();
   // await initializeCategoryStructure();
   const PORT = process.env.PORT || 8000;
   app.listen(PORT, () =>

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
+import logo from "../assets/logo/logo.png";
 
 export default function Loader() {
   const [show, setShow] = useState(true);
@@ -116,12 +117,18 @@ export default function Loader() {
       <div className="text-center select-none px-8 flex flex-col items-center relative z-10">
 
         <div className="overflow-hidden py-1 mb-2">
-          <div
+          {/* <div
             ref={monogramLettersRef}
             className="font-display text-[40px] md:text-[56px] tracking-[0.4em] font-light text-white pl-[0.4em]"
           >
             TBA
-          </div>
+          </div> */}
+
+          <img
+            src={logo}
+            alt="TBA"
+            className="w-23 sm:w-28 md:w-30 lg:w-30 h-auto object-contain"
+          />
         </div>
 
         {/* Minimal Sophisticated Horizontal Line Ornament */}
