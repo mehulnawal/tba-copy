@@ -4,6 +4,8 @@ import type { Banner } from "./banner.api";
 import type { Category, Product, PriceBreakdown } from "../types";
 
 export interface DiamondCategory { _id: string; name: string; subTypes: string[]; isActive: boolean; }
+export interface DiamondClarity { _id: string; name: string; isActive: boolean; }
+export interface CertificateOption { _id: string; name: string; logoUrl?: string; isActive: boolean; }
 export interface PricingConfig { _id: string; key: string; metal: "gold" | "silver"; categoryType: string; makingRatePerGram: number; weightBasis: "net" | "gross"; moissaniteRatePerCarat?: number; polkiValuePerUnit?: number; silverB2BMakingChargeRate?: number; certificateApplies: boolean; usesLabGrownFixedDiamondRates: boolean; b2bExcludeCharges?: boolean; isActive: boolean; }
 export interface B2BAccessStatus { active: boolean; lastChanged: string | null; }
 export interface AdminUser {
@@ -120,13 +122,20 @@ export const adminApi = {
   setB2BPassword: (password: string) => apiRequest<B2BAccessStatus>("/admin/b2b-access", { method: "PUT", body: JSON.stringify({ password }) }),
   revokeB2BPassword: () => apiRequest<B2BAccessStatus>("/admin/b2b-access", { method: "DELETE" }),
   diamondCategories: () => apiRequest<DiamondCategory[]>("/admin/diamond-categories"),
+  diamondClarities: () => apiRequest<DiamondClarity[]>("/admin/diamond-clarities"),
+  certificates: () => apiRequest<CertificateOption[]>("/admin/certificates"),
+  saveCertificate: (name: string, logoUrl = "") => apiRequest<CertificateOption>("/admin/certificates", { method: "POST", body: JSON.stringify({ name, logoUrl }) }),
+  deleteCertificate: (id: string) => apiRequest<null>(`/admin/certificates/${id}`, { method: "DELETE" }),
   saveDiamondCategory: (name: string, subType = "") => apiRequest<DiamondCategory>("/admin/diamond-categories", { method: "POST", body: JSON.stringify({ name, subType }) }),
+  saveDiamondClarity: (name: string) => apiRequest<DiamondClarity>("/admin/diamond-clarities", { method: "POST", body: JSON.stringify({ name }) }),
   categories: () => apiRequest<Category[]>("/admin/categories"),
   createCategory: (p: {
     name: string;
     parent: string | null;
-    displayOrder: number;
     isActive: boolean;
+    showOnHomepage?: boolean;
+    homepageCoverImage?: string;
+    shortCode?: string;
   }) =>
     apiRequest<Category>("/admin/categories", {
       method: "POST",
@@ -137,8 +146,10 @@ export const adminApi = {
     p: Partial<{
       name: string;
       parent: string | null;
-      displayOrder: number;
       isActive: boolean;
+    showOnHomepage?: boolean;
+    homepageCoverImage?: string;
+    shortCode?: string;
     }>,
   ) =>
     apiRequest<Category>(`/admin/categories/${id}`, {

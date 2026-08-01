@@ -11,7 +11,7 @@ const diamondEntrySchema = new mongoose.Schema({
   subType: { type: String, trim: true, default: "" },
   caratWeight: { type: Number, required: true, min: 0 },
   ratePerCt: { type: Number, min: 0 },
-  colorClarity: { type: String, required: true, default: DIAMOND_COLOR_CLARITY, enum: [DIAMOND_COLOR_CLARITY] },
+  colorClarity: { type: String, required: true, trim: true, default: DIAMOND_COLOR_CLARITY },
 }, { _id: false });
 const moissaniteEntrySchema = new mongoose.Schema({
   caratWeight: { type: Number, required: true, min: 0 },
@@ -31,6 +31,7 @@ const productSchema = new mongoose.Schema({
   isNewProduct: { type: Boolean, default: false },
   images: { type: [imageSchema], required: true, validate: { validator: arr => Array.isArray(arr) && arr.length > 0 && arr.length <= 6, message: "Between 1 and 6 images are required" } },
   videoLink: { type: String, default: "" },
+  certificates: { type: [mongoose.Schema.Types.ObjectId], ref: "Certificate", default: [] },
   sizes: { type: [Number], default: [], validate: { validator: arr => arr.every(size => Number.isInteger(size) && size >= 5 && size <= 25), message: "Sizes must be whole numbers from 5 to 25" } },
   colors: { type: [String], enum: PRODUCT_COLORS, default: [] },
   // Existing products retain their scalar weights. New Gold products store separate

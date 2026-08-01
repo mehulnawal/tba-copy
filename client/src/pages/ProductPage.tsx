@@ -78,6 +78,7 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
         const next = new URLSearchParams(params);
         next.delete("category");
         if (!category) { next.delete("mainCategory"); next.delete("subCategory"); }
+        else if (category.categoryKind === "type") { next.set("mainCategory", category._id); next.delete("subCategory"); }
         else if (category.parent) { next.set("mainCategory", parentId(category) || ""); next.set("subCategory", category._id); }
         else { next.set("mainCategory", category._id); next.delete("subCategory"); }
         setParams(next);
@@ -164,7 +165,7 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
 
                 <div className="pt-8 lg:grid lg:grid-cols-4 lg:gap-x-8">
                     {/* Desktop Sidebar Filters */}
-                    <aside className="catalog-filter-panel hidden lg:block space-y-6">
+                    <aside className="catalog-filter-panel hidden lg:sticky lg:top-4 lg:self-start lg:block lg:max-h-[calc(100vh-1rem)] lg:overflow-y-auto lg:pr-2 space-y-6">
                         <div className="flex items-center justify-between border-b border-gray-200 pb-4">
                             <h2 className="text-lg font-medium text-gray-900">Filters</h2>
                             <button onClick={clearFilters} className="text-xs font-medium text-amber-700 hover:text-amber-800 underline">
@@ -309,7 +310,7 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
                             <div className="mt-4 space-y-6 flex-grow">
                                 <div>
                                     <h3 className="text-sm font-semibold text-gray-900 mb-2">Categories</h3>
-                                    {categories.map((c) => (
+                                    {categories.filter((c) => c.categoryKind !== "metal-root").map((c) => (
                                         <button key={c._id} onClick={() => { selectCategory(c); setIsFilterMobileOpen(false); }} className={`block py-1 text-sm text-left w-full ${c.categoryKind === "type" ? "font-semibold text-gray-900" : "ml-4 border-l border-gray-200 pl-3"} ${selectedSubCategory === c._id || selectedMainCategory === c._id ? "text-amber-700 font-bold" : "text-gray-600"}`}>
                                             {c.name}
                                         </button>

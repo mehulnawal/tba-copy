@@ -1,4 +1,4 @@
-﻿const GOLD_18KT_FACTOR = 0.76;
+const GOLD_18KT_FACTOR = 0.76;
 const GOLD_14KT_FACTOR = 0.6;
 const GST_RATE = 0.03;
 const B2B_MAKING_DISCOUNT_PER_GRAM = 50;
@@ -60,9 +60,9 @@ const calculateGoldPrice = ({
   const normalizedBuyer = String(buyer).toUpperCase();
   if (!["B2C", "B2B"].includes(normalizedBuyer))
     throw new Error("Buyer must be B2C or B2B");
-  const rate24 = requiredNumber(rates?.gold24kt, "24kt gold rate");
-  const goldRate =
-    rate24 * (selectedKarat === "18kt" ? GOLD_18KT_FACTOR : GOLD_14KT_FACTOR);
+  const rate24PerTenGrams = requiredNumber(rates?.gold24kt, "24kt gold rate per 10 grams");
+  const karatRatePerTenGrams = rate24PerTenGrams * (selectedKarat === "18kt" ? GOLD_18KT_FACTOR : GOLD_14KT_FACTOR);
+  const goldRate = karatRatePerTenGrams / 10;
   const grossWeight = weight(product, "grossWeight", selectedKarat);
   const netWeight = weight(product, "netWeight", selectedKarat);
   // Gold Lab-Grown B2B is configuration-driven so charges can be enabled later without rebuilding.

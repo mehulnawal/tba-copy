@@ -251,14 +251,16 @@ export default function Navbar({
                 </span>
               ) : (
                 <div className="flex gap-3 md:gap-5 text-[12px] md:text-sm whitespace-nowrap">
-                  <span className="tracking-wider">
-                    Gold 24K: <strong className="font-mono">{"\u20B9"}{Number(metalRates.gold24kt || 0).toLocaleString("en-IN")}</strong>
+                  <span className="inline-flex flex-col tracking-wider leading-tight">
+                    <span>Gold 24K: <strong className="font-mono">{"\u20B9"}{Number(metalRates.gold24kt || 0).toLocaleString("en-IN")}</strong></span>
+                    <span className="text-[9px] sm:text-[10px] leading-none">(per 10 gram)</span>
                   </span>
                   {/* <span className="tracking-wider">
                     Gold 14K: <strong className="font-mono">{"\u20B9"}{Math.round((metalRates.gold24kt || 0) * 0.60).toLocaleString("en-IN")}</strong>
                   </span> */}
-                  <span className="tracking-wider">
-                    Silver (999): <strong className="font-mono">{"\u20B9"}{Number(metalRates.silver || 0).toLocaleString("en-IN")}</strong>
+                  <span className="inline-flex flex-col tracking-wider leading-tight">
+                    <span>Silver (999): <strong className="font-mono">{"\u20B9"}{(Number(metalRates.silver || 0) * 1000).toLocaleString("en-IN")}</strong></span>
+                    <span className="text-[9px] sm:text-[10px] leading-none">(per kg)</span>
                   </span>
                 </div>
               )}

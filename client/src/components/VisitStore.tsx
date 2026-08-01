@@ -96,7 +96,7 @@ export default function VisitStore() {
                     {/* Info Pills */}
                     <div className="flex flex-wrap gap-2">
                         {[
-                            { icon: "", label: "Surat, Gujarat" },
+                            { icon: "", label: "610 , The Lenora Complex , opp saint thomas school ,New Citylight road , surat 395007" },
                         ].map((item) => (
                             <span
                                 key={item.label}
@@ -104,7 +104,7 @@ export default function VisitStore() {
                                 style={{
                                     padding: "6px 14px",
                                     border: "1px solid rgba(219,213,181,0.2)",
-                                    fontSize: "10px",
+                                    fontSize: "13px",
                                     letterSpacing: "0.1em",
                                     color: "rgba(250,249,247,0.7)",
                                     fontWeight: 500,
@@ -120,7 +120,7 @@ export default function VisitStore() {
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 mt-2">
                         {/* Primary CTA — swap href to actual Google Maps URL */}
                         <a
-                            href="https://maps.app.goo.gl/ShPZbLJnxrnBdHEE9"
+                            href="https://maps.app.goo.gl/UtKxZcpn6BQ5PzDv7"
                             target="_blank"
                             rel="noopener noreferrer"
                             aria-label="Get directions to TBA store on Google Maps"
@@ -177,7 +177,7 @@ export default function VisitStore() {
                 style={{ borderTop: "1px solid rgba(219,213,181,0.1)" }}
             >
                 {[
-                    { num: "10+", label: "YEARS PERFECTING THE CRAFT" },
+                    { num: "25+", label: "YEARS PERFECTING THE CRAFT" },
                 ].map((stat, i) => (
                     <div
                         key={stat.label}

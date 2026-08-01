@@ -1,9 +1,10 @@
 ﻿import React from "react";
-import { Shield, Award } from "lucide-react";
+import { Shield, Award, Gem } from "lucide-react";
 
 import cert1 from "../assets/whyChooseUs/IGILogo.png";
 import cert2 from "../assets/whyChooseUs/sglLogo.png";
 import cert3 from "../assets/whyChooseUs/gciLogo.png";
+import cert4 from "../assets/whyChooseUs/hallmarkingLogo.png";
 
 
 export default function BrandPromise() {
@@ -21,12 +22,12 @@ export default function BrandPromise() {
         {
             id: 2,
             num: "02",
-            title: "SGL Lab Verification (SGL)",
-            subtitle: "Solitaire Gemological Laboratories (SGL)",
-            desc: "Advanced spectroscopy audits guarantee structural carbon purity and independent gemstone validation.",
-            img: cert2,
+            title: "Hallmarking",
+            subtitle: "Hallmarking",
+            desc: "Experience trustworthy gold hallmarking services, delivering accurate testing and authentic jewellery certification.",
+            img: cert4,
             icon: <Shield className="w-5 h-5 text-[var(--color-cream)]" />,
-            align: "md:pt-12" // Displace slightly lower for a designer boutique feel
+            align: "md:pt-12" // Displace slightly lower
         },
         {
             id: 3,
@@ -54,6 +55,18 @@ export default function BrandPromise() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 max-w-5xl mx-auto">
+
+                        {/* Card 1 */}
+                        <div className="bg-[var(--color-white)] rounded-lg p-8 border border-[var(--color-border-subtle)] shadow-xs flex flex-col gap-4 reveal-section">
+                            <Gem size={36} className="text-[var(--color-teal)] shrink-0" />
+                            <h3 className="font-primary text-xl font-medium text-[var(--color-teal)]">
+                                Highest Clarity & Cut
+                                VVS-EF Ideal cut diamonds
+                            </h3>
+                            <p className="font-secondary text-sm text-[var(--color-text-secondary)] leading-relaxed">
+                                Bring your unique vision to life. From minor design tweaks to personalized layouts, our team provides highly custom tailoring to craft jewelry exactly as per your desire.
+                            </p>
+                        </div>
 
 
                         {/* Card 2 */}

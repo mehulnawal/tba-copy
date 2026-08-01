@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { AVATAR_ASSETS } from "../constants/assets";
-import { Product, PrimeHotspot, FAQ, Testimonial } from "../types";
+import { Product, PrimeHotspot, FAQ, Testimonial, Category } from "../types";
 import FloatingButtons from "../components/FloatingButtons";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
@@ -11,6 +11,7 @@ import { apiRequest } from "../api/client";
 import banner1 from '../assets/banner/banner1.webp';
 import banner2 from '../assets/banner/banner2.webp';
 import banner3 from '../assets/banner/banner3.webp';
+import banner4 from '../assets/banner/banner4.webp';
 
 import {
     ChevronLeft,
@@ -28,6 +29,7 @@ import BrandPromise from "../components/BrandCredentials";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { useBanners } from "../hooks/useContent";
+import { useCategories } from "../hooks/useCategories";
 import { useCart, useAddToCart } from "../hooks/useCart";
 import { useWishlist, useAddToWishlist, useRemoveFromWishlist } from "../hooks/useWishlist";
 import {
@@ -43,12 +45,13 @@ const HERO_SLIDES = [
     { id: "1", image: banner1, mobileImage: banner1 },
     { id: "2", image: banner2, mobileImage: banner2 },
     { id: "3", image: banner3, mobileImage: banner3 },
+    { id: "4", image: banner4, mobileImage: banner4 },
 ];
 
 const TESTIMONIALS: Testimonial[] = [
     {
         id: "1", name: "Priya Mehta", location: "Mumbai", rating: 5, avatar: AVATAR_ASSETS.a1,
-        review: "TBA's craftsmanship is unmatched. The 22K necklace for my daughter's wedding was breathtaking — every detail perfect."
+        review: "TBA's craftsmanship is unmatched. The 22K necklace for my daughter's wedding was breathtaking Ã¢â‚¬â€ every detail perfect."
     },
     {
         id: "2", name: "Rajan Shah", location: "Surat", rating: 4.5, avatar: AVATAR_ASSETS.a2,
@@ -56,7 +59,7 @@ const TESTIMONIALS: Testimonial[] = [
     },
     {
         id: "3", name: "Kavita Desai", location: "Ahmedabad", rating: 5, avatar: AVATAR_ASSETS.a4,
-        review: "Purchased earrings as an anniversary gift. The packaging, finish, weight — all premium. Highly recommended."
+        review: "Purchased earrings as an anniversary gift. The packaging, finish, weight Ã¢â‚¬â€ all premium. Highly recommended."
     },
 ];
 
@@ -69,7 +72,7 @@ const FAQS: FAQ[] = [
     {
         id: "2",
         question: "Are Lab Grown Diamonds real?",
-        answer: "A diamond is categorized by its chemical structure and composition—not its origin. Both lab-grown and mined diamonds possess the exact same crystalline structure of pure carbon atoms, ensuring that they share the identical properties of genuine diamonds."
+        answer: "A diamond is categorized by its chemical structure and compositionÃ¢â‚¬â€not its origin. Both lab-grown and mined diamonds possess the exact same crystalline structure of pure carbon atoms, ensuring that they share the identical properties of genuine diamonds."
     },
     {
         id: "3",
@@ -84,7 +87,7 @@ const FAQS: FAQ[] = [
     {
         id: "5",
         question: "Do Lab-Grown Diamonds cost less than mined diamonds?",
-        answer: "Yes, they do. Lab-grown diamonds generally retail at a significant 60% to 90% discount compared to mined diamonds of equivalent quality. Despite the accessible price point, they are evaluated, graded, and priced using the exact same standard matrix—Cut, Colour, Clarity, and Carat weight."
+        answer: "Yes, they do. Lab-grown diamonds generally retail at a significant 60% to 90% discount compared to mined diamonds of equivalent quality. Despite the accessible price point, they are evaluated, graded, and priced using the exact same standard matrixÃ¢â‚¬â€Cut, Colour, Clarity, and Carat weight."
     },
     {
         id: "6",
@@ -126,11 +129,13 @@ export default function HomePage() {
     const [faqOpenId, setFaqOpenId] = useState<string | null>(null);
     const [isAuthOpen, setIsAuthOpen] = useState(false);
     const [authReturnTo, setAuthReturnTo] = useState("");
+    const [isHomepagePopupOpen, setIsHomepagePopupOpen] = useState(false);
     const navigate = useNavigate();
 
     const { isAuthenticated } = useAuth();
     const { showToast } = useToast();
     const { data: bannerData } = useBanners();
+    const { data: categories } = useCategories();
     const { data: apiCart } = useCart(isAuthenticated);
     const { data: apiWishlist } = useWishlist(isAuthenticated);
 
@@ -176,18 +181,22 @@ export default function HomePage() {
             if (e.key === "Escape") {
                 setIsWishlistOpen(false);
                 setIsAuthOpen(false);
+                setIsHomepagePopupOpen(false);
             }
         };
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown);
     }, []);
 
+    useEffect(() => { const shownCount = Number(sessionStorage.getItem("tba_homepage_popup_count") || "0"); if (shownCount >= 2) return; const timer = window.setTimeout(() => { setIsHomepagePopupOpen(true); sessionStorage.setItem("tba_homepage_popup_count", String(shownCount + 1)); }, 5500); return () => window.clearTimeout(timer); }, []);
+
     // Locking standard layout dimensions for layers
     useEffect(() => {
-        const shouldLock = isWishlistOpen || isAuthOpen;
+        const shouldLock = isWishlistOpen || isAuthOpen || isHomepagePopupOpen;
         document.body.style.overflow = shouldLock ? "hidden" : "unset";
-        return () => { document.body.style.overflow = "unset"; };
-    }, [isWishlistOpen, isAuthOpen]);
+        document.documentElement.style.overflow = shouldLock ? "hidden" : "unset";
+        return () => { document.body.style.overflow = "unset"; document.documentElement.style.overflow = "unset"; };
+    }, [isWishlistOpen, isAuthOpen, isHomepagePopupOpen]);
 
     const nextHeroSlide = () => setActiveSlide((prev) => (prev + 1) % heroSlides.length);
     const prevHeroSlide = () => setActiveSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
@@ -201,6 +210,14 @@ export default function HomePage() {
     const bestSellerProducts = useMemo(() => {
         return products.filter(p => p.Is_Best_Seller === true || p.isBestSeller === true).map(adaptApiProductToUI);
     }, [products]);
+
+    const homepageCategories = useMemo(() => categories.filter((category) => Boolean(category.showOnHomepage && category.categoryKind !== "metal-root")), [categories]);
+    const openCategory = (category: Category) => {
+        const params = new URLSearchParams();
+        const parentId = typeof category.parent === "string" ? category.parent : category.parent?._id || "";
+        if (category.categoryKind === "subcategory") { params.set("mainCategory", parentId); params.set("subCategory", category._id); } else { params.set("mainCategory", category._id); }
+        navigate(`/${category.metal === "silver" ? "silver-jewellery" : "gold-jewellery"}?${params.toString()}`);
+    };
 
     // Safely extract price based on product reference tracking IDs matching live engine maps
     const resolveLiveProductPrice = (product: Product): number => {
@@ -336,6 +353,21 @@ export default function HomePage() {
 
                 {/* 2. PrimeSelection Component */}
                 <PrimeSelection />
+
+                {homepageCategories.length > 0 && <section className="py-10 md:py-14 bg-[var(--color-bg)]" id="homepage-categories">
+                    <div className="container">
+                        <div className="columns-2 gap-3 md:columns-3 md:gap-5 lg:grid lg:grid-cols-4 lg:auto-rows-[10rem] lg:grid-flow-dense lg:gap-5 lg:columns-auto">
+                            {homepageCategories.map((category, index) => {
+                                const tileSizes = ["h-56 sm:h-72", "h-64 sm:h-80", "h-48 sm:h-64", "h-60 sm:h-76"];
+                                const desktopTileSizes = ["lg:col-span-2 lg:row-span-2", "lg:row-span-2", "lg:row-span-1", "lg:row-span-1", "lg:row-span-1", "lg:col-span-2 lg:row-span-1", "lg:row-span-2", "lg:row-span-1"];
+                                return <button key={category._id} type="button" onClick={() => openCategory(category)} className={`group relative mb-3 block w-full break-inside-avoid overflow-hidden rounded-[var(--radius-md)] bg-[var(--color-bg-secondary)] md:mb-5 lg:mb-0 lg:h-auto ${tileSizes[index % tileSizes.length]} ${desktopTileSizes[index % desktopTileSizes.length]}`}>
+                                    {category.homepageCoverImage && <img src={category.homepageCoverImage} alt={category.name} className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />}
+                                    <span className="absolute inset-x-0 bottom-0 z-10 bg-black/55 px-3 py-2.5 text-left font-secondary text-[10px] tracking-[0.08em] text-white sm:text-[11px]">Shop by {category.name}</span>
+                                </button>;
+                            })}
+                        </div>
+                    </div>
+                </section>}
 
                 {/* 3. Best Seller Showcase */}
                 {bestSellerProducts.length > 0 && <section className="reveal-section py-3 bg-[var(--color-bg)]" id="collection-grid">
@@ -569,7 +601,7 @@ export default function HomePage() {
                                                         <h5 className="font-primary text-sm font-semibold text-[var(--color-teal)]">{item.name}</h5>
                                                         <span className="font-secondary text-[10px] text-[var(--color-text-muted)] block">{item.category}</span>
                                                         <div className="font-mono text-xs font-bold text-[var(--color-teal)] mt-1.5">
-                                                            ₹{item.price.toLocaleString("en-IN")}
+                                                            Ã¢â€šÂ¹{item.price.toLocaleString("en-IN")}
                                                         </div>
                                                     </div>
 
@@ -607,6 +639,16 @@ export default function HomePage() {
                     <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} onAuthenticated={() => { if (authReturnTo) navigate(authReturnTo); }} />
                 )}
             </AnimatePresence>
-        </div>
+
+            <AnimatePresence>
+                {isHomepagePopupOpen && <motion.div className="fixed inset-0 z-[var(--z-overlay)] flex items-center justify-center bg-black/55 p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                    <motion.section role="dialog" aria-modal="true" aria-label="Homepage offer" className="relative w-full max-w-md rounded-[var(--radius-md)] bg-[var(--color-bg)] p-7 text-center shadow-xl sm:p-9" initial={{ scale: 0.96, y: 12 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.96, y: 12 }}>
+                        <button type="button" onClick={() => setIsHomepagePopupOpen(false)} aria-label="Close popup" className="absolute right-4 top-4 text-[var(--color-text-muted)]"><X size={18} /></button>
+                        <h2 className="font-primary text-3xl text-[var(--color-teal)]">Popup Title</h2>
+                        <p className="mt-3 text-sm text-[var(--color-text-muted)]">Placeholder subtitle text for the homepage popup.</p>
+                        <button type="button" onClick={() => setIsHomepagePopupOpen(false)} className="mt-6 bg-[var(--color-teal)] px-6 py-3 text-xs font-semibold uppercase tracking-widest text-white">Placeholder Button</button>
+                    </motion.section>
+                </motion.div>}
+            </AnimatePresence></div>
     );
 }

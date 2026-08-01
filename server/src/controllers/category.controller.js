@@ -4,6 +4,7 @@ const Product = require("../models/product.model");
 const ApiError = require("../utils/ApiError");
 const ApiResponse = require("../utils/ApiResponse");
 const asyncHandler = require("../utils/asyncHandler");
+const shortCode = (value) => String(value || "").trim().toUpperCase();
 
 const FIXED_SUBCATEGORIES = [
   "Rings",
@@ -15,7 +16,7 @@ const FIXED_SUBCATEGORIES = [
 const withParent = (query) =>
   query
     .populate("parent", "name metal categoryKind")
-    .sort({ metal: 1, displayOrder: 1, name: 1 });
+    .sort({ createdAt: 1 });
 const rootFor = async (metal) =>
   Category.findOne({ metal, categoryKind: "metal-root" });
 const deriveHierarchy = async ({ name, parent, categoryId }) => {
@@ -94,8 +95,10 @@ const create = asyncHandler(async (req, res) => {
   const category = await Category.create({
     name,
     ...hierarchy,
-    displayOrder: Number(req.body.displayOrder || 0),
     isActive: req.body.isActive !== false,
+    showOnHomepage: req.body.showOnHomepage === true,
+    homepageCoverImage: String(req.body.homepageCoverImage || "").trim(),
+    shortCode: String(req.body.shortCode || "").trim().toUpperCase(),
   });
   await category.populate("parent", "name metal categoryKind");
   res.status(201).json(new ApiResponse(201, category, "Category created"));
@@ -121,7 +124,7 @@ const update = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Gold and Silver roots cannot be renamed or moved");
   const category = await Category.findByIdAndUpdate(
     existing._id,
-    { ...req.body, name, ...hierarchy },
+    { ...req.body, name, ...hierarchy, ...(Object.prototype.hasOwnProperty.call(req.body, "shortCode") ? { shortCode: String(req.body.shortCode || "").trim().toUpperCase() } : {}) },
     { new: true, runValidators: true },
   ).populate("parent", "name metal categoryKind");
   res.json(new ApiResponse(200, category, "Category updated"));
