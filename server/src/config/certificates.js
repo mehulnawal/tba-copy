@@ -5,10 +5,10 @@ const CERTIFICATE_OPTIONS = [
     name: "IGI Diamond Certification (IGI)",
     logoUrl: "/certificates/IGILogo.png",
   },
-  { name: "Hallmarking", logoUrl: "/certificates/IGILogo.png" },
+  { name: "Hallmarking", logoUrl: "/certificates/hallmarkingLogo.png" },
   {
     name: "Gemological Centers Identification (GCI)",
-    logoUrl: "/certificates/IGILogo.png",
+    logoUrl: "/certificates/gciLogo.png",
   },
 ];
 
