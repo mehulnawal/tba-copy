@@ -1,4 +1,4 @@
-const GOLD_18KT_FACTOR = 0.76;
+﻿const GOLD_18KT_FACTOR = 0.76;
 const GOLD_14KT_FACTOR = 0.6;
 const GST_RATE = 0.03;
 const B2B_MAKING_DISCOUNT_PER_GRAM = 50;
@@ -39,12 +39,12 @@ const totalDiamondWeight = (product) =>
     0,
   );
 // Gold diamond rates are deliberately entered per product, including Lab-Grown products.
-const diamondValue = (product) =>
+const diamondValue = (product, buyer) =>
   entriesFor(product).reduce(
     (total, entry, index) =>
       total +
       requiredNumber(entry.caratWeight, `Diamond ${index + 1} carat weight`) *
-        requiredNumber(entry.ratePerCt, `Diamond ${index + 1} rate per ct`),
+        requiredNumber(buyer === "B2B" ? (entry.ratePerCtB2B ?? entry.ratePerCt) : (entry.ratePerCtB2C ?? entry.ratePerCt), `Diamond ${index + 1} ${buyer} rate per ct`),
     0,
   );
 const calculateGoldPrice = ({
@@ -79,7 +79,7 @@ const calculateGoldPrice = ({
   if (makingRate < 0) throw new Error("B2B making rate cannot be negative");
   const goldValue = goldRate * grossWeight;
   const makingCharge = makingRate * netWeight;
-  const diamondTotal = diamondValue(product);
+  const diamondTotal = diamondValue(product, normalizedBuyer);
 
   const certificateCharges =
     !exemptB2BCharges && settings.certificateApplies

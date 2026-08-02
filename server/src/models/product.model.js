@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+﻿const mongoose = require("mongoose");
 
 const PRODUCT_COLORS = ["Yellow Gold", "White Gold", "Rose Gold"];
 const DIAMOND_COLOR_CLARITY = "EF/VVSVS";
@@ -10,7 +10,9 @@ const diamondEntrySchema = new mongoose.Schema({
   category: { type: String, required: true, trim: true },
   subType: { type: String, trim: true, default: "" },
   caratWeight: { type: Number, required: true, min: 0 },
-  ratePerCt: { type: Number, min: 0 },
+  ratePerCt: { type: Number, min: 0 }, // Legacy rate retained for existing products.
+  ratePerCtB2B: { type: Number, required: true, min: 0 },
+  ratePerCtB2C: { type: Number, required: true, min: 0 },
   colorClarity: { type: String, required: true, trim: true, default: DIAMOND_COLOR_CLARITY },
 }, { _id: false });
 const moissaniteEntrySchema = new mongoose.Schema({
@@ -42,6 +44,7 @@ const productSchema = new mongoose.Schema({
   moissaniteCaratWeight: { type: Number, min: 0 },
   moissaniteEntries: { type: [moissaniteEntrySchema], default: [] },
   diamonds: { type: [diamondEntrySchema], default: [] },
+  totalNumberOfDiamonds: { type: Number, required: true, min: 0 },
   isActive: { type: Boolean, default: true },
 }, { timestamps: true });
 

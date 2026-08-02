@@ -13,7 +13,7 @@ import { formatINR } from "../utils/currency";
 import { publicAssetUrl } from "../utils/image";
 import PriceBreakup from "../components/PriceBreakup";
 import { Seo } from "../components/Seo";
-import { Heart, Share2 } from "lucide-react";
+import { ChevronDown, Heart, Share2 } from "lucide-react";
 
 type Review = {
     _id: string;
@@ -33,6 +33,11 @@ function getSwatchHexColor(colorName: string): string {
 function ShippingHandling() {
     return <section className="border-t border-stone-200 pt-4"><h3 className="text-base font-bold uppercase tracking-widest text-stone-700 lg:text-xs">Shipping &amp; Handling</h3><ul className="mt-3 list-disc space-y-1.5 pl-5 text-base leading-relaxed text-stone-600 lg:text-xs"><li>Free shipping perks on all orders within India</li><li>Avail your items within 15 business days</li><li>Inspect your package carefully before signing off</li><li>Package will be sealed and wrapped in bubble wrap, small box, or padded envelope</li></ul></section>;
 }
+function MobileAccordion({ title, children }: { title: string; children: React.ReactNode }) {
+    const [open, setOpen] = useState(false);
+    return <section className="border border-stone-200 bg-white p-4"><button type="button" onClick={() => setOpen(value => !value)} className="flex w-full items-center justify-between text-left"><h3 className="text-xl font-bold uppercase tracking-widest text-stone-700">{title}</h3><ChevronDown size={20} className={`transition-transform ${open ? "rotate-180" : ""}`} /></button>{open && <div className="mt-3">{children}</div>}</section>;
+}
+
 function formatFinishLabel(colorName: string): string {
     const normalized = colorName.toLowerCase();
     if (normalized.includes("yellow")) return "Yellow";
@@ -270,16 +275,16 @@ export default function ProductDetails() {
 
 
                             {/* FIX 3: Description relocated under the image */}
-                            <div className="bg-white p-5 border border-stone-200/80 rounded-lg shadow-xs space-y-2">
+                            <div className="hidden bg-white p-5 border border-stone-200/80 rounded-lg shadow-xs space-y-2 lg:block">
                                 <h3 className="text-base font-bold uppercase tracking-widest text-stone-700 lg:text-xs">Description</h3>
                                 <p className="text-base leading-relaxed text-stone-600 lg:text-xs">{product.description}</p>{(product.certificates || []).length > 0 && <div className="hidden lg:block border-t pt-4"><h3 className="text-base font-bold uppercase tracking-widest text-stone-700 lg:text-xs">Certificates of Authenticity</h3><div className="mt-3 flex gap-3">{product.certificates?.map((certificate) => <div key={certificate._id} className="flex items-center gap-3 text-lg lg:text-sm"><img src={publicAssetUrl(certificate.logoUrl)} alt="" className="h-14 w-14 object-contain lg:h-10 lg:w-10" />{certificate.name}</div>)}</div></div>}<div className="hidden lg:block"><ShippingHandling /></div>
                             </div>
                         </div>
 
                         {/* RIGHT COLUMN: Product Configurator */}
-                        <div className="lg:col-span-6 space-y-5">
+                        <div className="lg:col-span-6 flex flex-col gap-5">
 
-                            <div>
+                            <div className="order-1 lg:order-1">
                                 <span className="text-xs uppercase tracking-[0.2em] font-semibold text-amber-900">
                                     {categoryName(product.mainCategory)}
                                 </span>
@@ -289,7 +294,7 @@ export default function ProductDetails() {
                             </div>
 
                             {/* Price Row */}
-                            <div className="py-3 border-y border-stone-200/80 flex items-baseline justify-between">
+                            <div className="order-2 flex items-baseline justify-between border-y border-stone-200/80 py-3 lg:order-2">
                                 <div>
                                     <span className="text-3xl font-serif text-stone-900">
                                         {formatINR(activePriceObj.finalPrice)}
@@ -302,7 +307,7 @@ export default function ProductDetails() {
                             </div>
 
                             {/* Specs */}
-                            <div className="bg-stone-50 border border-stone-200/80 rounded-lg p-4 space-y-3">
+                            <div className="order-4 rounded-lg border border-stone-200/80 bg-stone-50 p-4 space-y-3 lg:order-3">
                                 <h4 className="text-[11px] font-bold uppercase tracking-widest text-stone-700">
                                     Weight Specifications
                                 </h4>
@@ -315,10 +320,10 @@ export default function ProductDetails() {
                                 </div>
                             </div>
 
-                            <div className="flex gap-2"><button type="button" onClick={() => navigator.share ? void navigator.share({ title: product.title, url: window.location.href }) : void navigator.clipboard.writeText(window.location.href).then(() => showToast("Product link copied.", "success"))} className="inline-flex items-center gap-3 py-3 text-sm text-stone-700 cursor-pointer"><Share2 size={22} />Share</button><button type="button" onClick={() => isAuthenticated ? window.location.assign("/wishlist") : setIsAuthOpen(true)} className="inline-flex items-center gap-3 py-3 text-sm text-stone-700"><Heart size={22} />Add to Wishlist</button></div>
+                            <div className="order-3 flex gap-2 lg:order-4"><button type="button" onClick={() => navigator.share ? void navigator.share({ title: product.title, url: window.location.href }) : void navigator.clipboard.writeText(window.location.href).then(() => showToast("Product link copied.", "success"))} className="inline-flex items-center gap-3 py-3 text-sm text-stone-700 cursor-pointer"><Share2 size={22} />Share</button><button type="button" onClick={() => isAuthenticated ? window.location.assign("/wishlist") : setIsAuthOpen(true)} className="inline-flex items-center gap-3 py-3 text-sm text-stone-700"><Heart size={22} />Add to Wishlist</button></div>
 
                             {/* Purity Selection */}
-                            {isGold && <div className="space-y-2">
+                            {isGold && <div className="order-6 space-y-2 lg:order-5">
                                 <label className="block text-xs uppercase tracking-widest font-semibold text-stone-600">
                                     Select Purity Standard: <span className="text-stone-900">{karat.toUpperCase()} Gold</span>
                                 </label>
@@ -338,21 +343,18 @@ export default function ProductDetails() {
                                 </div>
                             </div>}
 
-                            <PriceBreakup product={product} price={activePriceObj} />{(product.certificates || []).length > 0 && <div className="lg:hidden border border-stone-200 bg-white p-4">
+                            <PriceBreakup product={product} price={activePriceObj} className="order-7 lg:order-6" />
 
+                            <div className="order-8 lg:hidden"><MobileAccordion title="Description"><p className="text-base leading-relaxed text-stone-600">{product.description}</p></MobileAccordion></div>
+                            {(product.certificates || []).length > 0 && <div className="order-9 lg:hidden"><MobileAccordion title="Certificates of Authenticity">
                                 <h3 className="text-xl font-bold uppercase tracking-widest text-stone-700 lg:text-xs">Certificates of Authenticity</h3>
-
                                 <div className="mt-3 flex flex-col gap-3">{product.certificates?.map((certificate) => <div key={certificate._id} className="flex min-w-0 items-center gap-2 text-xs">
                                     <img src={publicAssetUrl(certificate.logoUrl)} alt="" className="h-14 w-14 shrink-0 object-contain lg:h-10 lg:w-10" /><span className="min-w-0 break-words">{certificate.name}</span>
-                                </div>
-                                )}
-                                </div>
-                            </div>
-                            }
-                            <div className="lg:hidden"><ShippingHandling /></div>
-
-                            {/* Metal Finish Swatches with Proper White Color */}
-                            <div className="space-y-2">
+                                </div>)}</div>
+                            </MobileAccordion></div>}
+                            <div className="order-[10] lg:hidden"><MobileAccordion title="Shipping & Handling"><ul className="list-disc space-y-1.5 pl-5 text-base leading-relaxed text-stone-600"><li>Free shipping perks on all orders within India</li><li>Avail your items within 15 business days</li><li>Inspect your package carefully before signing off</li><li>Package will be sealed and wrapped in bubble wrap, small box, or padded envelope</li></ul></MobileAccordion></div>
+{/* Metal Finish Swatches with Proper White Color */}
+                            <div className="order-5 space-y-2 lg:order-9">
                                 <label className="block text-xs uppercase tracking-widest font-semibold text-stone-600">
                                     Metal Finish: <span className="text-stone-900">{formatFinishLabel(color)}</span>
                                 </label>
@@ -374,18 +376,16 @@ export default function ProductDetails() {
                                         </button>
                                     ))}
                                 </div>
-                            </div>
+                                {isRing && <div className="mt-5 space-y-2">
+                                    <label htmlFor="ring-size" className="block text-xs uppercase tracking-widest font-semibold text-stone-600">Ring Size</label>
+                                    <select id="ring-size" value={size} onChange={(event) => setSize(event.target.value)} className="w-full rounded border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-800 focus:border-amber-800 focus:outline-none" aria-required="true">
+                                        <option value="">Select size</option>
+                                        {RING_SIZES.map((ringSize) => <option key={ringSize} value={ringSize}>{ringSize}</option>)}
+                                    </select>
+                                </div>}                            </div>
 
-                            {isRing && <div className="space-y-2">
-                                <label htmlFor="ring-size" className="block text-xs uppercase tracking-widest font-semibold text-stone-600">Ring Size</label>
-                                <select id="ring-size" value={size} onChange={(event) => setSize(event.target.value)} className="w-full rounded border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-800 focus:border-amber-800 focus:outline-none" aria-required="true">
-                                    <option value="">Select size</option>
-                                    {RING_SIZES.map((ringSize) => <option key={ringSize} value={ringSize}>{ringSize}</option>)}
-                                </select>
-                            </div>}
-
-                            {/* CTA Buttons */}
-                            <div className="flex gap-4 pt-2">
+                                                        {/* CTA Buttons */}
+                            <div className="order-[11] flex gap-4 pt-2 lg:order-11">
                                 <button
                                     onClick={handleAddToCart}
                                     className="flex-1 py-3.5 px-6 border border-stone-900 bg-white text-stone-900 font-semibold text-xs uppercase tracking-widest hover:bg-stone-900 hover:text-white transition"

@@ -1,4 +1,4 @@
-const CategoryPricingConfig = require("../models/categoryPricingConfig.model");
+﻿const CategoryPricingConfig = require("../models/categoryPricingConfig.model");
 const Category = require("../models/category.model");
 const { calculateGoldPrice } = require("./goldPricing");
 const { calculateSilverPrice } = require("./silverPricing");
@@ -30,7 +30,7 @@ const calculatePrice = async (product, karat, buyer = "B2C", rates = global.TBA_
   const settings = await resolveSettings(product);
   return settings.metal === "gold"
     ? calculateGoldPrice({ product, karat, buyer, rates, settings })
-    : calculateSilverPrice({ product, rates, settings });
+    : calculateSilverPrice({ product, rates, settings, buyer });
 };
 
 module.exports = { calculatePrice, resolveSettings };

@@ -52,3 +52,7 @@ add a call button (office number)
 
 **Login Page -**
 1. add the discount option add a banner - https://onyadiamonds.com/ and also write it
+
+
+Product Page - 
+total diamond count number - this be manually added by admin in add products - admin panel
