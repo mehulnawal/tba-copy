@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -26,7 +26,7 @@ export default function Navbar({
   activeCategory,
   onCategoryChange,
   onAuthOpen,
-  showMobileSearch = true,
+  showMobileSearch = false,
 }: {
   onSearchChange: (query: string) => void;
   activeCategory: string;
@@ -44,7 +44,7 @@ export default function Navbar({
   const cartCount =
     cartData?.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
 
-  const handleAuthAction = (returnTo = "/") => {
+  const handleAuthAction = (returnTo = `${location.pathname}${location.search}${location.hash}`) => {
     if (onAuthOpen) {
       onAuthOpen(returnTo);
       return;

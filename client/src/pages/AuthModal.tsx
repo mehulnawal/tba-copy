@@ -19,7 +19,8 @@ type AuthMode = "login" | "register" | "forgot";
 export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const returnTo = typeof location.state?.from === "string" && location.state.from.startsWith("/") && !location.state.from.startsWith("//") ? location.state.from : "/";
+  const currentPage = `${location.pathname}${location.search}${location.hash}`;
+  const returnTo = typeof location.state?.from === "string" && location.state.from.startsWith("/") && !location.state.from.startsWith("//") ? location.state.from : location.pathname === "/auth" ? "/" : currentPage;
   const { login, register, setUser } = useAuth();
   const { showToast } = useToast();
 

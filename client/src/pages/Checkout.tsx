@@ -32,9 +32,10 @@ type AvailableCoupon = {
     discountType: string;
     discountValue: number;
     minimumCartValue: number;
-    expiryDate: string;
-    usageLimit: number;
+    expiryDate?: string;
+    usageLimit: number | null;
     usedCount: number;
+    eligibilityLabel?: string;
 };
 
 export default function Checkout() {
@@ -46,7 +47,7 @@ export default function Checkout() {
     const [couponSuccess, setCouponSuccess] = useState("");
     const [couponError, setCouponError] = useState("");
     const [manualCouponCode, setManualCouponCode] = useState("");
-    const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
+    const [appliedCoupons, setAppliedCoupons] = useState<AppliedCoupon[]>([]);
 
     const [applyingCode, setApplyingCode] = useState<string | null>(null);
     const [isRemoving, setIsRemoving] = useState(false);
@@ -73,14 +74,11 @@ export default function Checkout() {
             const d: any = await checkoutApi.getOrderSummary();
             setItems(d.items as CartItem[]);
             setSummary(d.summary);
-            if (d.coupon) {
-                setAppliedCoupon({
-                    code: d.coupon.code || d.coupon,
-                    discountDisplay: d.coupon.discountDisplay || d.coupon.discountLabel,
-                });
-            } else {
-                setAppliedCoupon(null);
-            }
+            const activeCoupons = d.coupons || (d.coupon ? [d.coupon] : []);
+            setAppliedCoupons(activeCoupons.map((coupon: any) => ({
+                code: coupon.code || coupon,
+                discountDisplay: coupon.discountDisplay || coupon.discountLabel,
+            })));
         } catch (e: any) {
             setError(e.message);
         }
@@ -93,14 +91,11 @@ export default function Checkout() {
     // 3. Fetch Available Coupons
     useEffect(() => {
         setIsLoadingCoupons(true);
-        checkoutApi
-            .getCoupons()
-            .then((coupons) => {
-                setAvailableCoupons(coupons || []);
+        Promise.all([checkoutApi.getCoupons(), checkoutApi.getWelcomeCoupons()])
+            .then(([coupons, welcomeCoupons]) => {
+                setAvailableCoupons([...(coupons || []), ...(welcomeCoupons || [])]);
             })
-            .catch(() => {
-                setAvailableCoupons([]);
-            })
+            .catch(() => setAvailableCoupons([]))
             .finally(() => setIsLoadingCoupons(false));
     }, []);
 
@@ -129,13 +124,13 @@ export default function Checkout() {
     };
 
     // Remove Coupon Handler
-    const handleRemoveCoupon = async () => {
+    const handleRemoveCoupon = async (code: string) => {
         setCouponError("");
         setCouponSuccess("");
 
         try {
             setIsRemoving(true);
-            await checkoutApi.removeCoupon();
+            await checkoutApi.removeCoupon(code);
             await fetchOrderSummary();
             setCouponSuccess("Coupon removed successfully.");
         } catch (err: any) {
@@ -239,135 +234,40 @@ export default function Checkout() {
                                 <h3 className="text-xs uppercase tracking-widest font-semibold text-gray-900 border-b border-gray-100 pb-3">
                                     Offers & Coupons
                                 </h3>
+                                {/* Promo entry and independently applied coupons */}
+                                <div className="space-y-2">
+                                    <label className="text-[11px] font-medium uppercase tracking-wider text-gray-500 block">Enter Promo Code</label>
+                                    <form onSubmit={(e) => { e.preventDefault(); handleApplyCoupon(manualCouponCode); }} className="flex gap-2">
+                                        <input type="text" placeholder="SAVE10" value={manualCouponCode} onChange={(e) => setManualCouponCode(e.target.value.toUpperCase())} disabled={!!applyingCode} className="flex-1 bg-white border border-gray-300 text-gray-900 text-xs px-3 py-2.5 rounded focus:outline-none focus:border-gray-900 uppercase tracking-wider disabled:opacity-50" />
+                                        <button type="submit" disabled={!!applyingCode || !manualCouponCode.trim()} className="bg-black hover:bg-gray-800 text-white text-xs uppercase tracking-widest px-4 py-2.5 rounded font-medium transition-colors disabled:opacity-50 flex-shrink-0">{applyingCode === manualCouponCode.trim() ? "Applying..." : "Apply"}</button>
+                                    </form>
+                                </div>
 
-                                {/* Manual Input Form (Always Visible When No Active Applied Coupon) */}
-                                {!appliedCoupon && (
-                                    <div className="space-y-2">
-                                        <label className="text-[11px] font-medium uppercase tracking-wider text-gray-500 block">
-                                            Enter Promo Code
-                                        </label>
-                                        <form
-                                            onSubmit={(e) => {
-                                                e.preventDefault();
-                                                handleApplyCoupon(manualCouponCode);
-                                            }}
-                                            className="flex gap-2"
-                                        >
-                                            <input
-                                                type="text"
-                                                placeholder="SAVE10"
-                                                value={manualCouponCode}
-                                                onChange={(e) => setManualCouponCode(e.target.value.toUpperCase())}
-                                                disabled={!!applyingCode}
-                                                className="flex-1 bg-white border border-gray-300 text-gray-900 text-xs px-3 py-2.5 rounded focus:outline-none focus:border-gray-900 uppercase tracking-wider disabled:opacity-50"
-                                            />
-                                            <button
-                                                type="submit"
-                                                disabled={!!applyingCode || !manualCouponCode.trim()}
-                                                className="bg-black hover:bg-gray-800 text-white text-xs uppercase tracking-widest px-4 py-2.5 rounded font-medium transition-colors disabled:opacity-50 flex-shrink-0"
-                                            >
-                                                {applyingCode === manualCouponCode.trim() ? "Applying..." : "Apply"}
-                                            </button>
-                                        </form>
+                                {appliedCoupons.map((coupon) => (
+                                    <div key={coupon.code} className="p-4 bg-emerald-50 border border-emerald-200 rounded flex items-center justify-between">
+                                        <div><div className="text-sm font-bold tracking-wider text-emerald-900 flex items-center gap-1.5"><span>?</span> {coupon.code} Applied</div>{coupon.discountDisplay && <div className="text-xs text-emerald-700 font-medium mt-0.5">{coupon.discountDisplay}</div>}</div>
+                                        <button type="button" onClick={() => handleRemoveCoupon(coupon.code)} disabled={isRemoving} className="text-xs uppercase tracking-wider font-semibold text-red-600 hover:text-red-800 underline underline-offset-2 transition-colors disabled:opacity-50">{isRemoving ? "Removing..." : "Remove"}</button>
                                     </div>
-                                )}
+                                ))}
 
-                                {/* Applied Coupon Section */}
-                                {appliedCoupon ? (
-                                    <div className="p-4 bg-emerald-50 border border-emerald-200 rounded flex items-center justify-between">
-                                        <div>
-                                            <div className="text-sm font-bold tracking-wider text-emerald-900 flex items-center gap-1.5">
-                                                <span>✓</span> {appliedCoupon.code} Applied
-                                            </div>
-                                            {appliedCoupon.discountDisplay && (
-                                                <div className="text-xs text-emerald-700 font-medium mt-0.5">
-                                                    {appliedCoupon.discountDisplay}
-                                                </div>
-                                            )}
+                                <div className="space-y-3 pt-2">
+                                    <span className="text-[11px] font-medium uppercase tracking-wider text-gray-500 block">Available Offers</span>
+                                    {isLoadingCoupons ? <div className="space-y-2"><div className="h-16 bg-gray-100 rounded animate-pulse" /><div className="h-16 bg-gray-100 rounded animate-pulse" /></div> : availableCoupons.length === 0 ? <p className="text-xs text-gray-500 italic py-2">No offers available.</p> : (
+                                        <div className="space-y-3 max-h-64 overflow-y-auto pr-1">
+                                            {availableCoupons.map((coupon) => {
+                                                const currentSubtotal = summary?.subtotal || 0;
+                                                const minReq = coupon.minimumCartValue || 0;
+                                                const isEligible = currentSubtotal >= minReq;
+                                                const isApplied = appliedCoupons.some((entry) => entry.code === coupon.code);
+                                                const isThisApplying = applyingCode === coupon.code;
+                                                return <div key={coupon.code} className={`p-3.5 border rounded-md transition-all flex items-start justify-between gap-3 ${isEligible ? "border-gray-200 bg-gray-50/50 hover:border-gray-400" : "border-gray-200 bg-gray-50/20 opacity-75"}`}>
+                                                    <div className="space-y-1 min-w-0 flex-1"><div className="text-xs font-bold text-gray-900 tracking-wider">{coupon.code}</div><div className="text-xs font-semibold text-emerald-700">{coupon.discountType === "percentage" ? `${coupon.discountValue}% OFF` : `${formatCurrency(coupon.discountValue)} OFF`}</div>{coupon.eligibilityLabel && <div className="text-[11px] text-gray-500">{coupon.eligibilityLabel}</div>}{minReq > 0 && <div className="text-[11px] text-gray-500">Minimum Order {formatCurrency(minReq)}</div>}{coupon.expiryDate && <div className="text-[10px] text-gray-400">Expires {formatDate(coupon.expiryDate)}</div>}{!isEligible && <div className="text-[11px] font-medium text-amber-700 pt-1">Add {formatCurrency(minReq - currentSubtotal)} more to use this coupon.</div>}</div>
+                                                    <button type="button" disabled={!isEligible || isApplied || !!applyingCode || isRemoving} onClick={() => isEligible && !isApplied && handleApplyCoupon(coupon.code)} className="bg-black hover:bg-gray-800 text-white text-[11px] uppercase tracking-wider px-3.5 py-1.5 rounded font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0">{isApplied ? "Applied" : isThisApplying ? "Applying..." : "Apply"}</button>
+                                                </div>;
+                                            })}
                                         </div>
-                                        <button
-                                            type="button"
-                                            onClick={handleRemoveCoupon}
-                                            disabled={isRemoving}
-                                            className="text-xs uppercase tracking-wider font-semibold text-red-600 hover:text-red-800 underline underline-offset-2 transition-colors disabled:opacity-50"
-                                        >
-                                            {isRemoving ? "Removing..." : "Remove"}
-                                        </button>
-                                    </div>
-                                ) : (
-                                    /* Available Offers Section */
-                                    <div className="space-y-3 pt-2">
-                                        <span className="text-[11px] font-medium uppercase tracking-wider text-gray-500 block">
-                                            Available Offers
-                                        </span>
-
-                                        {isLoadingCoupons ? (
-                                            <div className="space-y-2">
-                                                <div className="h-16 bg-gray-100 rounded animate-pulse" />
-                                                <div className="h-16 bg-gray-100 rounded animate-pulse" />
-                                            </div>
-                                        ) : availableCoupons.length === 0 ? (
-                                            <p className="text-xs text-gray-500 italic py-2">
-                                                No offers available.
-                                            </p>
-                                        ) : (
-                                            <div className="space-y-3 max-h-64 overflow-y-auto pr-1">
-                                                {availableCoupons.map((coupon) => {
-                                                    const currentSubtotal = summary?.subtotal || 0;
-                                                    const minReq = coupon.minimumCartValue || 0;
-                                                    const isEligible = currentSubtotal >= minReq;
-                                                    const shortage = minReq - currentSubtotal;
-                                                    const isThisApplying = applyingCode === coupon.code;
-
-                                                    return (
-                                                        <div
-                                                            key={coupon.code}
-                                                            className={`p-3.5 border rounded-md transition-all flex items-start justify-between gap-3 ${isEligible
-                                                                    ? "border-gray-200 bg-gray-50/50 hover:border-gray-400"
-                                                                    : "border-gray-200 bg-gray-50/20 opacity-75"
-                                                                }`}
-                                                        >
-                                                            <div className="space-y-1 min-w-0 flex-1">
-                                                                <div className="text-xs font-bold text-gray-900 tracking-wider">
-                                                                    {coupon.code}
-                                                                </div>
-                                                                <div className="text-xs font-semibold text-emerald-700">
-                                                                    {coupon.discountType === "percentage"
-                                                                        ? `${coupon.discountValue}% OFF`
-                                                                        : `${formatCurrency(coupon.discountValue)} OFF`}
-                                                                </div>
-                                                                {minReq > 0 && (
-                                                                    <div className="text-[11px] text-gray-500">
-                                                                        Minimum Order {formatCurrency(minReq)}
-                                                                    </div>
-                                                                )}
-                                                                <div className="text-[10px] text-gray-400">
-                                                                    Expires {formatDate(coupon.expiryDate)}
-                                                                </div>
-
-                                                                {!isEligible && (
-                                                                    <div className="text-[11px] font-medium text-amber-700 pt-1">
-                                                                        Add {formatCurrency(shortage)} more to use this coupon.
-                                                                    </div>
-                                                                )}
-                                                            </div>
-
-                                                            <button
-                                                                type="button"
-                                                                disabled={!isEligible || !!applyingCode || isRemoving}
-                                                                onClick={() => isEligible && handleApplyCoupon(coupon.code)}
-                                                                className="bg-black hover:bg-gray-800 text-white text-[11px] uppercase tracking-wider px-3.5 py-1.5 rounded font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
-                                                            >
-                                                                {isThisApplying ? "Applying..." : "Apply"}
-                                                            </button>
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-
+                                    )}
+                                </div>
                                 {/* Status Messages */}
                                 {couponSuccess && (
                                     <p className="text-xs font-medium text-emerald-700 tracking-wide">

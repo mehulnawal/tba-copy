@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 
 import Loader from "./components/Loader";
 import ToastContainer from "./components/ToastContainer";
@@ -76,6 +76,12 @@ function RouteSeo() {
   const noIndex = ["/admin", "/b2b", "/wishlist", "/cart", "/checkout", "/account", "/orders", "/orderConfirmation", "/auth", "/reset-password"].some((path) => pathname === path || pathname.startsWith(`${path}/`));
   return <Seo {...page} noIndex={noIndex || page.noIndex} />;
 }
+function AuthRoute() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const from = typeof location.state?.from === "string" && location.state.from.startsWith("/") && !location.state.from.startsWith("//") ? location.state.from : "/";
+  return <div className="min-h-screen bg-[var(--color-bg)] flex items-center justify-center"><AuthModal isOpen={true} onClose={() => navigate(from, { replace: true })} /></div>;
+}
 function ScrollToTop() {
   const { pathname } = useLocation();
   useEffect(() => { window.scrollTo({ top: 0, left: 0, behavior: "auto" }); }, [pathname]);
@@ -150,11 +156,8 @@ export default function App() {
 
               <Route
                 path="/auth"
-                element={
-                  <div className="min-h-screen bg-[var(--color-bg)] flex items-center justify-center">
-                    <AuthModal isOpen={true} onClose={() => { window.location.href = "/"; }} />
-                  </div>
-                }
+                element={<AuthRoute />}
+
               />
 
               <Route
