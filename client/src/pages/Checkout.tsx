@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { checkoutApi } from "../api/checkout.api";
 import { apiRequest } from "../api/client";
@@ -56,6 +57,7 @@ export default function Checkout() {
     const [isPaying, setIsPaying] = useState(false);
 
     const nav = useNavigate();
+    const queryClient = useQueryClient();
 
     // 1. Load Razorpay SDK
     useEffect(() => {
@@ -149,7 +151,7 @@ export default function Checkout() {
             const R = (window as any).Razorpay;
             if (!R) throw new Error("Razorpay checkout is not loaded. Please try again.");
             new R({ key: d.keyId, order_id: d.razorpayOrder.id, amount: d.razorpayOrder.amount, currency: d.razorpayOrder.currency,
-                handler: async (response: unknown) => { try { await apiRequest("/orders/verify", { method: "POST", body: JSON.stringify(response) }); nav(`/orderConfirmation?orderId=${d.order._id}`); } catch (error) { setError(error instanceof Error ? error.message : "Payment verification failed."); } finally { setIsPaying(false); } },
+                handler: async (response: unknown) => { try { await apiRequest("/orders/verify", { method: "POST", body: JSON.stringify(response) }); queryClient.setQueryData(["cart"], (current: any) => current ? { ...current, items: [] } : current); queryClient.invalidateQueries({ queryKey: ["cart"] }); nav(`/orderConfirmation?orderId=${d.order._id}`); } catch (error) { setError(error instanceof Error ? error.message : "Payment verification failed."); } finally { setIsPaying(false); } },
                 modal: { ondismiss: () => setIsPaying(false) },
             }).open();
         } catch (error: unknown) { setError(error instanceof Error ? error.message : "Unable to start payment."); setIsPaying(false); }

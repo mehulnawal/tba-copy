@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ChevronDown, ChevronLeft, Share2 } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ApiRequestError, apiRequest } from "../api/client";
@@ -7,6 +7,7 @@ import { useB2BSessionGuard } from "../hooks/useB2BSessionGuard";
 import { publicAssetUrl, responsiveImage } from "../utils/image";
 import { formatINR } from "../utils/currency";
 import PriceBreakup from "../components/PriceBreakup";
+import { ProductSkeleton } from "../components/LoadingSkeleton";
 import { Seo } from "../components/Seo";
 
 const categoryName = (category?: Product["mainCategory"] | Product["subCategory"]) => typeof category === "string" ? "" : category?.name || "";
@@ -41,7 +42,7 @@ export default function B2BProductDetails() {
   const [selectedColor, setSelectedColor] = useState("");
   useEffect(() => { apiRequest<Product>("/b2b/products/" + encodeURIComponent(identifier)).then((item) => { setProduct(item); setSelectedColor(item.colors?.[0] || ""); }).catch((reason) => { if (reason instanceof ApiRequestError && reason.statusCode === 401) navigate("/b2b/access", { replace: true }); else setError(reason instanceof Error ? reason.message : "Unable to load product"); }); }, [identifier, navigate]);
   if (error) return <main className="p-10 text-[var(--color-error)]">{error}</main>;
-  if (!product) return <main className="p-10 text-[var(--color-text-muted)]">Loading B2B product...</main>;
+  if (!product) return <ProductSkeleton />;
   const isGold = product.metal === "gold";
   const media = [...(product.images || []).map((image) => ({ type: "image" as const, url: image.url })), ...(product.videoLink ? [{ type: "video" as const, url: product.videoLink }] : [])];
   const prices = product.prices || [];

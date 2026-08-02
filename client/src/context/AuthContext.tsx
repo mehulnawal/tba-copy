@@ -6,6 +6,7 @@ import React, {
   useMemo,
   useState,
 } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { authApi, type AuthUser } from "../api/auth.api";
 import { ApiRequestError } from "../api/client";
 
@@ -23,8 +24,13 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const queryClient = useQueryClient();
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const clearAccountQueries = useCallback(() => {
+    queryClient.removeQueries({ queryKey: ["cart"] });
+    queryClient.removeQueries({ queryKey: ["wishlist"] });
+  }, [queryClient]);
 
   const refreshSession = useCallback(async () => {
     try {
@@ -43,15 +49,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = useCallback(async (email: string, password: string) => {
     const loggedInUser = await authApi.login({ email, password });
+    clearAccountQueries();
     setUser(loggedInUser);
-  }, []);
+  }, [clearAccountQueries]);
 
   const register = useCallback(
     async (name: string, email: string, password: string, phone?: string) => {
       const registeredUser = await authApi.register({ name, email, password, phone });
+      clearAccountQueries();
       setUser(registeredUser);
     },
-    [],
+    [clearAccountQueries],
   );
 
   const logout = useCallback(async () => {
@@ -62,9 +70,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw error;
       }
     } finally {
+      clearAccountQueries();
       setUser(null);
     }
-  }, []);
+  }, [clearAccountQueries]);
 
   const value = useMemo(
     () => ({

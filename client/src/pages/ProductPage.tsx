@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router-dom";
 import { apiRequest } from "../api/client";
@@ -8,6 +8,7 @@ import Footer from "../components/Footer";
 import { AuthModal } from "./AuthModal";
 import { useToast } from "../context/ToastContext";
 import { useAuth } from "../context/AuthContext";
+import { useAddToWishlist, useRemoveFromWishlist, useWishlist } from "../hooks/useWishlist";
 import type { Category, Product } from "../types";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -38,7 +39,7 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
 
     const { data: categoryData = [] } = useCategories(metal);
     const categories = categoryData ?? [];
-    const [selectedKaratFilter, setSelectedKaratFilter] = useState<"14kt" | "18kt">((params.get("karat") as "14kt" | "18kt") || "14kt");
+    const [selectedKaratFilter, setSelectedKaratFilter] = useState<"" | "14kt" | "18kt">((params.get("karat") as "14kt" | "18kt") || "");
     const [isFilterMobileOpen, setIsFilterMobileOpen] = useState(false);
     const [isSortMobileOpen, setIsSortMobileOpen] = useState(false);
     const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -52,6 +53,10 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
 
     // FIX #1: Hybrid Dynamic Auth Check (Checks most common storage names)
     const { isAuthenticated: isLoggedIn } = useAuth();
+    const { data: wishlist = [] } = useWishlist(isLoggedIn);
+    const addToWishlistMutation = useAddToWishlist();
+    const removeFromWishlistMutation = useRemoveFromWishlist();
+    const [pendingWishlistProduct, setPendingWishlistProduct] = useState<Product | null>(null);
 
     const query = params.toString();
 
@@ -108,31 +113,26 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
         setParams(next);
     };
 
-    const handleWishlistToggle = async (product: Product) => {
-        if (!isLoggedIn) {
-            setIsAuthOpen(true);
-            return;
-        }
+    const performWishlistToggle = async (product: Product) => {
+        const alreadySaved = wishlist.some((item) => item.productId === product.SKU);
         try {
-            const currentWishlist = await apiRequest<{ productId: string }[]>("/wishlist");
-            const alreadySaved = currentWishlist.some((item) => item.productId === product.SKU);
-
-            if (alreadySaved) {
-                await apiRequest(`/wishlist/${product.SKU}`, { method: "DELETE" });
-                showToast("Removed from wishlist.", "success");
-            } else {
+            if (alreadySaved) { await removeFromWishlistMutation.mutateAsync(product.SKU); showToast("Removed from wishlist.", "success"); }
+            else {
                 const productPrices = Array.isArray(product.prices) ? product.prices : [];
-                const priceObj = productPrices.find((p) => p.karat === "14kt") || productPrices[0];
-                await apiRequest("/wishlist", {
-                    method: "POST",
-                    body: JSON.stringify({ productId: product.SKU, karat: priceObj?.karat || "14kt" }),
-                });
+                const priceObj = productPrices.find((price) => price.karat === "14kt") || productPrices[0];
+                await addToWishlistMutation.mutateAsync({ productId: product.SKU, karat: priceObj?.karat || "14kt" });
                 showToast("Product saved to wishlist.", "success");
             }
-        } catch (err) {
-            console.error(err);
-            showToast("Could not update wishlist.", "error");
-        }
+        } catch { showToast("Could not update wishlist.", "error"); }
+    };
+    const handleWishlistToggle = (product: Product) => {
+        if (!isLoggedIn) { setPendingWishlistProduct(product); setIsAuthOpen(true); return; }
+        void performWishlistToggle(product);
+    };
+    const handleWishlistAuthenticated = () => {
+        const product = pendingWishlistProduct;
+        setPendingWishlistProduct(null);
+        if (product) void performWishlistToggle(product);
     };
 
     const filteredProducts = products.filter((product) => (!selectedMainCategory || categoryId(product.mainCategory) === selectedMainCategory || (!selectedSubCategory && categoryId(product.subCategory) === selectedMainCategory)) && (!selectedSubCategory || categoryId(product.subCategory) === selectedSubCategory));
@@ -212,22 +212,7 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
                             </div>
                         </FilterSection>
 
-                        <FilterSection title="Metal Purity">
-                            <div className="space-y-2 pt-2">
-                                {KARAT_OPTIONS.map((k) => (
-                                    <label key={k.value} className="flex items-center space-x-3 cursor-pointer text-sm text-gray-600 hover:text-gray-900">
-                                        <input
-                                            type="radio"
-                                            name="purity-desktop"
-                                            checked={selectedKaratFilter === k.value}
-                                            onChange={() => { setSelectedKaratFilter(k.value as "14kt" | "18kt"); changeParam("karat", k.value); }}
-                                            className="h-4 w-4 border-gray-300 text-amber-600 focus:ring-amber-500"
-                                        />
-                                        <span className={selectedKaratFilter === k.value ? "text-amber-700 font-medium" : ""}>{k.label}</span>
-                                    </label>
-                                ))}
-                            </div>
-                        </FilterSection>
+                        <FilterSection title="Purity / KT"><div className="flex gap-2 pt-2">{[{ label: "All", value: "" }, { label: "14KT", value: "14kt" }, { label: "18KT", value: "18kt" }].map((option) => (<button key={option.label} type="button" onClick={() => { setSelectedKaratFilter(option.value as "" | "14kt" | "18kt"); changeParam("karat", option.value || null); }} className={`rounded border px-3 py-2 text-xs font-semibold ${selectedKaratFilter === option.value ? "border-amber-600 bg-amber-50 text-amber-800" : "border-gray-200 text-gray-600 hover:bg-gray-50"}`}>{option.label}</button>))}</div></FilterSection>
                     </aside>
 
                     {/* Product Grid Area */}
@@ -277,8 +262,9 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
                                     <ProductCard
                                         key={product.id}
                                         product={product}
-                                        defaultKarat={selectedKaratFilter}
+                                        defaultKarat={selectedKaratFilter || "14kt"}
                                         onWishlistToggle={handleWishlistToggle}
+                                        isWishlisted={wishlist.some((item) => item.productId === product.SKU)}
                                     />
                                 ))}
                             </div>
@@ -317,6 +303,7 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
                                         </button>
                                     ))}
                                 </div>
+                                <div className="border-t pt-4"><h3 className="text-sm font-semibold text-gray-900 mb-2">Purity / KT</h3><div className="flex gap-2">{[{ label: "All", value: "" }, { label: "14KT", value: "14kt" }, { label: "18KT", value: "18kt" }].map((option) => (<button key={option.label} type="button" onClick={() => { setSelectedKaratFilter(option.value as "" | "14kt" | "18kt"); changeParam("karat", option.value || null); }} className={`rounded border px-3 py-2 text-xs font-semibold ${selectedKaratFilter === option.value ? "border-amber-600 bg-amber-50 text-amber-800" : "border-gray-200 text-gray-600 hover:bg-gray-50"}`}>{option.label}</button>))}</div></div>
                                 <div className="border-t pt-4">
                                     <h3 className="text-sm font-semibold text-gray-900 mb-2">Price Ranges</h3>
                                     {PRICE_BUCKETS.map((b) => (
@@ -356,7 +343,7 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
             }
 
             <Footer onCategoryChange={() => { }} />
-            <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
+            <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} onAuthenticated={handleWishlistAuthenticated} />
         </div >
     );
 }
@@ -376,7 +363,7 @@ function FilterSection({ title, children }: { title: string; children: React.Rea
     );
 }
 
-function ProductCard({ product, defaultKarat, onWishlistToggle }: { product: Product; defaultKarat: "14kt" | "18kt"; onWishlistToggle: (product: Product) => void }) {
+function ProductCard({ product, defaultKarat, onWishlistToggle, isWishlisted }: { product: Product; defaultKarat: "14kt" | "18kt"; onWishlistToggle: (product: Product) => void; isWishlisted: boolean }) {
 
     const categoryName = (
         category?: Category | string | null
@@ -441,10 +428,10 @@ function ProductCard({ product, defaultKarat, onWishlistToggle }: { product: Pro
 
                 <button
                     onClick={() => onWishlistToggle(product)}
-                    className="absolute top-3 right-3 p-2 rounded-full bg-white/90 text-gray-500 hover:text-rose-600 hover:bg-white shadow-sm transition"
+                    className={`absolute top-3 right-3 p-2 rounded-full bg-white/90 hover:bg-white shadow-sm transition ${isWishlisted ? "text-rose-600" : "text-gray-500 hover:text-rose-600"}`}
                     aria-label="Save to Wishlist"
                 >
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="h-4 w-4" fill={isWishlisted ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                     </svg>
                 </button>

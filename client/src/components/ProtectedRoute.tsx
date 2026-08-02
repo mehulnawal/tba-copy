@@ -1,5 +1,6 @@
-﻿import { Navigate, useLocation } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { PageSkeleton } from "./LoadingSkeleton";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -13,15 +14,7 @@ export default function ProtectedRoute({
   const { isAuthenticated, isLoading, user } = useAuth();
   const location = useLocation();
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg)]">
-        <p className="font-secondary text-sm text-[var(--color-text-muted)] tracking-widest uppercase">
-          Loading...
-        </p>
-      </div>
-    );
-  }
+  if (isLoading) return <PageSkeleton />;
 
   if (!isAuthenticated) {
     return <Navigate to="/auth" replace state={{ from: `${location.pathname}${location.search}${location.hash}` }} />;

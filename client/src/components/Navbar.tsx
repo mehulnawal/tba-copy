@@ -74,7 +74,7 @@ export default function Navbar({
   const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
-  const [mobileExpanded, setMobileExpanded] = useState<Record<string, boolean>>({ Gold: false, Silver: false });
+  const [mobileExpanded, setMobileExpanded] = useState<Record<string, boolean>>({ Gold: true, Silver: true });
   const accountDropdownRef = useRef<HTMLDivElement>(null);
   const lenis = useLenis();
   const toggleMobileAccordion = (title: string) => setMobileExpanded((prev) => ({ ...prev, [title]: !prev[title] }));
@@ -298,7 +298,7 @@ export default function Navbar({
             {/* Left Column: Mobile Hamburger & Logo (Padded & Balanced) */}
             <div className="flex items-center gap-4 justify-start">
               <button
-                onClick={() => setIsMobileMenuOpen(true)}
+                onClick={() => { setMobileExpanded({ Gold: true, Silver: true }); setIsMobileMenuOpen(true); }}
                 className="lg:hidden text-[var(--color-text)] hover:text-[var(--color-teal)] transition-colors duration-200 p-1 cursor-pointer"
                 aria-label="Open navigation menu"
               >

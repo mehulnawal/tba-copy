@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { AuthModal } from "./AuthModal";
 import { useAuth } from "../context/AuthContext";
@@ -7,12 +7,14 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { useToast } from "../context/ToastContext";
 import { useAddToCart } from "../hooks/useCart";
+import { useAddToWishlist, useRemoveFromWishlist, useWishlist } from "../hooks/useWishlist";
 import { RING_SIZES } from "../constants/product";
 import type { Product } from "../types";
 import { formatINR } from "../utils/currency";
 import { publicAssetUrl } from "../utils/image";
 import PriceBreakup from "../components/PriceBreakup";
 import { Seo } from "../components/Seo";
+import { ProductSkeleton } from "../components/LoadingSkeleton";
 import { ChevronDown, Heart, Share2 } from "lucide-react";
 
 type Review = {
@@ -51,6 +53,9 @@ export default function ProductDetails() {
     const { showToast } = useToast();
     const { isAuthenticated } = useAuth();
     const addToCartMutation = useAddToCart();
+    const { data: wishlist = [] } = useWishlist(isAuthenticated);
+    const addToWishlistMutation = useAddToWishlist();
+    const removeFromWishlistMutation = useRemoveFromWishlist();
 
     const [product, setProduct] = useState<Product | null>(null);
     const [karat, setKarat] = useState<"14kt" | "18kt">("14kt");
@@ -62,6 +67,7 @@ export default function ProductDetails() {
     const [hoverRating, setHoverRating] = useState(0);
     const [reviewText, setReviewText] = useState("");
     const [isAuthOpen, setIsAuthOpen] = useState(false);
+    const [pendingAction, setPendingAction] = useState<"cart" | "wishlist" | null>(null);
 
     const [activeMediaIndex, setActiveMediaIndex] = useState(0);
     const [isPriceBreakupOpen, setIsPriceBreakupOpen] = useState(true);
@@ -93,7 +99,7 @@ export default function ProductDetails() {
                     </div>
                 </main>
                 <Footer onCategoryChange={() => { }} />
-                <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} onAuthenticated={() => void addToCartMutation.mutateAsync({ productId: product.SKU, karat, color, size, quantity: 1 }).then(() => showToast("Item added to cart!", "success")).catch((error: unknown) => showToast(error instanceof Error ? error.message : "Failed to add to cart.", "error"))} />
+                <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
             </>
         );
     }
@@ -174,24 +180,31 @@ export default function ProductDetails() {
         setZoomMousePos({ x, y });
     };
 
-    const handleAddToCart = async () => {
-        if (isRing && !size) {
-            showToast("Select a size before adding this product.", "error");
-            return;
-        }
-        if (!isAuthenticated) { setIsAuthOpen(true); return; }
+    const isWishlisted = wishlist.some((item) => item.productId === product.SKU);
+    const addProductToCart = async () => {
+        try { await addToCartMutation.mutateAsync({ productId: product.SKU, karat, color, size, quantity: 1 }); showToast("Item added to cart!", "success"); }
+        catch (err: unknown) { showToast(err instanceof Error ? err.message : "Failed to add to cart.", "error"); }
+    };
+    const toggleWishlist = async () => {
         try {
-            await addToCartMutation.mutateAsync({
-                productId: product.SKU,
-                karat,
-                color,
-                size,
-                quantity: 1,
-            });
-            showToast("Item added to cart!", "success");
-        } catch (err: unknown) {
-            showToast(err instanceof Error ? err.message : "Failed to add to cart.", "error");
-        }
+            if (isWishlisted) { await removeFromWishlistMutation.mutateAsync(product.SKU); showToast("Removed from wishlist.", "success"); }
+            else { await addToWishlistMutation.mutateAsync({ productId: product.SKU, karat }); showToast("Product saved to wishlist.", "success"); }
+        } catch (err: unknown) { showToast(err instanceof Error ? err.message : "Could not update wishlist.", "error"); }
+    };
+    const handleAddToCart = async () => {
+        if (isRing && !size) { showToast("Select a size before adding this product.", "error"); return; }
+        if (!isAuthenticated) { setPendingAction("cart"); setIsAuthOpen(true); return; }
+        await addProductToCart();
+    };
+    const handleWishlistClick = () => {
+        if (!isAuthenticated) { setPendingAction("wishlist"); setIsAuthOpen(true); return; }
+        void toggleWishlist();
+    };
+    const handleAuthenticated = () => {
+        const action = pendingAction;
+        setPendingAction(null);
+        if (action === "wishlist") void toggleWishlist();
+        if (action === "cart") void addProductToCart();
     };
 
     const handleSubmitReview = async (e: React.FormEvent) => {
@@ -302,7 +315,7 @@ export default function ProductDetails() {
                                     </span>
                                     <span className="text-[11px] text-stone-500 block">Inclusive of all taxes</span><span className="text-[11px] text-stone-500 block">*This is an estimated price, actual price may differ as per actual weights.</span>
                                 </div>
-                                <div className="flex gap-2"><button type="button" onClick={() => navigator.share ? void navigator.share({ title: product.title, url: window.location.href }) : void navigator.clipboard.writeText(window.location.href).then(() => showToast("Product link copied.", "success"))} className="inline-flex items-center gap-3 py-3 text-sm text-stone-700 cursor-pointer"><Share2 size={22} />Share</button><button type="button" onClick={() => isAuthenticated ? window.location.assign("/wishlist") : setIsAuthOpen(true)} className="inline-flex items-center gap-3 py-3 text-sm text-stone-700"><Heart size={22} />Add to Wishlist</button></div>
+                                <div className="flex gap-6"><button type="button" onClick={() => navigator.share ? void navigator.share({ title: product.title, url: window.location.href }) : void navigator.clipboard.writeText(window.location.href).then(() => showToast("Product link copied.", "success"))} className="inline-flex items-center gap-3 py-3 text-sm text-stone-700 cursor-pointer"><Share2 size={22} />Share</button><button type="button" onClick={handleWishlistClick} className="inline-flex items-center gap-1.5 py-3 text-sm text-stone-700"><Heart size={22} fill={isWishlisted ? "#dc2626" : "none"} className={isWishlisted ? "text-red-600" : ""} />Add to Wishlist</button></div>
                             </div>
                             {/* Specs */}
                             <div className="order-4 rounded-lg border border-stone-200/80 bg-stone-50 p-4 space-y-3 lg:order-3">
@@ -474,7 +487,7 @@ export default function ProductDetails() {
                 </main>
 
                 <Footer onCategoryChange={() => { }} />
-                <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} onAuthenticated={() => void addToCartMutation.mutateAsync({ productId: product.SKU, karat, color, size, quantity: 1 }).then(() => showToast("Item added to cart!", "success")).catch((error: unknown) => showToast(error instanceof Error ? error.message : "Failed to add to cart.", "error"))} />
+                <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} onAuthenticated={handleAuthenticated} />
             </div>
         </>
     );
