@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+﻿import React, { useEffect, useMemo, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -18,6 +18,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../hooks/useCart";
 import { useAnnouncements } from "../hooks/useContent";
+import { useToast } from "../context/ToastContext";
 type NavCategory = { id: string; name: string; parentId?: string; children: NavCategory[] };
 
 export default function Navbar({
@@ -36,6 +37,7 @@ export default function Navbar({
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated, logout } = useAuth();
+  const { showToast } = useToast();
   const { data: cartData } = useCart(isAuthenticated);
   const { data: announcementData } = useAnnouncements();
 
@@ -152,8 +154,14 @@ export default function Navbar({
 
   const handleLogoutAction = async () => {
     setIsAccountDropdownOpen(false);
-    await logout();
-    navigate("/");
+    const loginRequiredPaths = ["/checkout", "/cart", "/account", "/wishlist", "/orders", "/orderConfirmation"];
+    if (loginRequiredPaths.includes(location.pathname)) navigate("/", { replace: true });
+    try {
+      await logout();
+      showToast("Logged out successfully", "success");
+    } catch {
+      showToast("Unable to log out. Please try again.", "error");
+    }
   };
 
   const fallbackAnnouncements = [

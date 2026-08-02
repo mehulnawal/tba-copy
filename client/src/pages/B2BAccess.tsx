@@ -1,13 +1,63 @@
-import { FormEvent, useState } from "react";
+﻿import { FormEvent, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { apiRequest, ApiRequestError } from "../api/client";
+
+type Step = "password" | "mobile" | "otp";
+const OTP_LENGTH = 6;
 
 export default function B2BAccess() {
   const navigate = useNavigate();
+  const [step, setStep] = useState<Step>("password");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const [mobile, setMobile] = useState("");
+  const [otp, setOtp] = useState(() => Array(OTP_LENGTH).fill(""));
   const [error, setError] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const submit = async (event: FormEvent) => { event.preventDefault(); setSubmitting(true); setError(""); try { await apiRequest("/b2b/access", { method: "POST", body: JSON.stringify({ password }) }); navigate("/b2b/catalog", { replace: true }); } catch (reason) { setError(reason instanceof ApiRequestError ? reason.message : "Unable to grant B2B access"); } finally { setSubmitting(false); } };
-  return <main className="min-h-screen grid place-items-center bg-[var(--color-bg)] px-5"><form onSubmit={submit} className="w-full max-w-md bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] p-8 space-y-6"><div className="space-y-2"><p className="section-label">Trade Access</p><h1 className="font-primary text-3xl text-[var(--color-teal)]">B2B Catalogue</h1><p className="text-sm text-[var(--color-text-muted)]">Enter the shared access password supplied by your account manager.</p></div>{error && <p role="alert" className="rounded-[var(--radius-sm)] border border-[var(--color-error)]/30 bg-[var(--color-error)]/10 p-3 text-sm text-[var(--color-error)]">{error}</p>}<label className="block text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">Access password<div className="relative mt-2"><input required type={showPassword ? "text" : "password"} value={password} onChange={event => setPassword(event.target.value)} className="admin-input pr-20" autoComplete="current-password" /><button type="button" onClick={() => setShowPassword(value => !value)} className="absolute inset-y-0 right-0 px-4 text-xs font-semibold normal-case tracking-normal text-[var(--color-teal)] hover:text-[var(--color-teal-light)]" aria-label={showPassword ? "Hide password" : "Show password"}>{showPassword ? "Hide" : "Show"}</button></div></label><button disabled={submitting} className="admin-button w-full disabled:opacity-60">{submitting ? "Checking access…" : "Enter B2B catalogue"}</button></form></main>;
+  const [notice, setNotice] = useState("");
+  const otpRefs = useRef<Array<HTMLInputElement | null>>([]);
+
+  const continueWithPassword = (event: FormEvent) => {
+    event.preventDefault();
+    if (!password.trim()) { setError("Password is required."); return; }
+    setError("");
+    setNotice("");
+    setMobile("");
+    setStep("mobile");
+  };
+
+  const sendOtp = (event: FormEvent) => {
+    event.preventDefault();
+    if (!mobile.trim()) { setError("Mobile Number is required."); return; }
+    setError("");
+    setNotice("OTP sent to your mobile number.");
+    setOtp(Array(OTP_LENGTH).fill(""));
+    setStep("otp");
+  };
+
+  const updateOtp = (index: number, value: string) => {
+    const digit = value.replace(/\D/g, "").slice(-1);
+    const next = [...otp];
+    next[index] = digit;
+    setOtp(next);
+    if (digit && index < OTP_LENGTH - 1) otpRefs.current[index + 1]?.focus();
+  };
+
+  const verifyOtp = (event: FormEvent) => {
+    event.preventDefault();
+    if (otp.some((digit) => !digit)) { setError("Enter the complete OTP."); return; }
+    setError("");
+    const storedLogs = JSON.parse(window.localStorage.getItem("tba-b2b-mock-access-log") || "[]") as Array<{ id: string; mobile: string; accessedAt: string; status: "Verified" }>;
+    window.localStorage.setItem("tba-b2b-mock-access-log", JSON.stringify([{ id: `b2b-log-${Date.now()}`, mobile, accessedAt: new Date().toISOString(), status: "Verified" }, ...storedLogs]));
+    navigate("/b2b/catalog", { replace: true, state: { b2bMock: true } });
+  };
+
+  const resendOtp = () => {
+    setOtp(Array(OTP_LENGTH).fill(""));
+    setError("");
+    setNotice("A new OTP has been sent.");
+    otpRefs.current[0]?.focus();
+  };
+
+  const heading = step === "password" ? "B2B Catalogue" : step === "mobile" ? "Verify your mobile" : "Enter OTP";
+  const description = step === "password" ? "Enter the password shared by your account manager." : step === "mobile" ? "Use your mobile number to continue to the private trade catalogue." : "Enter the six-digit OTP sent to your mobile number.";
+
+  return <main className="grid min-h-screen place-items-center bg-[var(--color-bg)] px-5 py-10"><section className="w-full max-w-md rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-8 shadow-[var(--shadow-lg)]"><div className="mb-7 space-y-2"><p className="section-label">Trade Access</p><h1 className="font-primary text-3xl text-[var(--color-teal)]">{heading}</h1><p className="text-sm leading-relaxed text-[var(--color-text-muted)]">{description}</p></div>{error && <p role="alert" className="mb-5 rounded-[var(--radius-sm)] border border-[var(--color-error)]/30 bg-[var(--color-error)]/10 p-3 text-sm text-[var(--color-error)]">{error}</p>}{notice && <p className="mb-5 rounded-[var(--radius-sm)] border border-[var(--color-teal)]/20 bg-[var(--color-cream)] p-3 text-sm text-[var(--color-teal)]">{notice}</p>}{step === "password" && <form onSubmit={continueWithPassword} className="space-y-5"><label className="block text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">Password<input type="password" value={password} onChange={(event) => setPassword(event.target.value)} className="admin-input mt-2" autoComplete="current-password" /></label><button className="admin-button w-full">Continue</button></form>}{step === "mobile" && <form onSubmit={sendOtp} className="space-y-5"><label className="block text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">Mobile Number<input type="tel" value={mobile} onChange={(event) => setMobile(event.target.value)} className="admin-input mt-2" autoComplete="tel" inputMode="numeric" placeholder="Enter mobile number" /></label><button className="admin-button w-full">Send OTP</button></form>}{step === "otp" && <form onSubmit={verifyOtp} className="space-y-5"><div><span className="block text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">OTP</span><div className="mt-2 flex gap-2">{otp.map((digit, index) => <input key={index} ref={(element) => { otpRefs.current[index] = element; }} value={digit} onChange={(event) => updateOtp(index, event.target.value)} onKeyDown={(event) => { if (event.key === "Backspace" && !otp[index] && index > 0) otpRefs.current[index - 1]?.focus(); }} className="h-12 min-w-0 flex-1 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-white text-center text-lg font-semibold text-[var(--color-teal)] outline-none focus:border-[var(--color-teal)]" inputMode="numeric" autoComplete={index === 0 ? "one-time-code" : "off"} maxLength={1} aria-label={`OTP digit ${index + 1}`} />)}</div></div><button className="admin-button w-full">Verify OTP</button><button type="button" onClick={resendOtp} className="w-full text-sm font-semibold text-[var(--color-teal)] underline underline-offset-4">Resend OTP</button></form>}</section></main>;
 }

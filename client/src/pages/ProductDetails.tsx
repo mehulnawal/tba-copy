@@ -34,8 +34,8 @@ function ShippingHandling() {
     return <section className="border-t border-stone-200 pt-4"><h3 className="text-base font-bold uppercase tracking-widest text-stone-700 lg:text-xs">Shipping &amp; Handling</h3><ul className="mt-3 list-disc space-y-1.5 pl-5 text-base leading-relaxed text-stone-600 lg:text-xs"><li>Free shipping perks on all orders within India</li><li>Avail your items within 15 business days</li><li>Inspect your package carefully before signing off</li><li>Package will be sealed and wrapped in bubble wrap, small box, or padded envelope</li></ul></section>;
 }
 function MobileAccordion({ title, children }: { title: string; children: React.ReactNode }) {
-    const [open, setOpen] = useState(false);
-    return <section className="border border-stone-200 bg-white p-4"><button type="button" onClick={() => setOpen(value => !value)} className="flex w-full items-center justify-between text-left"><h3 className="text-xl font-bold uppercase tracking-widest text-stone-700">{title}</h3><ChevronDown size={20} className={`transition-transform ${open ? "rotate-180" : ""}`} /></button>{open && <div className="mt-3">{children}</div>}</section>;
+    const [open, setOpen] = useState(() => typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches);
+    return <section className="border border-stone-200 bg-white p-4"><button type="button" onClick={() => setOpen(value => !value)} className="flex w-full items-center justify-between text-left"><h3 className="text-base text-stone-700 lg:text-xs">{title}</h3><ChevronDown size={20} className={`transition-transform ${open ? "rotate-180" : ""}`} /></button>{open && <div className="mt-3">{children}</div>}</section>;
 }
 
 function formatFinishLabel(colorName: string): string {
@@ -275,9 +275,10 @@ export default function ProductDetails() {
 
 
                             {/* FIX 3: Description relocated under the image */}
-                            <div className="hidden bg-white p-5 border border-stone-200/80 rounded-lg shadow-xs space-y-2 lg:block">
-                                <h3 className="text-base font-bold uppercase tracking-widest text-stone-700 lg:text-xs">Description</h3>
-                                <p className="text-base leading-relaxed text-stone-600 lg:text-xs">{product.description}</p>{(product.certificates || []).length > 0 && <div className="hidden lg:block border-t pt-4"><h3 className="text-base font-bold uppercase tracking-widest text-stone-700 lg:text-xs">Certificates of Authenticity</h3><div className="mt-3 flex gap-3">{product.certificates?.map((certificate) => <div key={certificate._id} className="flex items-center gap-3 text-lg lg:text-sm"><img src={publicAssetUrl(certificate.logoUrl)} alt="" className="h-14 w-14 object-contain lg:h-10 lg:w-10" />{certificate.name}</div>)}</div></div>}<div className="hidden lg:block"><ShippingHandling /></div>
+                            <div className="hidden space-y-3 lg:block">
+                                <MobileAccordion title="Description"><p className="text-base leading-relaxed text-stone-600 lg:text-xs">{product.description}</p></MobileAccordion>
+                                {(product.certificates || []).length > 0 && <MobileAccordion title="Certificates of Authenticity"><div className="flex gap-3">{product.certificates?.map((certificate) => <div key={certificate._id} className="flex items-center gap-3 text-lg lg:text-sm"><img src={publicAssetUrl(certificate.logoUrl)} alt="" className="h-14 w-14 object-contain lg:h-10 lg:w-10" />{certificate.name}</div>)}</div></MobileAccordion>}
+                                <MobileAccordion title="Shipping & Handling"><ul className="list-disc space-y-1.5 pl-5 text-base leading-relaxed text-stone-600 lg:text-xs"><li>Free shipping perks on all orders within India</li><li>Avail your items within 15 business days</li><li>Inspect your package carefully before signing off</li><li>Package will be sealed and wrapped in bubble wrap, small box, or padded envelope</li></ul></MobileAccordion>
                             </div>
                         </div>
 
@@ -301,11 +302,8 @@ export default function ProductDetails() {
                                     </span>
                                     <span className="text-[11px] text-stone-500 block">Inclusive of all taxes</span><span className="text-[11px] text-stone-500 block">*This is an estimated price, actual price may differ as per actual weights.</span>
                                 </div>
-                                {/* <span className="text-xs font-semibold uppercase tracking-widest text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded">
-                                In Stock & Ready to Ship
-                            </span> */}
+                                <div className="flex gap-2"><button type="button" onClick={() => navigator.share ? void navigator.share({ title: product.title, url: window.location.href }) : void navigator.clipboard.writeText(window.location.href).then(() => showToast("Product link copied.", "success"))} className="inline-flex items-center gap-3 py-3 text-sm text-stone-700 cursor-pointer"><Share2 size={22} />Share</button><button type="button" onClick={() => isAuthenticated ? window.location.assign("/wishlist") : setIsAuthOpen(true)} className="inline-flex items-center gap-3 py-3 text-sm text-stone-700"><Heart size={22} />Add to Wishlist</button></div>
                             </div>
-
                             {/* Specs */}
                             <div className="order-4 rounded-lg border border-stone-200/80 bg-stone-50 p-4 space-y-3 lg:order-3">
                                 <h4 className="text-[11px] font-bold uppercase tracking-widest text-stone-700">
@@ -320,10 +318,8 @@ export default function ProductDetails() {
                                 </div>
                             </div>
 
-                            <div className="order-3 flex gap-2 lg:order-4"><button type="button" onClick={() => navigator.share ? void navigator.share({ title: product.title, url: window.location.href }) : void navigator.clipboard.writeText(window.location.href).then(() => showToast("Product link copied.", "success"))} className="inline-flex items-center gap-3 py-3 text-sm text-stone-700 cursor-pointer"><Share2 size={22} />Share</button><button type="button" onClick={() => isAuthenticated ? window.location.assign("/wishlist") : setIsAuthOpen(true)} className="inline-flex items-center gap-3 py-3 text-sm text-stone-700"><Heart size={22} />Add to Wishlist</button></div>
-
                             {/* Purity Selection */}
-                            {isGold && <div className="order-6 space-y-2 lg:order-5">
+                            {isGold && <div className="order-6 space-y-2 lg:order-6">
                                 <label className="block text-xs uppercase tracking-widest font-semibold text-stone-600">
                                     Select Purity Standard: <span className="text-stone-900">{karat.toUpperCase()} Gold</span>
                                 </label>
@@ -333,8 +329,8 @@ export default function ProductDetails() {
                                             key={k}
                                             onClick={() => setKarat(k)}
                                             className={`py-2.5 text-xs font-semibold uppercase rounded transition border ${karat === k
-                                                ? "border-amber-800 bg-amber-900 text-white"
-                                                : "border-stone-300 bg-white text-stone-700 hover:border-amber-700"
+                                                ? "border-[var(--color-teal)] bg-[var(--color-teal)] text-white"
+                                                : "border-stone-300 bg-white text-stone-700 hover:border-[var(--color-teal)]"
                                                 }`}
                                         >
                                             {k}
@@ -343,18 +339,17 @@ export default function ProductDetails() {
                                 </div>
                             </div>}
 
-                            <PriceBreakup product={product} price={activePriceObj} className="order-7 lg:order-6" />
+                            <PriceBreakup product={product} price={activePriceObj} className="order-7 lg:order-7" />
 
                             <div className="order-8 lg:hidden"><MobileAccordion title="Description"><p className="text-base leading-relaxed text-stone-600">{product.description}</p></MobileAccordion></div>
                             {(product.certificates || []).length > 0 && <div className="order-9 lg:hidden"><MobileAccordion title="Certificates of Authenticity">
-                                <h3 className="text-xl font-bold uppercase tracking-widest text-stone-700 lg:text-xs">Certificates of Authenticity</h3>
                                 <div className="mt-3 flex flex-col gap-3">{product.certificates?.map((certificate) => <div key={certificate._id} className="flex min-w-0 items-center gap-2 text-xs">
                                     <img src={publicAssetUrl(certificate.logoUrl)} alt="" className="h-14 w-14 shrink-0 object-contain lg:h-10 lg:w-10" /><span className="min-w-0 break-words">{certificate.name}</span>
                                 </div>)}</div>
                             </MobileAccordion></div>}
                             <div className="order-[10] lg:hidden"><MobileAccordion title="Shipping & Handling"><ul className="list-disc space-y-1.5 pl-5 text-base leading-relaxed text-stone-600"><li>Free shipping perks on all orders within India</li><li>Avail your items within 15 business days</li><li>Inspect your package carefully before signing off</li><li>Package will be sealed and wrapped in bubble wrap, small box, or padded envelope</li></ul></MobileAccordion></div>
 {/* Metal Finish Swatches with Proper White Color */}
-                            <div className="order-5 space-y-2 lg:order-9">
+                            <div className="order-5 space-y-2 lg:order-5">
                                 <label className="block text-xs uppercase tracking-widest font-semibold text-stone-600">
                                     Metal Finish: <span className="text-stone-900">{formatFinishLabel(color)}</span>
                                 </label>
@@ -363,7 +358,7 @@ export default function ProductDetails() {
                                         <button
                                             key={c}
                                             onClick={() => setColor(c)}
-                                            className={`flex items-center space-x-2 px-3.5 py-2 rounded-full border transition ${color === c ? "border-amber-800 bg-amber-50/50 ring-1 ring-amber-800" : "border-stone-200 bg-white"
+                                            className={`flex items-center space-x-2 px-3.5 py-2 rounded-full border transition ${color === c ? "border-[var(--color-teal)] bg-[var(--color-cream)] ring-1 ring-[var(--color-teal)]" : "border-stone-200 bg-white"
                                                 }`}
                                         >
                                             <span
@@ -388,7 +383,7 @@ export default function ProductDetails() {
                             <div className="order-[11] flex gap-4 pt-2 lg:order-11">
                                 <button
                                     onClick={handleAddToCart}
-                                    className="flex-1 py-3.5 px-6 border border-stone-900 bg-white text-stone-900 font-semibold text-xs uppercase tracking-widest hover:bg-stone-900 hover:text-white transition"
+                                    className="flex-1 border border-[var(--color-teal)] bg-[var(--color-teal)] px-6 py-3.5 text-xs font-semibold uppercase tracking-widest text-white transition hover:bg-[var(--color-teal-light)]"
                                 >
                                     Add to Cart
                                 </button>

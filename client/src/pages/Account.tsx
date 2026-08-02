@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { userApi } from "../api/user.api";
@@ -239,10 +239,10 @@ export default function Account() {
     };
 
     const handleLogoutClick = async () => {
+        navigate("/", { replace: true });
         try {
             await logout();
-            showToast("Logged out safely.", "success");
-            window.location.href = "/";
+            showToast("Logged out successfully", "success");
         } catch {
             showToast("An error occurred during logout.", "error");
         }
@@ -518,7 +518,7 @@ export default function Account() {
                                                 <p className="font-secondary text-xs text-[var(--color-text)] space-y-1">
                                                     <span>{address.houseNo}, {address.area}</span>
                                                     {address.landmark && <span className="block italic text-[var(--color-text-muted)]">Near {address.landmark}</span>}
-                                                    <span className="block">{address.city}, {address.state} — {address.pincode}</span>
+                                                    <span className="block">{address.city}, {address.state} â€” {address.pincode}</span>
                                                     <span className="block font-medium tracking-wide">{address.country}</span>
                                                     <span className="block text-[var(--color-text-muted)] mt-2">Ph: {address.phone}</span>
                                                 </p>

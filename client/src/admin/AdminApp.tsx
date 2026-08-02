@@ -1,4 +1,4 @@
-import React, { FormEvent, useEffect, useState, useMemo, useCallback } from "react";
+﻿import React, { FormEvent, useEffect, useState, useMemo, useCallback } from "react";
 import { Navigate, NavLink, Route, Routes, useNavigate } from "react-router-dom";
 import { adminApi, type AdminUser, type BannerPayload, type Coupon, type ManagedUser, type B2BAccessStatus, type PricingConfig } from "../api/admin.api";
 import type { Banner } from "../api/banner.api";
@@ -7,7 +7,7 @@ import { ApiRequestError, apiRequest } from "../api/client";
 import type { Category } from "../types";
 import Products from "./Products";
 import Reviews from "./Reviews";
-import { FolderTree, Gem, Image, Lock, Megaphone, Menu, Scale, ShoppingBag, Sparkles, Star, Ticket, UsersRound, X } from "lucide-react";
+import { ClipboardList, FolderTree, Gem, Image, Lock, Megaphone, Menu, Scale, ShoppingBag, Sparkles, Star, Ticket, UsersRound, X } from "lucide-react";
 
 // --- HELPERS ---
 const errorMessage = (error: unknown) =>
@@ -166,6 +166,7 @@ function Layout({ admin, onLogout }: { admin: AdminUser; onLogout: () => void })
     { to: "/admin/announcements", label: "Announcements", icon: Megaphone },
     { to: "/admin/metal-rates", label: "Metal Rates", icon: Scale },
     { to: "/admin/b2b-access", label: "B2B Access", icon: Lock },
+    { to: "/admin/b2b-access-log", label: "B2B Access Log", icon: ClipboardList },
   ];
 
   return (
@@ -230,6 +231,7 @@ function Layout({ admin, onLogout }: { admin: AdminUser; onLogout: () => void })
           <Route path="reviews" element={<Reviews />} />
           <Route path="metal-rates" element={<MetalRates />} />
           <Route path="b2b-access" element={<B2BAccessManagement />} />
+          <Route path="b2b-access-log" element={<B2BAccessLog />} />
           <Route path="categories" element={<Categories />} />
           <Route path="products" element={<Products />} />
           <Route path="*" element={<Navigate to="/admin" replace />} />
@@ -764,6 +766,18 @@ function B2BAccessManagement() {
   return <div className="space-y-8">{toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}<PageHeader title="B2B Access Password" subtitle="One shared password protects the read-only Gold trade catalogue." /><div className="admin-form max-w-2xl"><div className="flex items-center justify-between"><div><b>Current access</b><p className="mt-1 text-xs text-[var(--color-text-muted)]">Last changed: {status.lastChanged ? new Date(status.lastChanged).toLocaleString() : "Never"}</p></div><Badge variant={status.active ? "success" : "danger"}>{status.active ? "Active" : "Revoked"}</Badge></div><form onSubmit={save} className="space-y-4 border-t border-[var(--color-border)] pt-5"><label className="block">Shared B2B password<div className="mt-2 flex gap-2"><input required minLength={8} type="text" value={password} onChange={event => setPassword(event.target.value)} placeholder="Set or generate a password" className="admin-input flex-1" /><button type="button" onClick={generate} className="px-4 border border-[var(--color-border)] rounded-[var(--radius-sm)] text-xs font-semibold cursor-pointer">Generate</button></div></label><button className="admin-button cursor-pointer">Activate / replace password</button></form>{status.active && <button onClick={() => void revoke()} className="border border-[var(--color-error)]/40 text-[var(--color-error)] rounded-[var(--radius-sm)] px-4 py-2 text-xs font-semibold cursor-pointer">Revoke current password</button>}</div></div>;
 }
 
+// --- B2B ACCESS LOG (MOCK UI) ---
+type MockB2BAccessLog = { id: string; mobile: string; accessedAt: string; status: "Verified" };
+const mockB2BAccessLogs: MockB2BAccessLog[] = [
+  { id: "b2b-log-1", mobile: "+91 98765 43210", accessedAt: "2026-08-02T14:42:00+05:30", status: "Verified" },
+  { id: "b2b-log-2", mobile: "+91 98220 11845", accessedAt: "2026-08-02T11:18:00+05:30", status: "Verified" },
+  { id: "b2b-log-3", mobile: "+91 99876 54321", accessedAt: "2026-08-01T16:05:00+05:30", status: "Verified" },
+];
+function B2BAccessLog() {
+  const [entries, setEntries] = useState<MockB2BAccessLog[]>(mockB2BAccessLogs);
+  useEffect(() => { try { const stored = JSON.parse(window.localStorage.getItem("tba-b2b-mock-access-log") || "[]") as MockB2BAccessLog[]; setEntries([...stored, ...mockB2BAccessLogs].sort((a, b) => new Date(b.accessedAt).getTime() - new Date(a.accessedAt).getTime())); } catch { setEntries(mockB2BAccessLogs); } }, []);
+  return <div className="space-y-8"><PageHeader title="B2B Access Log" subtitle="Mock access records for the B2B password and OTP flow. Database logging will be connected separately." /><div className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-bg-secondary)]"><div className="overflow-x-auto"><table className="w-full min-w-[560px] text-left"><thead className="border-b border-[var(--color-border)] bg-[var(--color-cream)]/40 text-xs uppercase tracking-wider text-[var(--color-text-muted)]"><tr><th className="px-5 py-4 font-semibold">Mobile Number</th><th className="px-5 py-4 font-semibold">Accessed At</th><th className="px-5 py-4 font-semibold">OTP Status</th></tr></thead><tbody className="divide-y divide-[var(--color-border)]">{entries.map((entry) => <tr key={entry.id} className="text-sm"><td className="px-5 py-4 font-medium text-[var(--color-text)]">{entry.mobile}</td><td className="px-5 py-4 text-[var(--color-text-muted)]">{new Date(entry.accessedAt).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}</td><td className="px-5 py-4"><Badge variant="success">{entry.status}</Badge></td></tr>)}</tbody></table></div></div></div>;
+}
 // --- METAL RATES ---
 function MetalRates() {
   const [rates, setRates] = useState<any>(null);

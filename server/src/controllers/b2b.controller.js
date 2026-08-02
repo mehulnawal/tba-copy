@@ -1,4 +1,4 @@
-const bcrypt = require("bcryptjs");
+﻿const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const Product = require("../models/product.model");
@@ -9,7 +9,7 @@ const asyncHandler = require("../utils/asyncHandler");
 const { toProductResponse } = require("../services/catalog.service");
 const { B2B_COOKIE, b2bSecret } = require("../middlewares/b2b.middleware");
 
-const populated = query => query.populate("mainCategory", "name").populate("subCategory", "name");
+const populated = query => query.populate("mainCategory", "name").populate("subCategory", "name").populate("certificates", "name logoUrl");
 const cookieOptions = { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", maxAge: 7 * 24 * 60 * 60 * 1000 };
 const statusPayload = access => ({ active: Boolean(access?.isActive), lastChanged: access?.updatedAt || null });
 const signAccess = access => jwt.sign({ version: access.sessionVersion, scope: "b2b" }, b2bSecret(), { expiresIn: process.env.JWT_B2B_ACCESS_EXPIRY || "7d" });
