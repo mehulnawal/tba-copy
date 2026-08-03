@@ -27,7 +27,7 @@ export default function BrandPromise() {
             desc: "Experience trustworthy gold hallmarking services, delivering accurate testing and authentic jewellery certification.",
             img: cert4,
             icon: <Shield className="w-5 h-5 text-[var(--color-cream)]" />,
-            align: "md:pt-12" // Displace slightly lower
+            align: "md:pt-0" // Displace slightly lower
         },
         {
             id: 3,
@@ -115,7 +115,6 @@ export default function BrandPromise() {
                         {/* Premium Multi-Column Static Layout */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8 relative">
 
-                            {/* Horizontal Connecting Minimal Line (Only Visible on Desktop) */}
                             <div className="hidden md:block absolute top-[26px] left-[10%] right-[10%] h-[1px] bg-white/10 z-0" />
 
                             {credentials.map((item) => (
