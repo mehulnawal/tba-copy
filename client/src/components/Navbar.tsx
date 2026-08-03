@@ -11,7 +11,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { useLenis } from "../providers/LenisProvider";
-import logo from "../assets/logo/logo.png";
+import logo from "../assets/logo/logo-3.png";
 import { useMetalRates } from "../hooks/useMetalRates";
 import { useCategories } from "../hooks/useCategories";
 import { useNavigate, useLocation } from "react-router-dom";

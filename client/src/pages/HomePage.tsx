@@ -11,7 +11,7 @@ import { apiRequest } from "../api/client";
 import banner1 from '../assets/banner/banner1.webp';
 import banner2 from '../assets/banner/banner2.webp';
 import banner3 from '../assets/banner/banner3.webp';
-import banner4 from '../assets/banner/banner4.webp';
+import banner4 from '../assets/banner/banner4.2.webp';
 
 import {
     ChevronLeft,
