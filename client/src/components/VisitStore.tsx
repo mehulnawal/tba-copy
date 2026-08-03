@@ -1,4 +1,4 @@
-import storeImg from "../assets/map/store_banner_homepage.webp";
+import storeImg from "../assets/map/store_banner_homepage.png";
 
 export default function VisitStore() {
     return (
