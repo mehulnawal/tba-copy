@@ -9,6 +9,9 @@ const isShown = (price: PriceBreakdown, key: "showMaking" | "showCertificate" | 
 export default function PriceBreakup({ product, price, b2b = false, className = "" }: Props) {
   const [open, setOpen] = useState(true);
   const isGold = price.metal === "gold" || product.metal === "gold";
+  const isSilver = !isGold;
+  // TEMPORARY FLOW — silver only: the saved Price is the complete pre-GST amount.
+  const manualSilverPrice = number(price.price ?? product.price);
   const metalLabel = isGold ? `${price.karat?.toUpperCase() || "Gold"} Gold` : "Fine Silver";
   const metalValue = isGold ? number(price.goldValue) : number(price.silverValue ?? price.metalValue);
   const makingValue = number(price.makingCharge ?? price.makingValue);
@@ -30,8 +33,10 @@ export default function PriceBreakup({ product, price, b2b = false, className = 
       <button type="button" onClick={() => setOpen(value => !value)} className="text-xs font-semibold uppercase tracking-wide text-[var(--color-teal)] underline">{open ? "Hide details" : "View breakdown"}</button>
     </div>
     {open && <div className="space-y-5 pt-4 text-sm">
-      <div><h3 className="mb-2 font-semibold text-[var(--color-teal)]">{metalLabel}</h3>
-        <div className="overflow-x-auto">
+      <div className="mb-0"><h3 className="mb-2 font-bold text-[var(--color-teal)]">{metalLabel}</h3>
+
+        {/* TEMPORARY FLOW — silver only: the original Silver/Making rows are hidden. */}
+        {isSilver ? <div className="flex justify-between border-y border-[var(--color-border)] py-2 text-xs"><span className="font-bold text-[14px] text-[var(--color-teal)]">Price</span><span>{formatINR(manualSilverPrice)}</span></div> : <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="border-y border-[var(--color-border)] text-[var(--color-text-muted)]"><tr>
               <th className="py-2 font-semibold">Component</th>
@@ -49,9 +54,10 @@ export default function PriceBreakup({ product, price, b2b = false, className = 
               </tr>
               {showMaking && <tr className="border-b border-[var(--color-border)]">
                 <td className="py-2">Making</td>
-                <td className="py-2">{formatINR(makingRate)}</td><td className="py-2">{number(price.netWeight ?? price.grossWeight)} g</td><td className="py-2 text-right">{formatINR(makingValue)}</td></tr>}</tbody></table></div></div>
+                <td className="py-2">{formatINR(makingRate)}</td><td className="py-2">{number(price.netWeight ?? price.grossWeight)} g</td><td className="py-2 text-right">{formatINR(makingValue)}</td></tr>}</tbody></table></div>}</div>
 
-      {stoneEntries.length > 0 && <div className="mb-0">
+      {/* TEMPORARY FLOW — silver only: manual Price already includes all Silver components. */}
+      {!isSilver && stoneEntries.length > 0 && <div className="mb-0">
         <h3 className="mb-0 font-semibold text-[var(--color-teal)]">{hasDiamonds ? `Lab-Grown Diamonds (Total diamonds - ${product.totalNumberOfDiamonds ?? 0})` : "Moissanite"}</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
@@ -84,7 +90,8 @@ export default function PriceBreakup({ product, price, b2b = false, className = 
                     <h3 className="font-semibold text-[14px] text-[var(--color-teal)]">GST (3%)</h3> </td>
                   <td className="py-2 text-right">{formatINR(number(price.gst))}</td>
                 </tr>}
-              <tr className="border-b-2 border-[var(--color-teal)] bg-[var(--color-cream)] font-bold text-[var(--color-teal)]"><td className="py-3">Total Amount</td><td className="py-3 text-right">{formatINR(number(price.finalPrice))}</td></tr></tbody></table></div><p className="mt-2 text-xs text-[var(--color-text-muted)]">*This is an estimated price, actual price may differ as per actual weights.</p>{b2b && price.b2bPricingStatus === "pending" && <p className="mt-2 text-xs text-[var(--color-text-muted)]">Silver B2B pricing is pending; the B2C total is shown.</p>}</div>
-    </div>}
-  </section>;
+              <tr className="border-b-2 border-[var(--color-teal)] bg-[var(--color-cream)] font-bold text-[var(--color-teal)]"><td className="py-3 px-1">Total Amount</td><td className="py-3 px-1 text-right">{formatINR(number(price.finalPrice))}</td></tr></tbody></table></div><p className="mt-2 text-xs text-[var(--color-text-muted)]">*This is an estimated price, actual price may differ as per actual weights.</p>{b2b && price.b2bPricingStatus === "pending" && <p className="mt-2 text-xs text-[var(--color-text-muted)]">Silver B2B pricing is pending; the B2C total is shown.</p>}</div>
+    </div>
+    }
+  </section >;
 }

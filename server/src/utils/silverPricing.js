@@ -1,8 +1,12 @@
-﻿const GST_RATE = 0.03;
+const GST_RATE = 0.03;
 const requiredNumber = (value, label) => { if (value === undefined || value === null || value === "" || !Number.isFinite(Number(value))) throw new Error(`${label} is required for pricing`); if (Number(value) < 0) throw new Error(`${label} cannot be negative`); return Number(value); };
 const optionalNumber = value => value === undefined || value === null || value === "" ? undefined : requiredNumber(value, "Value");
 const moissaniteEntries = product => Array.isArray(product?.moissaniteEntries) && product.moissaniteEntries.length ? product.moissaniteEntries : product?.moissaniteCaratWeight === undefined ? [] : [{ caratWeight: product.moissaniteCaratWeight }];
-const calculateSilverPrice = ({ product, rates, settings, buyer = "B2C" }) => {
+/*
+ * TEMPORARILY DISABLED — restore this for original flow.
+ * The original Silver rate × weight + making/stone calculation is retained below
+ * so this temporary manual-price flow can be reverted cleanly.
+const calculateSilverPriceFromRates = ({ product, rates, settings, buyer = "B2C" }) => {
   if (!settings || settings.metal !== "silver") throw new Error("Silver product requires Silver category settings");
   const grossWeight = requiredNumber(product?.grossWeight, "Gross weight");
   const silverRate = requiredNumber(rates?.silver, "Fine silver rate");
@@ -24,6 +28,14 @@ const calculateSilverPrice = ({ product, rates, settings, buyer = "B2C" }) => {
   const totalCost = silverValue + makingValue + moissaniteValue + diamondValue + polkiValue + certificateCharges;
   const gst = totalCost * GST_RATE;
   return { metal: "silver", buyer: String(buyer).toUpperCase(), b2bPricingStatus: "pending", silverRate, grossWeight, silverValue, metalValue: silverValue, makingRatePerGram: makingRate, makingValue, totalMoissaniteWeight, moissaniteRatePerCarat, moissaniteValue, diamondValue, stoneValue: moissaniteValue + diamondValue + polkiValue, polkiValue, certificateCharges, totalCost, gst, finalPrice: totalCost + gst };
+};
+*/
+
+// TEMPORARY FLOW — silver only: the admin-entered Price is the complete pre-GST value.
+const calculateSilverPrice = ({ product, buyer = "B2C" }) => {
+  const price = requiredNumber(product?.price, "Silver Price");
+  const gst = price * GST_RATE;
+  return { metal: "silver", buyer: String(buyer).toUpperCase(), price, totalCost: price, gst, finalPrice: price + gst };
 };
 module.exports = { calculateSilverPrice };
 

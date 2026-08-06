@@ -56,3 +56,16 @@ add a call button (office number)
 
 Product Page - 
 total diamond count number - this be manually added by admin in add products - admin panel
+ 
+1. B2B - product catalog - filter not working properly 
+2. SKU - TBA-GLD-NL0001 - this will be the format 
+✔ 3. change the category in shop by category from Shop by Gold.. to Shop by Diamond...
+✔ 4. 925 Silver with Moissanite Diamond - bold it - Moissanite & Polki - ALl Silver Categories 
+✔ 5. 925 Silver with Polki Diamond - bold it - Polki & Polki - ALl Silver Categories 
+✔ 6. Lab grown diamond + brand name(tba + the brillaince atteiter) = in every product description 
+7. make certificate charges manually, add a new input box of certifcate charges = manual entery of diamond weight - gold change 
+✔ 8. show only price in silver categories - no component breakup
+✔ 9. Correct description format 
+
+
+

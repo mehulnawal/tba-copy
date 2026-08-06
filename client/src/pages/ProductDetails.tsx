@@ -289,7 +289,7 @@ export default function ProductDetails() {
 
                             {/* FIX 3: Description relocated under the image */}
                             <div className="hidden space-y-3 lg:block">
-                                <MobileAccordion title="Description"><p className="text-base leading-relaxed text-stone-600 lg:text-xs">{product.description}</p></MobileAccordion>
+                                <MobileAccordion title="Description"><p className="whitespace-pre-line text-base leading-relaxed text-stone-600 lg:text-xs">{product.description}</p></MobileAccordion>
                                 {(product.certificates || []).length > 0 && <MobileAccordion title="Certificates of Authenticity"><div className="flex gap-3">{product.certificates?.map((certificate) => <div key={certificate._id} className="flex items-center gap-3 text-lg lg:text-sm"><img src={publicAssetUrl(certificate.logoUrl)} alt="" className="h-14 w-14 object-contain lg:h-10 lg:w-10" />{certificate.name}</div>)}</div></MobileAccordion>}
                                 <MobileAccordion title="Shipping & Handling"><ul className="list-disc space-y-1.5 pl-5 text-base leading-relaxed text-stone-600 lg:text-xs"><li>Free shipping perks on all orders within India</li><li>Avail your items within 15 business days</li><li>Inspect your package carefully before signing off</li><li>Package will be sealed and wrapped in bubble wrap, small box, or padded envelope</li></ul></MobileAccordion>
                             </div>
@@ -354,7 +354,7 @@ export default function ProductDetails() {
 
                             <PriceBreakup product={product} price={activePriceObj} className="order-7 lg:order-7" />
 
-                            <div className="order-8 lg:hidden"><MobileAccordion title="Description"><p className="text-base leading-relaxed text-stone-600">{product.description}</p></MobileAccordion></div>
+                            <div className="order-8 lg:hidden"><MobileAccordion title="Description"><p className="whitespace-pre-line text-base leading-relaxed text-stone-600">{product.description}</p></MobileAccordion></div>
                             {(product.certificates || []).length > 0 && <div className="order-9 lg:hidden"><MobileAccordion title="Certificates of Authenticity">
                                 <div className="mt-3 flex flex-col gap-3">{product.certificates?.map((certificate) => <div key={certificate._id} className="flex min-w-0 items-center gap-2 text-xs">
                                     <img src={publicAssetUrl(certificate.logoUrl)} alt="" className="h-14 w-14 shrink-0 object-contain lg:h-10 lg:w-10" /><span className="min-w-0 break-words">{certificate.name}</span>

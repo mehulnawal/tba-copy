@@ -1,4 +1,4 @@
-﻿const mongoose = require("mongoose");
+const mongoose = require("mongoose");
 
 const PRODUCT_COLORS = ["Yellow Gold", "White Gold", "Rose Gold"];
 const DIAMOND_COLOR_CLARITY = "EF/VVSVS";
@@ -27,6 +27,8 @@ const productSchema = new mongoose.Schema({
   title: { type: String, required: true, trim: true },
   description: { type: String, default: "" },
   metal: { type: String, required: true, enum: ["gold", "silver"] },
+  // TEMPORARY FLOW — silver only: manually entered base price, before GST.
+  price: { type: Number, min: 0, required: function () { return this.metal === "silver"; } },
   mainCategory: { type: mongoose.Schema.Types.ObjectId, ref: "Category", required: true },
   subCategory: { type: mongoose.Schema.Types.ObjectId, ref: "Category", required: true },
   isBestSeller: { type: Boolean, default: false },
