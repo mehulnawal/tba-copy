@@ -50,16 +50,28 @@ const HERO_SLIDES = [
 
 const TESTIMONIALS: Testimonial[] = [
     {
-        id: "1", name: "Priya Mehta", location: "Mumbai", rating: 5, avatar: AVATAR_ASSETS.a1,
-        review: "TBA's craftsmanship is unmatched. The 22K necklace for my daughter's wedding was breathtaking Ã¢â‚¬â€ every detail perfect."
+        id: "1",
+        name: "Shivani Chandak",
+        location: "Ahemdabad",
+        rating: 4.5,
+        avatar: AVATAR_ASSETS.a1,
+        review: "Made Silvering & Diamond Bangles. My Mom loved it ♥"
     },
     {
-        id: "2", name: "Rajan Shah", location: "Surat", rating: 4.5, avatar: AVATAR_ASSETS.a2,
-        review: "Transparent pricing and on-time delivery. TBA has completely changed how I buy gold jewelry."
+        id: "2",
+        name: "Radika Somani",
+        location: "Surat",
+        rating: 5,
+        avatar: AVATAR_ASSETS.a2,
+        review: "Made Necklace for my wedding day. Goes perfect with the outfit 😀",
+        url: ""
     },
     {
-        id: "3", name: "Kavita Desai", location: "Ahmedabad", rating: 5, avatar: AVATAR_ASSETS.a4,
-        review: "Purchased earrings as an anniversary gift. The packaging, finish, weight Ã¢â‚¬â€ all premium. Highly recommended."
+        id: "3",
+        name: "Kavita Desai",
+        location: "Ahmedabad",
+        rating: 5, avatar: AVATAR_ASSETS.a4,
+        review: "Found Solitaire Ring IGI Certified at the most reasonable price in the market. Genuine and loved the finishing"
     },
 ];
 
@@ -81,13 +93,13 @@ const FAQS: FAQ[] = [
     },
     {
         id: "4",
-        question: "Are Lab-Grown Diamonds worth buying?",
-        answer: "Absolutely. Lab-grown diamonds are worth buying because they are LIKE real diamonds that last forever. TBA offers wholesale price to the customers, beacuse of whoch it is not reasonablr to provide buy back. exchange can be done at any point of time."
+        question: "Are Lab-Grown Diamonds worth buying and do you provide buy back?",
+        answer: "Absolutely. Lab-grown diamonds are worth buying because they are LIKE real diamonds that last forever. TBA offers direct to customer pricing, because of which it is not reasonable to provide buy back. Exchange can be done at any point of time."
     },
     {
         id: "5",
         question: "Do Lab-Grown Diamonds cost less than mined diamonds?",
-        answer: "Yes, they do. Lab-grown diamonds generally retail at a significant 60% to 90% discount compared to mined diamonds of equivalent quality. Despite the accessible price point, they are evaluated, graded, and priced using the exact same standard matrixÃ¢â‚¬â€Cut, Colour, Clarity, and Carat weight."
+        answer: "Yes, they do. Lab-grown diamonds generally retail at a significant 60% to 90% discount compared to mined diamonds of equivalent quality. Despite the accessible price point, they are evaluated, graded, and priced using the exact same standard matrix Cut, Color, Clarity, and Carat weight."
     },
     {
         id: "6",
@@ -102,7 +114,7 @@ const FAQS: FAQ[] = [
     {
         id: "8",
         question: "Are Lab-Grown Diamonds durable enough to last?",
-        answer: "Diamonds are the hardest known material on Earth, ranking at a maximum 10 on the Mohs Scale of hardness. Lab-grown diamonds share this exact same rank of 10, delivering identical structural strength, hardness, and ultimate durability. You can confidently pass these timeless pieces down to the next generation."
+        answer: "Diamonds are the hardest known material on Earth, ranking at a maximum 10 on the MOHs Scale of hardness. Lab-grown diamonds share this exact same rank of 10, delivering identical structural strength, hardness, and ultimate durability. You can confidently pass these timeless pieces down to the next generation."
     },
     {
         id: "9",

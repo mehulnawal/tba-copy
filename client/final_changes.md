@@ -68,4 +68,9 @@ total diamond count number - this be manually added by admin in add products - a
 ✔ 9. Correct description format 
 
 
-
+1. Gross weight is not visible in products in b2c and b2b both 
+2. if total number of diamonds are 0 then that line should not visible in product in b2c and b2b both 
+3. the admin can enter Moissanite or Polki entries - but currently it will not visible in the product page and no error should be visible - currently on entering the entries the product page is not loading there is a error - check that 
+4. prime collection product - add to cart, wishlist buttons not working and kt toggle needs to be fix and UI improvements - and the buttons are not working and the ui is also not good
+5. new diamond category list 
+6. certificate charge manually 

@@ -48,6 +48,10 @@ function formatFinishLabel(colorName: string): string {
     return colorName;
 }
 
+function weightFor(value: Product["grossWeight"] | Product["netWeight"], karat: "14kt" | "18kt"): number | undefined {
+    return typeof value === "number" ? value : value?.[karat];
+}
+
 export default function ProductDetails() {
     const { slug = "" } = useParams();
     const { showToast } = useToast();
@@ -106,6 +110,8 @@ export default function ProductDetails() {
 
     const productPrices = Array.isArray(product.prices) ? product.prices : [];
     const activePriceObj = productPrices.find((price) => price.karat === karat) || productPrices[0] || { totalCost: 0, gst: 0, finalPrice: 0, grossWeight: 0 };
+    const grossWeight = activePriceObj.grossWeight ?? weightFor(product.grossWeight, karat);
+    const netWeight = activePriceObj.netWeight ?? weightFor(product.netWeight, karat);
 
     const categoryName = (
         category?: Product["mainCategory"] | Product["subCategory"] | null
@@ -141,7 +147,7 @@ export default function ProductDetails() {
         }).toString()}`
         : mainCategoryPath;
     const isRing = [categoryName(product.mainCategory), categoryName(product.subCategory)].some((name) => /\brings?\b/i.test(name));
-    const mediaList = [...product.images.map((image) => ({ type: "image" as const, url: image.url })), ...(product.videoLink ? [{ type: "video" as const, url: product.videoLink }] : [])];
+    const mediaList = [...(product.images || []).map((image) => ({ type: "image" as const, url: image.url })), ...(product.videoLink ? [{ type: "video" as const, url: product.videoLink }] : [])];
 
     const availableColors = (product.colors && product.colors.length > 0 ? product.colors : ["Yellow", "Rose", "White"]).filter((finish) => isGold || !finish.toLowerCase().includes("rose"));
     const siteUrl = (import.meta.env.VITE_SITE_URL || "https://thebrillianceatelier.com").replace(/\/+$/, "");
@@ -149,7 +155,7 @@ export default function ProductDetails() {
     const productSchema = {
         "@context": "https://schema.org", "@type": "Product", name: product.title,
         description: product.description || `TBA Jewelry ${product.title}`, sku: product.SKU,
-        image: product.images.map((item) => item.url),
+        image: (product.images || []).map((item) => item.url),
         brand: { "@type": "Brand", name: "TBA Jewelry" },
         category: [categoryName(product.mainCategory), categoryName(product.subCategory)].filter(Boolean).join(" > "),
         material: isGold ? "Gold" : "Silver",
@@ -325,9 +331,9 @@ export default function ProductDetails() {
                                 <div className="grid grid-cols-2 gap-4 text-xs">
                                     <div className="bg-white p-3 rounded border border-stone-100">
                                         <span className="block text-[10px] text-stone-400 uppercase">Gross Weight</span>
-                                        <span className="text-sm font-serif font-semibold text-stone-900">{activePriceObj.grossWeight} g</span>
+                                        <span className="text-sm font-serif font-semibold text-stone-900">{grossWeight ?? 0} g</span>
                                     </div>
-                                    {isGold && <div className="bg-white p-3 rounded border border-stone-100"><span className="block text-[10px] text-stone-400 uppercase">Net Weight</span><span className="text-sm font-serif font-semibold text-stone-900">{activePriceObj.netWeight} g</span></div>}
+                                    {isGold && <div className="bg-white p-3 rounded border border-stone-100"><span className="block text-[10px] text-stone-400 uppercase">Net Weight</span><span className="text-sm font-serif font-semibold text-stone-900">{netWeight ?? 0} g</span></div>}
                                 </div>
                             </div>
 

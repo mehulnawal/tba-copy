@@ -79,7 +79,7 @@ export default function VisitStore() {
                             letterSpacing: "-0.02em",
                         }}
                     >
-                        Gold is meant
+                        Diamond is meant
                         <br />to be touched.
                         <span style={{
                             display: "block",
@@ -120,7 +120,7 @@ export default function VisitStore() {
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 mt-2">
                         {/* Primary CTA — swap href to actual Google Maps URL */}
                         <a
-                            href="https://maps.app.goo.gl/UtKxZcpn6BQ5PzDv7"
+                            href="https://maps.app.goo.gl/j4vbq5DuhdTm2XdE9"
                             target="_blank"
                             rel="noopener noreferrer"
                             aria-label="Get directions to TBA store on Google Maps"

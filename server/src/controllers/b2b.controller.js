@@ -1,4 +1,4 @@
-﻿const bcrypt = require("bcryptjs");
+const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const Product = require("../models/product.model");
@@ -24,9 +24,14 @@ const access = asyncHandler(async (req, res) => {
 });
 const logout = asyncHandler(async (req, res) => { res.cookie(B2B_COOKIE, "", { ...cookieOptions, maxAge: 0 }); res.json(new ApiResponse(200, null, "B2B session cleared")); });
 const listProducts = asyncHandler(async (req, res) => {
-  const metal = String(req.query.metal || "gold").toLowerCase();
+  const metal = String(req.query.metal || "gold").trim().toLowerCase();
+  const { mainCategory, subCategory } = req.query;
   if (!["gold", "silver"].includes(metal)) throw new ApiError(400, "Metal must be gold or silver");
-  const products = await populated(Product.find({ isActive: true, metal }).sort({ createdAt: -1 }));
+  // B2B-only catalogue filters: keep the selected metal while narrowing by category.
+  const filter = { isActive: true, metal };
+  if (subCategory) filter.subCategory = subCategory;
+  else if (mainCategory) filter.mainCategory = mainCategory;
+  const products = await populated(Product.find(filter).sort({ createdAt: -1 }));
   res.json(new ApiResponse(200, await Promise.all(products.map(product => toProductResponse(product, "B2B"))), `B2B ${metal} catalogue fetched`));
 });
 const getProduct = asyncHandler(async (req, res) => {

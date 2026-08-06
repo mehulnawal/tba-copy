@@ -16,7 +16,8 @@ export default function PriceBreakup({ product, price, b2b = false, className = 
   const metalValue = isGold ? number(price.goldValue) : number(price.silverValue ?? price.metalValue);
   const makingValue = number(price.makingCharge ?? price.makingValue);
   const hasDiamonds = (product.diamonds || []).length > 0;
-  const stoneValue = hasDiamonds ? number(price.diamondValue) : number(price.moissaniteValue ?? price.stoneValue);
+  const hasMoissanite = (product.moissaniteEntries || []).length > 0 || product.moissaniteCaratWeight !== undefined;
+  const hasPolki = (product.polkiEntries || []).length > 0;
   const diamondRate = (entry: NonNullable<Product["diamonds"]>[number]) => number(b2b ? (entry.ratePerCtB2B ?? entry.ratePerCt) : (entry.ratePerCtB2C ?? entry.ratePerCt));
   const stoneEntries = hasDiamonds
     ? (product.diamonds || []).map((entry, index) => ({ key: `diamond-${index}`, component: entry.category || "Diamond", clarity: entry.colorClarity || "\u2014", carat: number(entry.caratWeight), rate: diamondRate(entry), value: number(entry.caratWeight) * diamondRate(entry) }))
@@ -57,8 +58,8 @@ export default function PriceBreakup({ product, price, b2b = false, className = 
                 <td className="py-2">{formatINR(makingRate)}</td><td className="py-2">{number(price.netWeight ?? price.grossWeight)} g</td><td className="py-2 text-right">{formatINR(makingValue)}</td></tr>}</tbody></table></div>}</div>
 
       {/* TEMPORARY FLOW — silver only: manual Price already includes all Silver components. */}
-      {!isSilver && stoneEntries.length > 0 && <div className="mb-0">
-        <h3 className="mb-0 font-semibold text-[var(--color-teal)]">{hasDiamonds ? `Lab-Grown Diamonds (Total diamonds - ${product.totalNumberOfDiamonds ?? 0})` : "Moissanite"}</h3>
+      {stoneEntries.length > 0 && <div className="mb-0">
+        <h3 className="mb-0 font-semibold text-[var(--color-teal)]">{hasDiamonds ? `Lab-Grown Diamonds${Number(product.totalNumberOfDiamonds || 0) > 0 ? ` (Total diamonds - ${product.totalNumberOfDiamonds})` : ""}` : hasPolki ? "Polki" : "Moissanite"}</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="border-y border-[var(--color-border)] text-[var(--color-text-muted)]"><tr>

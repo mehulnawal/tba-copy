@@ -1,5 +1,5 @@
 ﻿import React from "react";
-import { Shield, Award, Gem } from "lucide-react";
+import { Shield, Award, Gem, Handshake, Hammer } from "lucide-react";
 
 import cert1 from "../assets/whyChooseUs/IGILogo.png";
 import cert2 from "../assets/whyChooseUs/sglLogo.png";
@@ -58,13 +58,24 @@ export default function BrandPromise() {
 
                         {/* Card 1 */}
                         <div className="bg-[var(--color-white)] rounded-lg p-8 border border-[var(--color-border-subtle)] shadow-xs flex flex-col gap-4 reveal-section">
-                            <Gem size={36} className="text-[var(--color-teal)] shrink-0" />
+                            <Handshake size={36} className="text-[var(--color-teal)] shrink-0" />
                             <h3 className="font-primary text-xl font-medium text-[var(--color-teal)]">
-                                Highest Clarity & Cut
-                                VVS-EF Ideal cut diamonds
+                                Direct-to-Consumer Pricing
                             </h3>
                             <p className="font-secondary text-sm text-[var(--color-text-secondary)] leading-relaxed">
-                                Bring your unique vision to life. From minor design tweaks to personalized layouts, our team provides highly custom tailoring to craft jewelry exactly as per your desire.
+                                No middlemen, no showroom markups. You pay for the diamond and the craftsmanship - not layers of distributor margin.
+                            </p>
+                        </div>
+
+                        {/* Card 1 */}
+                        <div className="bg-[var(--color-white)] rounded-lg p-8 border border-[var(--color-border-subtle)] shadow-xs flex flex-col gap-4 reveal-section">
+                            <Gem size={36} className="text-[var(--color-teal)] shrink-0" />
+                            <h3 className="font-primary text-xl font-medium text-[var(--color-teal)]">
+                                Highest Clarity &
+                                EF/VVS-VS Ideal cut diamonds
+                            </h3>
+                            <p className="font-secondary text-sm text-[var(--color-text-secondary)] leading-relaxed">
+                                The top tier for brilliance and fire. No compromises on the stone, because a beautiful setting can't fix a dull diamond.
                             </p>
                         </div>
 
@@ -82,7 +93,7 @@ export default function BrandPromise() {
 
                         {/* Card 3 */}
                         <div className="bg-[var(--color-white)] rounded-lg p-8 border border-[var(--color-border-subtle)] shadow-xs flex flex-col gap-4 reveal-section">
-                            <Award size={36} className="text-[var(--color-teal)] shrink-0" />
+                            <Hammer size={36} className="text-[var(--color-teal)] shrink-0" />
                             <h3 className="font-primary text-xl font-medium text-[var(--color-teal)]">
                                 Master Craftsmanship
                             </h3>
