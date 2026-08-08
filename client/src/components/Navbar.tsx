@@ -49,7 +49,7 @@ export default function Navbar({
       onAuthOpen(returnTo);
       return;
     }
-    navigate("/auth", { state: { from: returnTo } });
+    navigate("/auth", { state: { from: returnTo, background: `${location.pathname}${location.search}${location.hash}` } });
   };
 
   const handleProtectedNav = (path: string) => {

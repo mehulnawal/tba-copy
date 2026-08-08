@@ -56,7 +56,7 @@ const {
   remove: removeReview,
 } = require("../controllers/review.controller");
 
-const { list: listDiamondCategories, save: saveDiamondCategory } = require("../controllers/diamondCategory.controller");
+const { list: listDiamondCategories, get: getDiamondCategory, create: createDiamondCategory, listSizes: listDiamondCategorySizes, update: updateDiamondCategory, remove: removeDiamondCategory } = require("../controllers/diamondCategory.controller");
 const { list: listDiamondClarities, save: saveDiamondClarity } = require("../controllers/diamondClarity.controller");
 const { list: listCertificates, save: saveCertificate, remove: removeCertificate } = require("../controllers/certificate.controller");
 const { status: getB2BStatus, setPassword: setB2BPassword, revoke: revokeB2BPassword } = require("../controllers/b2b.controller");
@@ -104,7 +104,12 @@ router.post("/products/preview-price", previewPrice);
 router.get("/pricing-configs", listPricingConfigs);
 router.patch("/pricing-configs/:key", updatePricingConfig);
 router.get("/diamond-categories", listDiamondCategories);
-router.post("/diamond-categories", saveDiamondCategory);
+router.get("/diamond-categories/sizes", listDiamondCategorySizes);
+router.get("/diamond-categories/sizes/:categoryName", listDiamondCategorySizes);
+router.get("/diamond-categories/:diamondCategoryId", getDiamondCategory);
+router.post("/diamond-categories", createDiamondCategory);
+router.put("/diamond-categories/:diamondCategoryId", updateDiamondCategory);
+router.delete("/diamond-categories/:diamondCategoryId", removeDiamondCategory);
 router.get("/diamond-clarities", listDiamondClarities);
 router.post("/diamond-clarities", saveDiamondClarity);
 router.get("/certificates", listCertificates);

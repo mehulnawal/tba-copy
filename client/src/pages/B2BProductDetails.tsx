@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { ChevronDown, ChevronLeft, Share2 } from "lucide-react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { ApiRequestError, apiRequest } from "../api/client";
 import type { PriceBreakdown, Product } from "../types";
 import { useB2BSessionGuard } from "../hooks/useB2BSessionGuard";
@@ -35,12 +35,14 @@ export default function B2BProductDetails() {
   useB2BSessionGuard();
   const { identifier = "" } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const isMockAccess = Boolean((location.state as { b2bMock?: boolean } | null)?.b2bMock) || window.sessionStorage.getItem("tba-b2b-preview-access") === "true";
   const [product, setProduct] = useState<Product | null>(null);
   const [error, setError] = useState("");
   const [activeMediaIndex, setActiveMediaIndex] = useState(0);
   const [karat, setKarat] = useState<"14kt" | "18kt">("14kt");
   const [selectedColor, setSelectedColor] = useState("");
-  useEffect(() => { apiRequest<Product>("/b2b/products/" + encodeURIComponent(identifier)).then((item) => { setProduct(item); setSelectedColor(item.colors?.[0] || ""); }).catch((reason) => { if (reason instanceof ApiRequestError && reason.statusCode === 401) navigate("/b2b/access", { replace: true }); else setError(reason instanceof Error ? reason.message : "Unable to load product"); }); }, [identifier, navigate]);
+  useEffect(() => { apiRequest<Product>((isMockAccess ? "/products/" : "/b2b/products/") + encodeURIComponent(identifier)).then((item) => { setProduct(item); setSelectedColor(item.colors?.[0] || ""); }).catch((reason) => { if (reason instanceof ApiRequestError && reason.statusCode === 401) navigate("/b2b/access", { replace: true }); else setError(reason instanceof Error ? reason.message : "Unable to load product"); }); }, [identifier, isMockAccess, navigate]);
   if (error) return <main className="p-10 text-[var(--color-error)]">{error}</main>;
   if (!product) return <ProductSkeleton />;
   const isGold = product.metal === "gold";

@@ -11,7 +11,7 @@ import { useAddToWishlist, useRemoveFromWishlist, useWishlist } from "../hooks/u
 import { RING_SIZES } from "../constants/product";
 import type { Product } from "../types";
 import { formatINR } from "../utils/currency";
-import { publicAssetUrl } from "../utils/image";
+import { publicAssetUrl, responsiveImage } from "../utils/image";
 import PriceBreakup from "../components/PriceBreakup";
 import { Seo } from "../components/Seo";
 import { ProductSkeleton } from "../components/LoadingSkeleton";
@@ -40,7 +40,8 @@ function MobileAccordion({ title, children }: { title: string; children: React.R
     return <section className="border border-stone-200 bg-white p-4"><button type="button" onClick={() => setOpen(value => !value)} className="flex w-full items-center justify-between text-left"><h3 className="text-base text-stone-700 lg:text-xs">{title}</h3><ChevronDown size={20} className={`transition-transform ${open ? "rotate-180" : ""}`} /></button>{open && <div className="mt-3">{children}</div>}</section>;
 }
 
-function formatFinishLabel(colorName: string): string {
+function formatFinishLabel(colorName?: string): string {
+    if (!colorName) return "?";
     const normalized = colorName.toLowerCase();
     if (normalized.includes("yellow")) return "Yellow";
     if (normalized.includes("rose")) return "Rose";
@@ -147,7 +148,8 @@ export default function ProductDetails() {
         }).toString()}`
         : mainCategoryPath;
     const isRing = [categoryName(product.mainCategory), categoryName(product.subCategory)].some((name) => /\brings?\b/i.test(name));
-    const mediaList = [...(product.images || []).map((image) => ({ type: "image" as const, url: image.url })), ...(product.videoLink ? [{ type: "video" as const, url: product.videoLink }] : [])];
+    const mediaList = [...(product.images || []).filter((image) => Boolean(image?.url)).map((image) => ({ type: "image" as const, url: image.url })), ...(product.videoLink ? [{ type: "video" as const, url: product.videoLink }] : [])];
+    const productImage = mediaList[activeMediaIndex]?.url;
 
     const availableColors = (product.colors && product.colors.length > 0 ? product.colors : ["Yellow", "Rose", "White"]).filter((finish) => isGold || !finish.toLowerCase().includes("rose"));
     const siteUrl = (import.meta.env.VITE_SITE_URL || "https://thebrillianceatelier.com").replace(/\/+$/, "");
@@ -277,7 +279,7 @@ export default function ProductDetails() {
                                         onMouseMove={handleMouseMoveZoom}
                                         onMouseEnter={() => setIsHoveringMainImage(true)}
                                         onMouseLeave={() => setIsHoveringMainImage(false)}
-                                    >                                    {mediaList[activeMediaIndex]?.type === "video" ? <video controls className="w-full h-full object-contain" src={mediaList[activeMediaIndex]?.url} /> : <img src={mediaList[activeMediaIndex]?.url} alt={product.title} className={`w-full h-full object-cover transition-opacity duration-200 ${isHoveringMainImage ? "opacity-0" : "opacity-100"}`} />}{mediaList[activeMediaIndex]?.type !== "video" && isHoveringMainImage && (
+                                    >                                    {mediaList[activeMediaIndex]?.type === "video" ? <video controls className="w-full h-full object-contain" src={mediaList[activeMediaIndex]?.url} /> : <img src={responsiveImage(productImage, 1200)} alt={product.title || "Product image"} className={`w-full h-full object-cover transition-opacity duration-200 ${isHoveringMainImage ? "opacity-0" : "opacity-100"}`} />}{mediaList[activeMediaIndex]?.type !== "video" && isHoveringMainImage && (
                                         <div
                                             className="absolute inset-0 bg-no-repeat pointer-events-none"
                                             style={{

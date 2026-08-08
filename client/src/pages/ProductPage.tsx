@@ -212,7 +212,7 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
                             </div>
                         </FilterSection>
 
-                        <FilterSection title="Purity / KT"><div className="flex gap-2 pt-2">{[{ label: "All", value: "" }, { label: "14KT", value: "14kt" }, { label: "18KT", value: "18kt" }].map((option) => (<button key={option.label} type="button" onClick={() => { setSelectedKaratFilter(option.value as "" | "14kt" | "18kt"); changeParam("karat", option.value || null); }} className={`rounded border px-3 py-2 text-xs font-semibold ${selectedKaratFilter === option.value ? "border-amber-600 bg-amber-50 text-amber-800" : "border-gray-200 text-gray-600 hover:bg-gray-50"}`}>{option.label}</button>))}</div></FilterSection>
+                        {metal === "gold" && <FilterSection title="Purity / KT"><div className="flex gap-2 pt-2">{[{ label: "All", value: "" }, { label: "14KT", value: "14kt" }, { label: "18KT", value: "18kt" }].map((option) => (<button key={option.label} type="button" onClick={() => { setSelectedKaratFilter(option.value as "" | "14kt" | "18kt"); changeParam("karat", option.value || null); }} className={`rounded border px-3 py-2 text-xs font-semibold ${selectedKaratFilter === option.value ? "border-amber-600 bg-amber-50 text-amber-800" : "border-gray-200 text-gray-600 hover:bg-gray-50"}`}>{option.label}</button>))}</div></FilterSection>}
                     </aside>
 
                     {/* Product Grid Area */}
@@ -303,7 +303,7 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
                                         </button>
                                     ))}
                                 </div>
-                                <div className="border-t pt-4"><h3 className="text-sm font-semibold text-gray-900 mb-2">Purity / KT</h3><div className="flex gap-2">{[{ label: "All", value: "" }, { label: "14KT", value: "14kt" }, { label: "18KT", value: "18kt" }].map((option) => (<button key={option.label} type="button" onClick={() => { setSelectedKaratFilter(option.value as "" | "14kt" | "18kt"); changeParam("karat", option.value || null); }} className={`rounded border px-3 py-2 text-xs font-semibold ${selectedKaratFilter === option.value ? "border-amber-600 bg-amber-50 text-amber-800" : "border-gray-200 text-gray-600 hover:bg-gray-50"}`}>{option.label}</button>))}</div></div>
+                                {metal === "gold" && <div className="border-t pt-4"><h3 className="text-sm font-semibold text-gray-900 mb-2">Purity / KT</h3><div className="flex gap-2">{[{ label: "All", value: "" }, { label: "14KT", value: "14kt" }, { label: "18KT", value: "18kt" }].map((option) => (<button key={option.label} type="button" onClick={() => { setSelectedKaratFilter(option.value as "" | "14kt" | "18kt"); changeParam("karat", option.value || null); }} className={`rounded border px-3 py-2 text-xs font-semibold ${selectedKaratFilter === option.value ? "border-amber-600 bg-amber-50 text-amber-800" : "border-gray-200 text-gray-600 hover:bg-gray-50"}`}>{option.label}</button>))}</div></div>}
                                 <div className="border-t pt-4">
                                     <h3 className="text-sm font-semibold text-gray-900 mb-2">Price Ranges</h3>
                                     {PRICE_BUCKETS.map((b) => (

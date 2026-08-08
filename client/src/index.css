@@ -1269,3 +1269,13 @@ body.modal-open {
     width: auto;
   }
 }
+
+/* Interactive controls use the same affordance across storefront and admin. */
+button:not(:disabled), a[href], [role="button"], select:not(:disabled), input[type="checkbox"]:not(:disabled), input[type="radio"]:not(:disabled), label[for], summary, .clickable { cursor: pointer; }
+
+/* Keep the dense product-editor controls aligned with the standard admin grid rhythm. */
+.admin-editor .admin-section { display: grid; gap: var(--space-5); }
+.admin-editor .admin-grid { row-gap: var(--space-5); column-gap: var(--space-4); }
+.admin-editor .admin-colours, .admin-editor .admin-toggle-grid { margin-top: var(--space-2); }
+.admin-editor .admin-colours > div { gap: var(--space-3); }
+.admin-editor .admin-toggle-grid { gap: var(--space-4); }

@@ -9,10 +9,8 @@ const isShown = (price: PriceBreakdown, key: "showMaking" | "showCertificate" | 
 export default function PriceBreakup({ product, price, b2b = false, className = "" }: Props) {
   const [open, setOpen] = useState(true);
   const isGold = price.metal === "gold" || product.metal === "gold";
-  const isSilver = !isGold;
-  // TEMPORARY FLOW — silver only: the saved Price is the complete pre-GST amount.
-  const manualSilverPrice = number(price.price ?? product.price);
-  const metalLabel = isGold ? `${price.karat?.toUpperCase() || "Gold"} Gold` : "Fine Silver";
+  const isPolki = !isGold && [product.mainCategory, product.subCategory].some((category) => (typeof category === "string" ? category : category?.name || "").toLowerCase() === "polki");
+const metalLabel = isGold ? `${price.karat?.toUpperCase() || "Gold"} Gold` : "Fine Silver";
   const metalValue = isGold ? number(price.goldValue) : number(price.silverValue ?? price.metalValue);
   const makingValue = number(price.makingCharge ?? price.makingValue);
   const hasDiamonds = (product.diamonds || []).length > 0;
@@ -23,9 +21,8 @@ export default function PriceBreakup({ product, price, b2b = false, className = 
     ? (product.diamonds || []).map((entry, index) => ({ key: `diamond-${index}`, component: entry.category || "Diamond", clarity: entry.colorClarity || "\u2014", carat: number(entry.caratWeight), rate: diamondRate(entry), value: number(entry.caratWeight) * diamondRate(entry) }))
     : (product.moissaniteEntries || (product.moissaniteCaratWeight === undefined ? [] : [{ caratWeight: product.moissaniteCaratWeight }])).map((entry, index) => ({ key: `moissanite-${index}`, component: "Moissanite", clarity: entry.colorClarity || "\u2014", carat: number(entry.caratWeight), rate: number(price.moissaniteRatePerCarat), value: number(entry.caratWeight) * number(price.moissaniteRatePerCarat) }));
   const showMaking = isShown(price, "showMaking");
-  const showCertificate = isShown(price, "showCertificate") && number(price.certificateCharges) > 0;
   const showGst = isShown(price, "showGst");
-  const metalRate = isGold ? number(price.goldRate) : number(price.silverRate);
+  const metalRate = isGold ? number(price.goldRate) : isPolki ? number(price.price) : number(price.silverRate);
   const makingRate = number(price.makingRatePerGram);
 
   return <section className={`rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-4 ${className}`}>
@@ -37,37 +34,35 @@ export default function PriceBreakup({ product, price, b2b = false, className = 
       <div className="mb-0"><h3 className="mb-2 font-bold text-[var(--color-teal)]">{metalLabel}</h3>
 
         {/* TEMPORARY FLOW — silver only: the original Silver/Making rows are hidden. */}
-        {isSilver ? <div className="flex justify-between border-y border-[var(--color-border)] py-2 text-xs"><span className="font-bold text-[14px] text-[var(--color-teal)]">Price</span><span>{formatINR(manualSilverPrice)}</span></div> : <div className="overflow-x-auto">
+        <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="border-y border-[var(--color-border)] text-[var(--color-text-muted)]"><tr>
+            <thead className="border-t border-[var(--color-border)] text-[var(--color-text-muted)]"><tr>
               <th className="py-2 font-semibold">Component</th>
-              <th className="py-2 font-semibold">Rate/Gm</th>
+              <th className="py-2 font-semibold">{isPolki ? "Price" : "Rate/Gm"}</th>
               <th className="py-2 font-semibold">Weight</th>
-              <th className="py-2 text-right font-semibold">Value</th>
             </tr>
             </thead>
             <tbody>
               <tr className="border-b border-[var(--color-border)]">
-                <td className="py-2">{isGold ? `${price.karat?.toUpperCase() || "Gold"} Gold` : "Silver"}</td>
+                <td className="py-2">{isGold ? `${price.karat?.toUpperCase() || "Gold"} Gold` : isPolki ? "Silver Price" : "Silver"}</td>
                 <td className="py-2">{formatINR(metalRate)}</td>
-                <td className="py-2">{number(price.grossWeight)} g</td>
-                <td className="py-2 text-right">{formatINR(metalValue)}</td>
+                <td className="py-2">{isPolki ? "-" : `${number(price.grossWeight)} g`}</td>
               </tr>
-              {showMaking && <tr className="border-b border-[var(--color-border)]">
+              {showMaking && !isPolki && <tr className="border-b border-[var(--color-border)]">
                 <td className="py-2">Making</td>
-                <td className="py-2">{formatINR(makingRate)}</td><td className="py-2">{number(price.netWeight ?? price.grossWeight)} g</td><td className="py-2 text-right">{formatINR(makingValue)}</td></tr>}</tbody></table></div>}</div>
+                <td className="py-2">{formatINR(makingRate)}</td><td className="py-2">{number(price.netWeight ?? price.grossWeight)} g</td></tr>}</tbody></table></div></div>
 
       {/* TEMPORARY FLOW — silver only: manual Price already includes all Silver components. */}
       {stoneEntries.length > 0 && <div className="mb-0">
         <h3 className="mb-0 font-semibold text-[var(--color-teal)]">{hasDiamonds ? `Lab-Grown Diamonds${Number(product.totalNumberOfDiamonds || 0) > 0 ? ` (Total diamonds - ${product.totalNumberOfDiamonds})` : ""}` : hasPolki ? "Polki" : "Moissanite"}</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="border-y border-[var(--color-border)] text-[var(--color-text-muted)]"><tr>
+            <thead className="border-t border-[var(--color-border)] text-[var(--color-text-muted)]"><tr>
               <th className="py-2 font-semibold">Component</th>
               <th className="py-2 font-semibold">Colour/Clarity</th>
               <th className="py-2 pr-0 md-pr-4 font-semibold">Ct</th>
               <th className="py-2 pl-2 font-semibold">Rate/Ct</th>
-              <th className="py-2 text-right font-semibold">Value</th></tr></thead><tbody>{stoneEntries.map(entry => <tr key={entry.key} className="border-b border-[var(--color-border)]"><td className="py-2">{entry.component}</td><td className="py-2">{entry.clarity}</td><td className="py-2 pr-2">{entry.carat}</td><td className="py-2 pl-2">{formatINR(entry.rate)}</td><td className="py-2 text-right">{formatINR(entry.value)}</td></tr>)}</tbody>
+              </tr></thead><tbody>{stoneEntries.map(entry => <tr key={entry.key} className="border-b border-[var(--color-border)]"><td className="py-2">{entry.component}</td><td className="py-2">{entry.clarity}</td><td className="py-2 pr-2">{entry.carat}</td><td className="py-2 pl-2">{formatINR(entry.rate)}</td></tr>)}</tbody>
           </table></div>
       </div>}
       <div>
@@ -81,11 +76,7 @@ export default function PriceBreakup({ product, price, b2b = false, className = 
                 </tr>
                 </thead> */}
 
-            <tbody>{showCertificate &&
-              <tr className="border-b border-[var(--color-border)]">
-                <td className="py-2"><h3 className="font-semibold text-[var(--color-teal)] text-[14px]">Certificate Charge</h3></td>
-                <td className="py-2 text-right">{formatINR(number(price.certificateCharges))}</td>
-              </tr>}{showGst &&
+            <tbody><tr className="border-b border-[var(--color-border)]"><td className="py-2"><h3 className="font-semibold text-[14px] text-[var(--color-teal)]">Subtotal</h3></td><td className="py-2 text-right">{formatINR(number(price.totalCost))}</td></tr>{showGst &&
                 <tr className="border-b border-[var(--color-border)]">
                   <td className="py-2">
                     <h3 className="font-semibold text-[14px] text-[var(--color-teal)]">GST (3%)</h3> </td>

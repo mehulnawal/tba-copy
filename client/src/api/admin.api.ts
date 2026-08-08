@@ -3,7 +3,7 @@ import type { Announcement } from "./announcement.api";
 import type { Banner } from "./banner.api";
 import type { Category, Product, PriceBreakdown } from "../types";
 
-export interface DiamondCategory { _id: string; name: string; subTypes: string[]; isActive: boolean; }
+export interface DiamondCategory { _id: string; categoryName: string; size: string; b2bPrice: number; b2cPrice: number; createdAt: string; }
 export interface DiamondClarity { _id: string; name: string; isActive: boolean; }
 export interface CertificateOption { _id: string; name: string; logoUrl?: string; isActive: boolean; }
 export interface PricingConfig { _id: string; key: string; metal: "gold" | "silver"; categoryType: string; makingRatePerGram: number; weightBasis: "net" | "gross"; moissaniteRatePerCarat?: number; polkiValuePerUnit?: number; silverB2BMakingChargeRate?: number; certificateApplies: boolean; usesLabGrownFixedDiamondRates: boolean; b2bExcludeCharges?: boolean; isActive: boolean; }
@@ -122,11 +122,15 @@ export const adminApi = {
   setB2BPassword: (password: string) => apiRequest<B2BAccessStatus>("/admin/b2b-access", { method: "PUT", body: JSON.stringify({ password }) }),
   revokeB2BPassword: () => apiRequest<B2BAccessStatus>("/admin/b2b-access", { method: "DELETE" }),
   diamondCategories: () => apiRequest<DiamondCategory[]>("/admin/diamond-categories"),
+  createDiamondCategory: (payload: Omit<DiamondCategory, "_id" | "createdAt">) => apiRequest<DiamondCategory>("/admin/diamond-categories", { method: "POST", body: JSON.stringify({ ...payload, name: payload.categoryName }) }),
+  diamondCategorySizes: (categoryName: string) => apiRequest<string[]>(`/admin/diamond-categories/sizes?categoryName=${encodeURIComponent(categoryName)}`),
+  updateDiamondCategory: (id: string, payload: Pick<DiamondCategory, "categoryName" | "size" | "b2bPrice" | "b2cPrice">) => apiRequest<DiamondCategory>(`/admin/diamond-categories/${id}`, { method: "PUT", body: JSON.stringify(payload) }),
+  deleteDiamondCategory: (id: string) => apiRequest<null>(`/admin/diamond-categories/${id}`, { method: "DELETE" }),
   diamondClarities: () => apiRequest<DiamondClarity[]>("/admin/diamond-clarities"),
   certificates: () => apiRequest<CertificateOption[]>("/admin/certificates"),
   saveCertificate: (name: string, logoUrl = "") => apiRequest<CertificateOption>("/admin/certificates", { method: "POST", body: JSON.stringify({ name, logoUrl }) }),
   deleteCertificate: (id: string) => apiRequest<null>(`/admin/certificates/${id}`, { method: "DELETE" }),
-  saveDiamondCategory: (name: string, subType = "") => apiRequest<DiamondCategory>("/admin/diamond-categories", { method: "POST", body: JSON.stringify({ name, subType }) }),
+  saveDiamondCategory: (name: string, size = "") => apiRequest<DiamondCategory>("/admin/diamond-categories", { method: "POST", body: JSON.stringify({ categoryName: name, size: size || "Standard", b2bPrice: 0, b2cPrice: 0 }) }),
   saveDiamondClarity: (name: string) => apiRequest<DiamondClarity>("/admin/diamond-clarities", { method: "POST", body: JSON.stringify({ name }) }),
   categories: () => apiRequest<Category[]>("/admin/categories"),
   createCategory: (p: {

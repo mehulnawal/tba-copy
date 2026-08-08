@@ -53,6 +53,18 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
     if (import.meta.env.VITE_FACEBOOK_APP_ID) loadScript("facebook-jssdk", "https://connect.facebook.net/en_US/sdk.js");
   }, []);
 
+  const handleClose = () => {
+    setIsSubmitting(false);
+    onClose();
+  };
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => { if (event.key === "Escape") handleClose(); };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -157,7 +169,7 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        onClick={onClose}
+        onClick={handleClose}
         className="absolute inset-0 bg-black/60 backdrop-blur-md"
       />
 
@@ -169,7 +181,8 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
         className="relative w-full max-w-md overflow-hidden bg-[var(--color-bg)] border border-[var(--color-border)] p-8 shadow-2xl z-10"
       >
         <button
-          onClick={onClose}
+          type="button"
+          onClick={handleClose}
           className="absolute top-4 right-4 text-[var(--color-text-muted)] hover:text-[var(--color-text)] p-1.5 transition-colors cursor-pointer"
         >
           <X className="w-5 h-5" />

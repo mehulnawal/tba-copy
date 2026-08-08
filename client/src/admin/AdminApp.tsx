@@ -1,4 +1,4 @@
-﻿import React, { FormEvent, useEffect, useState, useMemo, useCallback } from "react";
+import React, { FormEvent, useEffect, useState, useMemo, useCallback } from "react";
 import { Navigate, NavLink, Route, Routes, useNavigate } from "react-router-dom";
 import { adminApi, type AdminUser, type BannerPayload, type Coupon, type ManagedUser, type B2BAccessStatus, type PricingConfig } from "../api/admin.api";
 import type { Banner } from "../api/banner.api";
@@ -6,6 +6,7 @@ import type { Announcement } from "../api/announcement.api";
 import { ApiRequestError, apiRequest } from "../api/client";
 import type { Category } from "../types";
 import Products from "./Products";
+import DiamondCategories from "./DiamondCategories";
 import Reviews from "./Reviews";
 import { ClipboardList, FolderTree, Gem, Image, Lock, Megaphone, Menu, Scale, ShoppingBag, Sparkles, Star, Ticket, UsersRound, X } from "lucide-react";
 
@@ -160,6 +161,7 @@ function Layout({ admin, onLogout }: { admin: AdminUser; onLogout: () => void })
     { to: "/admin/reviews", label: "Reviews", icon: Star },
     { to: "/admin/coupons", label: "Coupons", icon: Ticket },
     { to: "/admin/products", label: "Products", icon: Gem },
+    { to: "/admin/diamond-categories", label: "Diamond Categories", icon: Gem },
     { to: "/admin/categories", label: "Categories", icon: FolderTree },
     { to: "/admin/users", label: "Customers", icon: UsersRound },
     { to: "/admin/banners", label: "Banners", icon: Image },
@@ -234,6 +236,7 @@ function Layout({ admin, onLogout }: { admin: AdminUser; onLogout: () => void })
           <Route path="b2b-access-log" element={<B2BAccessLog />} />
           <Route path="categories" element={<Categories />} />
           <Route path="products" element={<Products />} />
+          <Route path="diamond-categories" element={<DiamondCategories />} />
           <Route path="*" element={<Navigate to="/admin" replace />} />
         </Routes>
       </main>

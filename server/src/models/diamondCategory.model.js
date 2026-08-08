@@ -1,10 +1,11 @@
 const mongoose = require("mongoose");
 
 const diamondCategorySchema = new mongoose.Schema({
-  name: { type: String, required: true, trim: true, unique: true },
-  subTypes: { type: [String], default: ["Round Brilliant", "Princess", "Cushion", "Emerald", "Oval", "Radiant", "Pear", "Marquise", "Asscher", "Heart"] },
-  isActive: { type: Boolean, default: true },
-}, { timestamps: true });
+  categoryName: { type: String, required: true, trim: true },
+  size: { type: String, required: true, trim: true },
+  b2bPrice: { type: Number, required: true },
+  b2cPrice: { type: Number, required: true },
+  createdAt: { type: Date, default: Date.now },
+}, { timestamps: false });
 
-diamondCategorySchema.index({ name: 1 }, { unique: true });
 module.exports = mongoose.model("DiamondCategory", diamondCategorySchema);

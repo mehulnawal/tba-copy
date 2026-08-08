@@ -2,6 +2,7 @@ const CategoryPricingConfig = require("../models/categoryPricingConfig.model");
 const Category = require("../models/category.model");
 const { calculateGoldPrice } = require("./goldPricing");
 const { calculateSilverPrice } = require("./silverPricing");
+const { getDiamondPricing } = require("./diamondPricing");
 
 const categoryName = (value) =>
   typeof value === "string" ? "" : String(value?.name || "").trim();
@@ -63,7 +64,20 @@ const calculatePrice = async (
 
   if (!rates) throw new Error("Live metal rates are required for pricing");
   const settings = await resolveSettings(product);
-  return calculateGoldPrice({ product, karat, buyer, rates, settings });
+  let calculated = calculateGoldPrice({ product, karat, buyer, rates, settings });
+  // Legacy certificate charge (Universal Price × Total Diamond Weight) remains in goldPricing.js; gold products with a manual certificateWeight use the replacement basis here.
+  if (product?.certificateWeight !== undefined && settings.certificateApplies && !(String(buyer).toUpperCase() === "B2B" && settings.b2bExcludeCharges)) {
+    const certificateCharges = Number(rates.certificateRatePerGram) * Number(product.certificateWeight);
+    const totalCost = calculated.totalCost - calculated.certificateCharges + certificateCharges;
+    const gst = totalCost * 0.03;
+    calculated = { ...calculated, certificateCharges, totalCost, gst, finalPrice: totalCost + gst };
+  }
+  if (product?.diamondCategoryRef) {
+    const diamond = await getDiamondPricing({ product });
+    const finalPrice = String(buyer).toUpperCase() === "B2B" ? diamond.b2bPrice : diamond.b2cPrice;
+    return { ...calculated, b2bPrice: diamond.b2bPrice, b2cPrice: diamond.b2cPrice, totalCost: finalPrice, finalPrice };
+  }
+  return calculated;
 };
 
 module.exports = { calculatePrice, resolveSettings };

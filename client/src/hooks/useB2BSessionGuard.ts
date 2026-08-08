@@ -7,7 +7,7 @@ export function useB2BSessionGuard() {
   const navigate = useNavigate();
   const location = useLocation();
   useEffect(() => {
-    if ((location.state as { b2bMock?: boolean } | null)?.b2bMock) return;
+    if ((location.state as { b2bMock?: boolean } | null)?.b2bMock || window.sessionStorage.getItem("tba-b2b-preview-access") === "true") return;
     let active = true;
     void apiRequest("/b2b/status").catch(() => { if (active) navigate("/b2b/access", { replace: true }); });
     return () => { active = false; };

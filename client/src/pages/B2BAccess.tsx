@@ -46,6 +46,7 @@ export default function B2BAccess() {
     setError("");
     const storedLogs = JSON.parse(window.localStorage.getItem("tba-b2b-mock-access-log") || "[]") as Array<{ id: string; mobile: string; accessedAt: string; status: "Verified" }>;
     window.localStorage.setItem("tba-b2b-mock-access-log", JSON.stringify([{ id: `b2b-log-${Date.now()}`, mobile, accessedAt: new Date().toISOString(), status: "Verified" }, ...storedLogs]));
+    window.sessionStorage.setItem("tba-b2b-preview-access", "true");
     navigate("/b2b/catalog", { replace: true, state: { b2bMock: true } });
   };
 

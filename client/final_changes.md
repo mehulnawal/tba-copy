@@ -74,3 +74,13 @@ total diamond count number - this be manually added by admin in add products - a
 4. prime collection product - add to cart, wishlist buttons not working and kt toggle needs to be fix and UI improvements - and the buttons are not working and the ui is also not good
 5. new diamond category list 
 6. certificate charge manually 
+7. facebook testing Locate every place in the codebase (admin panel product list/detail views, B2B storefront, B2C storefront, cart, pricing calculation, order creation, any API response) where a product's b2bPrice or b2cPrice is currently read directly from the product document.
+
+For any product whose category is a diamond category (has a diamondCategoryRef set), replace that direct read with a call to the diamondPricing.js helper created earlier, so the price shown/calculated is always either the live current DiamondCategory master data price, or the diamondPriceOverride if one is set on that product — following the exact same resolution logic already implemented in diamondPricing.js.
+
+For all non-diamond products (gold, silver), do not change how their price is read at all — leave that logic 100% untouched.
+
+
+
+
+

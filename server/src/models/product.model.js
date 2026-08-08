@@ -20,6 +20,10 @@ const moissaniteEntrySchema = new mongoose.Schema({
   colorClarity: { type: String, default: "" }, // Optional/inactive pending client confirmation.
 }, { _id: false });
 const imageSchema = new mongoose.Schema({ url: { type: String, required: true }, source: { type: String, enum: ["link", "upload"], required: true } }, { _id: false });
+const diamondPriceOverrideSchema = new mongoose.Schema({
+  b2bPrice: { type: Number, required: true },
+  b2cPrice: { type: Number, required: true },
+}, { _id: false });
 
 const productSchema = new mongoose.Schema({
   SKU: { type: String, required: true, unique: true, trim: true, index: true },
@@ -47,6 +51,9 @@ const productSchema = new mongoose.Schema({
   moissaniteEntries: { type: [moissaniteEntrySchema], default: [] },
   diamonds: { type: [diamondEntrySchema], default: [] },
   totalNumberOfDiamonds: { type: Number, required: true, min: 0 },
+  certificateWeight: { type: Number, min: 0 },
+  diamondCategoryRef: { type: mongoose.Schema.Types.ObjectId, ref: "DiamondCategory" },
+  diamondPriceOverride: { type: diamondPriceOverrideSchema },
   isActive: { type: Boolean, default: true },
 }, { timestamps: true });
 
