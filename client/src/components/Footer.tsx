@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { SOCIAL_LINKS } from "../constants/assets";
 import { Phone, Mail, MapPin, Instagram, Heart, Shield, Award } from "lucide-react";
@@ -129,7 +130,7 @@ export default function Footer({ onCategoryChange }: { onCategoryChange: (catego
       <div className="border-t border-white/10 w-full">
         <div className="container py-6 flex flex-col sm:flex-row justify-between items-center gap-3 text-[10px] font-secondary text-white/40 tracking-wider">
           <span>© 2026 TBA - The Brilliance Atelier. All rights reserved.</span>
-          <span className="flex items-center gap-1">Crafted with <Heart size={10} className="text-red-500 fill-red-500" /> in India</span>
+          <nav className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2"><Link to="/terms-of-service" className="hover:text-white transition-colors">Terms of Service</Link><Link to="/data-deletion" className="hover:text-white transition-colors">Data Deletion</Link><span className="flex items-center gap-1">Crafted with <Heart size={10} className="text-red-500 fill-red-500" /> in India</span></nav>
         </div>
       </div>
     </footer>

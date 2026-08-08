@@ -25,7 +25,9 @@ const normalizeGoldWeights = (body, metal = body?.metal) => {
 };
 const listForMetal = metal => asyncHandler(async (req, res) => {
   const { search = "", mainCategory, subCategory, minPrice, maxPrice, sort, karat } = req.query;
-  const filter = { isActive: true, metal }; if (subCategory) { filter.subCategory = subCategory; } else if (mainCategory) { const children = await Category.find({ parent: mainCategory }).select("_id").lean(); const childIds = children.map((category) => category._id); filter.$or = [{ mainCategory }, { subCategory: { $in: childIds } }]; }
+  const filter = { isActive: true, metal };
+  if (String(req.query.primeCollection || "").toLowerCase() === "true") filter.isPrimeCollection = true;
+  if (subCategory) { filter.subCategory = subCategory; } else if (mainCategory) { const children = await Category.find({ parent: mainCategory }).select("_id").lean(); const childIds = children.map((category) => category._id); filter.$or = [{ mainCategory }, { subCategory: { $in: childIds } }]; }
   const documents = await populated(Product.find(filter));
   // One legacy product with incomplete pricing must not make the entire public
   // catalogue (and consequently the Best Seller section) disappear.

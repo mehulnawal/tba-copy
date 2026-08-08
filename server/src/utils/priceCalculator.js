@@ -59,8 +59,10 @@ const calculatePrice = async (
   rates = global.TBA_METAL_RATES,
 ) => {
   // TEMPORARY FLOW — silver only: rate/category settings for manual Price + GST.
-  if (String(product?.metal || "").toLowerCase() === "silver")
-    return calculateSilverPrice({ product, buyer });
+  if (String(product?.metal || "").toLowerCase() === "silver") {
+    const settings = await resolveSettings(product);
+    return calculateSilverPrice({ product, buyer, rates, settings });
+  }
 
   if (!rates) throw new Error("Live metal rates are required for pricing");
   const settings = await resolveSettings(product);

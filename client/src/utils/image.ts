@@ -5,6 +5,9 @@ export function responsiveImage(url: string | undefined, width: number) {
   if (!url || !url.includes("res.cloudinary.com")) return url || PRODUCT_IMAGE_PLACEHOLDER;
   return url.replace("/upload/", `/upload/f_auto,q_auto,c_limit,w_${width}/`);
 }
+/** Uses the uploaded original for detail galleries, avoiding format/crop transformations. */
+export function detailImage(url: string | undefined) { return url || PRODUCT_IMAGE_PLACEHOLDER; }
+
 /** Resolves public assets correctly when the storefront is deployed under a base path. */
 const PUBLIC_ASSET_BASE_URL = import.meta.env.BASE_URL.replace(/\/$/, "");
 export function publicAssetUrl(path: string | undefined) {

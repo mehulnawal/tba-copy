@@ -37,6 +37,7 @@ const productSchema = new mongoose.Schema({
   subCategory: { type: mongoose.Schema.Types.ObjectId, ref: "Category", required: true },
   isBestSeller: { type: Boolean, default: false },
   isNewProduct: { type: Boolean, default: false },
+  isPrimeCollection: { type: Boolean, default: false },
   images: { type: [imageSchema], required: true, validate: { validator: arr => Array.isArray(arr) && arr.length > 0 && arr.length <= 6, message: "Between 1 and 6 images are required" } },
   videoLink: { type: String, default: "" },
   certificates: { type: [mongoose.Schema.Types.ObjectId], ref: "Certificate", default: [] },

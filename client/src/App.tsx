@@ -44,6 +44,8 @@ const Account = React.lazy(() => import("./pages/Account"));
 const B2BAccess = React.lazy(() => import("./pages/B2BAccess"));
 const B2BCatalog = React.lazy(() => import("./pages/B2BCatalog"));
 const B2BProductDetails = React.lazy(() => import("./pages/B2BProductDetails"));
+const TermsOfService = React.lazy(() => import("./pages/TermsOfService"));
+const DataDeletion = React.lazy(() => import("./pages/DataDeletion"));
 const Deferred = ({ children }: { children: React.ReactNode }) => <React.Suspense fallback={<div className="min-h-screen grid place-items-center text-[var(--color-text-muted)]">Loading...</div>}>{children}</React.Suspense>;
 
 function RouteSeo() {
@@ -126,6 +128,8 @@ export default function App() {
               <Route path="/gold-jewellery" element={<Deferred><ProductsPage metal="gold" /></Deferred>} />
               <Route path="/silver-jewellery" element={<Deferred><ProductsPage metal="silver" /></Deferred>} />
               <Route path="/product/:slug" element={<Deferred><ProductDetailPage /></Deferred>} />
+              <Route path="/terms-of-service" element={<Deferred><TermsOfService /></Deferred>} />
+              <Route path="/data-deletion" element={<Deferred><DataDeletion /></Deferred>} />
 
               <Route
                 path="/wishlist"
