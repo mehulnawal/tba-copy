@@ -81,6 +81,11 @@ For any product whose category is a diamond category (has a diamondCategoryRef s
 For all non-diamond products (gold, silver), do not change how their price is read at all — leave that logic 100% untouched.
 
 
+1. Admin Panel - calculation 
+2. Solve product update 
+3. 
+4. 
+
 
 
 

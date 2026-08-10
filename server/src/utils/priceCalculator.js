@@ -2,7 +2,7 @@ const CategoryPricingConfig = require("../models/categoryPricingConfig.model");
 const Category = require("../models/category.model");
 const { calculateGoldPrice } = require("./goldPricing");
 const { calculateSilverPrice } = require("./silverPricing");
-const { getDiamondPricing } = require("./diamondPricing");
+const { hydrateLiveDiamondEntryRates } = require("./diamondPricing");
 
 const categoryName = (value) =>
   typeof value === "string" ? "" : String(value?.name || "").trim();
@@ -58,6 +58,7 @@ const calculatePrice = async (
   buyer = "B2C",
   rates = global.TBA_METAL_RATES,
 ) => {
+  product = await hydrateLiveDiamondEntryRates(product);
   // TEMPORARY FLOW — silver only: rate/category settings for manual Price + GST.
   if (String(product?.metal || "").toLowerCase() === "silver") {
     const settings = await resolveSettings(product);
@@ -73,11 +74,6 @@ const calculatePrice = async (
     const totalCost = calculated.totalCost - calculated.certificateCharges + certificateCharges;
     const gst = totalCost * 0.03;
     calculated = { ...calculated, certificateCharges, totalCost, gst, finalPrice: totalCost + gst };
-  }
-  if (product?.diamondCategoryRef) {
-    const diamond = await getDiamondPricing({ product });
-    const finalPrice = String(buyer).toUpperCase() === "B2B" ? diamond.b2bPrice : diamond.b2cPrice;
-    return { ...calculated, b2bPrice: diamond.b2bPrice, b2cPrice: diamond.b2cPrice, totalCost: finalPrice, finalPrice };
   }
   return calculated;
 };

@@ -7,6 +7,8 @@ const weightSchema = new mongoose.Schema({
   "18kt": { type: Number, required: true, min: 0 },
 }, { _id: false });
 const diamondEntrySchema = new mongoose.Schema({
+  // This master row is the source of truth for the entry B2B/B2C rate.
+  diamondCategoryRef: { type: mongoose.Schema.Types.ObjectId, ref: "DiamondCategory" },
   category: { type: String, required: true, trim: true },
   subType: { type: String, trim: true, default: "" },
   caratWeight: { type: Number, required: true, min: 0 },

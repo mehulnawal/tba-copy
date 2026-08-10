@@ -23,4 +23,20 @@ const getDiamondPricing = async ({ productId, diamondCategoryRef, product } = {}
   return { b2bPrice: validPrice(category.b2bPrice, "Diamond category B2B price"), b2cPrice: validPrice(category.b2cPrice, "Diamond category B2C price") };
 };
 
-module.exports = { getDiamondPricing };
+// Resolve referenced diamond-entry rates at request time. Legacy entries with
+// no reference retain their stored rate until an admin assigns a master row.
+const hydrateLiveDiamondEntryRates = async (product) => {
+  const diamonds = Array.isArray(product?.diamonds) ? product.diamonds : [];
+  const ids = [...new Set(diamonds.map((entry) => entry?.diamondCategoryRef).filter(Boolean).map(String))];
+  if (!ids.length) return product;
+  const categories = await DiamondCategory.find({ _id: { $in: ids } }).select("b2bPrice b2cPrice").lean();
+  const byId = new Map(categories.map((category) => [String(category._id), category]));
+  return { ...product, diamonds: diamonds.map((entry, index) => {
+    if (!entry?.diamondCategoryRef) return entry;
+    const category = byId.get(String(entry.diamondCategoryRef));
+    if (!category) throw new Error(`Diamond ${index + 1} category not found`);
+    return { ...entry, ratePerCtB2B: validPrice(category.b2bPrice, `Diamond ${index + 1} B2B rate`), ratePerCtB2C: validPrice(category.b2cPrice, `Diamond ${index + 1} B2C rate`) };
+  }) };
+};
+
+module.exports = { getDiamondPricing, hydrateLiveDiamondEntryRates };
