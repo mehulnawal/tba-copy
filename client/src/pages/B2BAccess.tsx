@@ -15,16 +15,10 @@ export default function B2BAccess() {
   const [notice, setNotice] = useState("");
   const otpRefs = useRef<Array<HTMLInputElement | null>>([]);
 
-  const continueWithPassword = async (event: FormEvent) => {
+  const continueWithPassword = (event: FormEvent) => {
     event.preventDefault();
     if (!password.trim()) { setError("Password is required."); return; }
-    try {
-      await apiRequest("/b2b/access", { method: "POST", body: JSON.stringify({ password }) });
-      window.sessionStorage.removeItem("tba-b2b-preview-access");
-      navigate("/b2b/catalog", { replace: true });
-    } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "Unable to verify B2B access.");
-    }
+    setError(""); setNotice("Password accepted. Enter your mobile number to continue."); setStep("mobile");
   };
 
   const sendOtp = (event: FormEvent) => {
@@ -44,14 +38,14 @@ export default function B2BAccess() {
     if (digit && index < OTP_LENGTH - 1) otpRefs.current[index + 1]?.focus();
   };
 
-  const verifyOtp = (event: FormEvent) => {
+  const verifyOtp = async (event: FormEvent) => {
     event.preventDefault();
     if (otp.some((digit) => !digit)) { setError("Enter the complete OTP."); return; }
     setError("");
-    const storedLogs = JSON.parse(window.localStorage.getItem("tba-b2b-mock-access-log") || "[]") as Array<{ id: string; mobile: string; accessedAt: string; status: "Verified" }>;
-    window.localStorage.setItem("tba-b2b-mock-access-log", JSON.stringify([{ id: `b2b-log-${Date.now()}`, mobile, accessedAt: new Date().toISOString(), status: "Verified" }, ...storedLogs]));
-    window.sessionStorage.setItem("tba-b2b-preview-access", "true");
-    navigate("/b2b/catalog", { replace: true, state: { b2bMock: true } });
+    try {
+      await apiRequest("/b2b/access", { method: "POST", body: JSON.stringify({ password, mobile, otp: otp.join("") }) });
+      navigate("/b2b/catalog", { replace: true });
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "Unable to verify B2B access."); }
   };
 
   const resendOtp = () => {

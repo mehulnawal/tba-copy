@@ -12,14 +12,17 @@ const { B2B_COOKIE, b2bSecret } = require("../middlewares/b2b.middleware");
 
 const populated = query => query.populate("mainCategory", "name").populate("subCategory", "name").populate("certificates", "name logoUrl");
 const cookieOptions = { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", maxAge: 7 * 24 * 60 * 60 * 1000 };
-const statusPayload = access => ({ active: Boolean(access?.isActive), lastChanged: access?.updatedAt || null });
+const statusPayload = access => ({ active: Boolean(access?.isActive), lastChanged: access?.updatedAt || null, lastAccessMobile: access?.lastAccessMobile || null });
 const signAccess = access => jwt.sign({ version: access.sessionVersion, scope: "b2b" }, b2bSecret(), { expiresIn: process.env.JWT_B2B_ACCESS_EXPIRY || "7d" });
 
 const access = asyncHandler(async (req, res) => {
-  const password = String(req.body?.password || "");
+  const password = String(req.body?.password || ""); const mobile = String(req.body?.mobile || ""); const otp = String(req.body?.otp || "");
   if (!password) throw new ApiError(400, "B2B access password is required");
+  if (!/^\d{10}$/.test(mobile)) throw new ApiError(400, "A valid 10-digit mobile number is required");
+  if (!/^\d{6}$/.test(otp)) throw new ApiError(400, "A valid 6-digit OTP is required");
   const current = await B2BAccess.findOne({ key: "current" }).select("+passwordHash");
   if (!current?.isActive || !current.passwordHash || !(await bcrypt.compare(password, current.passwordHash))) throw new ApiError(401, "Invalid or revoked B2B access password");
+  await B2BAccess.updateOne({ _id: current._id }, { $set: { lastAccessMobile: mobile } });
   res.cookie(B2B_COOKIE, signAccess(current), cookieOptions);
   res.json(new ApiResponse(200, { active: true }, "B2B access granted"));
 });

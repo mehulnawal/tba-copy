@@ -9,83 +9,36 @@ const isShown = (price: PriceBreakdown, key: "showMaking" | "showCertificate" | 
 export default function PriceBreakup({ product, price, b2b = false, className = "" }: Props) {
   const [open, setOpen] = useState(true);
   const isGold = price.metal === "gold" || product.metal === "gold";
-  const isPolki = !isGold && [product.mainCategory, product.subCategory].some((category) => (typeof category === "string" ? category : category?.name || "").toLowerCase() === "polki");
-  const metalLabel = isGold ? `${price.karat?.toUpperCase() || "Gold"} Gold` : "Fine Silver";
-  const metalValue = isGold ? number(price.goldValue) : number(price.silverValue ?? price.metalValue);
-  const makingValue = number(price.makingCharge ?? price.makingValue);
-  const hasDiamonds = (product.diamonds || []).length > 0;
-  const hasMoissanite = (product.moissaniteEntries || []).length > 0 || product.moissaniteCaratWeight !== undefined;
-  const hasPolki = (product.polkiEntries || []).length > 0;
-  const diamondRate = (entry: NonNullable<Product["diamonds"]>[number]) => number(b2b ? (entry.ratePerCtB2B ?? entry.ratePerCt) : (entry.ratePerCtB2C ?? entry.ratePerCt));
-  const stoneEntries = hasDiamonds
-    ? (product.diamonds || []).map((entry, index) => ({ key: `diamond-${index}`, component: entry.category || "Diamond", clarity: entry.colorClarity || "\u2014", carat: number(entry.caratWeight), rate: diamondRate(entry), value: number(entry.caratWeight) * diamondRate(entry) }))
-    : (product.moissaniteEntries || (product.moissaniteCaratWeight === undefined ? [] : [{ caratWeight: product.moissaniteCaratWeight }])).map((entry, index) => ({ key: `moissanite-${index}`, component: "Moissanite", clarity: entry.colorClarity || "\u2014", carat: number(entry.caratWeight), rate: number(price.moissaniteRatePerCarat), value: number(entry.caratWeight) * number(price.moissaniteRatePerCarat) }));
+  const categoryName = (value: Product["mainCategory"] | Product["subCategory"]) => (typeof value === "string" ? value : value?.name || "").toLowerCase();
+  const isPolki = !isGold && [product.mainCategory, product.subCategory].some(value => categoryName(value) === "polki");
+  const hasMoissanite = !isGold && !isPolki && ((product.moissaniteEntries || []).length > 0 || product.moissaniteCaratWeight !== undefined);
   const showMaking = isShown(price, "showMaking");
   const showGst = isShown(price, "showGst");
-  const metalRate = isGold ? number(price.goldRate) : isPolki ? number(price.price) : number(price.silverRate);
-  const makingRate = number(price.makingRatePerGram);
-
-  return <section className={`rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-4 ${className}`}>
-    <div className="flex items-center justify-between border-b border-[var(--color-border)] pb-3">
-      <h2 className="font-primary text-lg text-[var(--color-teal)]">Price Breakup</h2>
-      <button type="button" onClick={() => setOpen(value => !value)} className="text-xs font-semibold uppercase tracking-wide text-[var(--color-teal)] underline">{open ? "Hide details" : "View breakdown"}</button>
-    </div>
-    {open && <div className="space-y-5 pt-4 text-sm">
-      <div className="mb-0"><h3 className="mb-2 font-bold text-[var(--color-teal)]">{metalLabel}</h3>
-
-        {/* TEMPORARY FLOW — silver only: the original Silver/Making rows are hidden. */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="border-t border-[var(--color-border)] text-[var(--color-text-muted)]"><tr>
-              <th className="py-2 font-semibold">Component</th>
-              <th className="py-2 font-semibold">{isPolki ? "Price" : "Rate/Gm"}</th>
-              <th className="py-2 font-semibold">Weight</th>
-            </tr>
-            </thead>
-            <tbody>
-              <tr className="border-b border-[var(--color-border)]">
-                <td className="py-2">{isGold ? `${price.karat?.toUpperCase() || "Gold"} Gold` : isPolki ? "Silver Price" : "Silver"}</td>
-                <td className="py-2">{formatINR(metalRate)}</td>
-                <td className="py-2">{isPolki ? "-" : `${number(price.grossWeight)} g`}</td>
-              </tr>
-              {showMaking && !isPolki && <tr className="border-b border-[var(--color-border)]">
-                <td className="py-2">Making</td>
-                <td className="py-2">{formatINR(makingRate)}</td><td className="py-2">{number(price.netWeight ?? price.grossWeight)} g</td></tr>}</tbody></table></div></div>
-
-      {/* TEMPORARY FLOW — silver only: manual Price already includes all Silver components. */}
-      {stoneEntries.length > 0 && <div className="mb-0">
-
-        <h3 className="mb-0 py-2 font-semibold text-[var(--color-teal)]">{hasDiamonds ? `Lab-Grown Diamonds${Number(product.totalNumberOfDiamonds || 0) > 0 ? ` (Total diamonds - ${product.totalNumberOfDiamonds})` : ""}` : hasPolki ? "Polki" : "Moissanite"}</h3>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="border-t border-[var(--color-border)] text-[var(--color-text-muted)]"><tr>
-              <th className="py-2 font-semibold">Component</th>
-              <th className="py-2 font-semibold">Colour/Clarity</th>
-              <th className="py-2 pr-0 md-pr-4 font-semibold">Ct</th>
-              <th className="py-2 pl-2 font-semibold">Rate/Ct</th>
-            </tr></thead><tbody>{stoneEntries.map(entry => <tr key={entry.key} className="border-b border-[var(--color-border)]"><td className="py-2">{entry.component}</td><td className="py-2">{entry.clarity}</td><td className="py-2 pr-2">{entry.carat}</td><td className="py-2 pl-2">{formatINR(entry.rate)}</td></tr>)}</tbody>
-          </table></div>
-      </div>}
-      <div>
-        {/* <h3 className="mb-2 font-semibold text-[var(--color-teal)]">Totals</h3> */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            {/* <thead className="border-y border-[var(--color-border)] text-[var(--color-text-muted)]">
-              <tr>
-                <th className="py-2 font-semibold">Component</th>
-                <th className="py-2 text-right font-semibold">Total</th>
-                </tr>
-                </thead> */}
-
-            <tbody><tr className="border-b border-[var(--color-border)]"><td className="py-2"><h3 className="font-semibold text-[14px] text-[var(--color-teal)]">Subtotal</h3></td><td className="py-2 text-right">{formatINR(number(price.totalCost))}</td></tr>{showGst &&
-              <tr className="border-b border-[var(--color-border)]">
-                <td className="py-2">
-                  <h3 className="font-semibold text-[14px] text-[var(--color-teal)]">GST (3%)</h3> </td>
-                <td className="py-2 text-right">{formatINR(number(price.gst))}</td>
-              </tr>}
-              <tr className="border-b-2 border-[var(--color-teal)] bg-[var(--color-cream)] font-bold text-[var(--color-teal)]"><td className="py-3 px-1">Total Amount</td><td className="py-3 px-1 text-right">{formatINR(number(price.finalPrice))}</td></tr></tbody></table></div><p className="mt-2 text-xs text-[var(--color-text-muted)]">*This is an estimated price, actual price may differ as per actual weights.</p>{b2b && price.b2bPricingStatus === "pending" && <p className="mt-2 text-xs text-[var(--color-text-muted)]">Silver B2B pricing is pending; the B2C total is shown.</p>}</div>
-    </div>
-    }
-  </section >;
+  const silverWeight = number(price.grossWeight ?? (typeof product.grossWeight === "number" ? product.grossWeight : 0));
+  const metalValue = isGold ? number(price.goldValue) : number(price.silverValue ?? price.metalValue);
+  const makingValue = number(price.makingCharge ?? price.makingValue);
+  const metalLabel = isGold ? `${price.karat?.toUpperCase() || "Gold"} Gold` : "Fine Silver";
+  const stoneEntries = (product.diamonds || []).length > 0
+    ? (product.diamonds || []).map((entry, index) => ({ key: `diamond-${index}`, component: entry.category || "Diamond", clarity: entry.colorClarity || "—", carat: number(entry.caratWeight), rate: number(b2b ? (entry.ratePerCtB2B ?? entry.ratePerCt) : (entry.ratePerCtB2C ?? entry.ratePerCt)) }))
+    : (product.moissaniteEntries || (product.moissaniteCaratWeight === undefined ? [] : [{ caratWeight: product.moissaniteCaratWeight }])).map((entry, index) => ({ key: `moissanite-${index}`, component: "Moissanite", clarity: entry.colorClarity || "—", carat: number(entry.caratWeight), rate: number(price.moissaniteRatePerCarat) }));
+  const totals = <div>
+    <div className="overflow-x-auto"><table className="w-full text-left text-xs"><tbody>
+      <tr className="border-b border-[var(--color-border)]"><td className="py-2"><h3 className="font-semibold text-[14px] text-[var(--color-teal)]">Subtotal</h3></td><td className="py-2 text-right">{formatINR(number(price.totalCost))}</td></tr>
+      {showGst && <tr className="border-b border-[var(--color-border)]"><td className="py-2"><h3 className="font-semibold text-[14px] text-[var(--color-teal)]">GST (3%)</h3></td><td className="py-2 text-right">{formatINR(number(price.gst))}</td></tr>}
+      <tr className="border-b-2 border-[var(--color-teal)] bg-[var(--color-cream)] font-bold text-[var(--color-teal)]"><td className="py-3 px-1">Total Amount</td><td className="py-3 px-1 text-right">{formatINR(number(price.finalPrice))}</td></tr>
+    </tbody></table></div><p className="mt-2 text-xs text-[var(--color-text-muted)]">*This is an estimated price, actual price may differ as per actual weights.</p>{b2b && price.b2bPricingStatus === "pending" && <p className="mt-2 text-xs text-[var(--color-text-muted)]">Silver B2B pricing is pending; the B2C total is shown.</p>}
+  </div>;
+  const silverBreakup = <>
+    <div className="mb-0"><h3 className="mb-2 font-bold text-[var(--color-teal)]">Fine Silver</h3><div className="overflow-x-auto"><table className="w-full text-left text-xs"><thead className="border-t border-[var(--color-border)] text-[var(--color-text-muted)]"><tr><th className="py-2 font-semibold">Component</th><th className="py-2 text-right font-semibold">Weight</th></tr></thead><tbody>
+      <tr className="border-b border-[var(--color-border)]"><td className="py-2">Silver</td><td className="py-2 text-right tabular-nums">{silverWeight} g</td></tr>
+      {showMaking && <tr className="border-b border-[var(--color-border)]"><td className="py-2">Making</td><td className="py-2 text-right tabular-nums">{silverWeight} g</td></tr>}
+    </tbody></table></div></div>
+    {hasMoissanite && <div className="mb-0"><h3 className="mb-0 py-2 font-semibold text-[var(--color-teal)]">Moissanite</h3><div className="overflow-x-auto"><table className="w-full text-left text-xs"><thead className="border-t border-[var(--color-border)] text-[var(--color-text-muted)]"><tr><th className="py-2 font-semibold">Component</th><th className="py-2 text-right font-semibold">Carat</th></tr></thead><tbody><tr className="border-b border-[var(--color-border)]"><td className="py-2">Moissanite</td><td className="py-2 text-right tabular-nums">{number(price.totalMoissaniteWeight ?? product.moissaniteCaratWeight)} ct</td></tr></tbody></table></div></div>}
+    {totals}
+  </>;
+  return <section className={`rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-4 ${className}`}><div className="flex items-center justify-between border-b border-[var(--color-border)] pb-3"><h2 className="font-primary text-lg text-[var(--color-teal)]">Price Breakup</h2><button type="button" onClick={() => setOpen(value => !value)} className="text-xs font-semibold uppercase tracking-wide text-[var(--color-teal)] underline">{open ? "Hide details" : "View breakdown"}</button></div>{open && <div className="space-y-5 pt-4 text-sm">{!isGold ? silverBreakup : <>
+    <div className="mb-0"><h3 className="mb-2 font-bold text-[var(--color-teal)]">{metalLabel}</h3><div className="overflow-x-auto"><table className="w-full text-left text-xs"><thead className="border-t border-[var(--color-border)] text-[var(--color-text-muted)]"><tr><th className="py-2 font-semibold">Component</th><th className="py-2 font-semibold">Rate/Gm</th><th className="py-2 text-right font-semibold">Weight</th></tr></thead><tbody><tr className="border-b border-[var(--color-border)]"><td className="py-2">{metalLabel}</td><td className="py-2">{formatINR(number(price.goldRate))}</td><td className="py-2 text-right tabular-nums">{number(price.grossWeight)} g</td></tr>{showMaking && <tr className="border-b border-[var(--color-border)]"><td className="py-2">Making</td><td className="py-2">{formatINR(number(price.makingRatePerGram))}</td><td className="py-2">{number(price.netWeight ?? price.grossWeight)} g</td></tr>}</tbody></table></div></div>
+    {stoneEntries.length > 0 && <div className="mb-0"><h3 className="mb-0 py-2 font-semibold text-[var(--color-teal)]">{(product.diamonds || []).length > 0 ? `Lab-Grown Diamonds${Number(product.totalNumberOfDiamonds || 0) > 0 ? ` (Total diamonds - ${product.totalNumberOfDiamonds})` : ""}` : "Moissanite"}</h3><div className="overflow-x-auto"><table className="w-full text-left text-xs"><thead className="border-t border-[var(--color-border)] text-[var(--color-text-muted)]"><tr><th className="py-2 font-semibold">Component</th><th className="py-2 font-semibold">Colour/Clarity</th><th className="py-2 font-semibold">Ct</th><th className="py-2 font-semibold">Rate/Ct</th></tr></thead><tbody>{stoneEntries.map(entry => <tr key={entry.key} className="border-b border-[var(--color-border)]"><td className="py-2">{entry.component}</td><td className="py-2">{entry.clarity}</td><td className="py-2">{entry.carat}</td><td className="py-2">{formatINR(entry.rate)}</td></tr>)}</tbody></table></div></div>}
+    {totals}
+  </>}</div>}</section>;
 }

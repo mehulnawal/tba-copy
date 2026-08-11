@@ -39,6 +39,7 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
 
     const { data: categoryData = [] } = useCategories(metal);
     const categories = categoryData ?? [];
+
     const [selectedKaratFilter, setSelectedKaratFilter] = useState<"" | "14kt" | "18kt">((params.get("karat") as "14kt" | "18kt") || "");
     const [isFilterMobileOpen, setIsFilterMobileOpen] = useState(false);
     const [isSortMobileOpen, setIsSortMobileOpen] = useState(false);
@@ -78,6 +79,7 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
     };
 
 
+    const categoryOptions = categories.filter((category) => category.categoryKind === "type").flatMap((type) => [type, ...categories.filter((child) => categoryId(child.parent) === type._id)]);
     const parentId = (category: Category) => category.parent ? categoryId(category.parent) : null;
     const selectCategory = (category: Category | null) => {
         const next = new URLSearchParams(params);
@@ -181,7 +183,7 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
                                 >
                                     All Categories
                                 </button>
-                                {categories.filter((cat) => cat.categoryKind !== "metal-root").map((cat) => (
+                                {categoryOptions.map((cat) => (
                                     <button
                                         key={cat._id}
                                         onClick={() => selectCategory(cat)}
@@ -297,7 +299,7 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
                                 <div>
                                     <h3 className="text-sm font-semibold text-gray-900 mb-2">Categories</h3>
                                     <button onClick={() => { selectCategory(null); setIsFilterMobileOpen(false); }} className={`block py-1 text-sm text-left w-full ${!selectedMainCategory ? "text-amber-700 font-bold" : "text-gray-600"}`}>All Categories</button>
-                                    {categories.filter((c) => c.categoryKind !== "metal-root").map((c) => (
+                                    {categoryOptions.map((c) => (
                                         <button key={c._id} onClick={() => { selectCategory(c); setIsFilterMobileOpen(false); }} className={`block py-1 text-sm text-left w-full ${c.categoryKind === "type" ? "font-semibold text-gray-900" : "ml-4 border-l border-gray-200 pl-3"} ${selectedSubCategory === c._id || selectedMainCategory === c._id ? "text-amber-700 font-bold" : "text-gray-600"}`}>
                                             {c.name}
                                         </button>

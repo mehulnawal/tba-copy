@@ -11,7 +11,7 @@ import { useAddToWishlist, useRemoveFromWishlist, useWishlist } from "../hooks/u
 import { RING_SIZES } from "../constants/product";
 import type { Product } from "../types";
 import { formatINR } from "../utils/currency";
-import { publicAssetUrl, responsiveImage } from "../utils/image";
+import { detailImage, publicAssetUrl, responsiveImage } from "../utils/image";
 import PriceBreakup from "../components/PriceBreakup";
 import { Seo } from "../components/Seo";
 import { ProductSkeleton } from "../components/LoadingSkeleton";
@@ -279,7 +279,7 @@ export default function ProductDetails() {
                                         onMouseMove={handleMouseMoveZoom}
                                         onMouseEnter={() => setIsHoveringMainImage(true)}
                                         onMouseLeave={() => setIsHoveringMainImage(false)}
-                                    >                                    {mediaList[activeMediaIndex]?.type === "video" ? <video controls className="w-full h-full object-contain" src={mediaList[activeMediaIndex]?.url} /> : <img src={responsiveImage(productImage, 1200)} alt={product.title || "Product image"} className={`w-full h-full object-cover transition-opacity duration-200 ${isHoveringMainImage ? "opacity-0" : "opacity-100"}`} />}{mediaList[activeMediaIndex]?.type !== "video" && isHoveringMainImage && (
+                                    >                                    {mediaList[activeMediaIndex]?.type === "video" ? <video controls className="w-full h-full object-contain" src={mediaList[activeMediaIndex]?.url} /> : <img src={detailImage(productImage)} alt={product.title || "Product image"} className={`w-full h-full object-cover transition-opacity duration-200 ${isHoveringMainImage ? "opacity-0" : "opacity-100"}`} />}{mediaList[activeMediaIndex]?.type !== "video" && isHoveringMainImage && (
                                         <div
                                             className="absolute inset-0 bg-no-repeat pointer-events-none"
                                             style={{

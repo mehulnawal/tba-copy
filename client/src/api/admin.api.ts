@@ -7,7 +7,7 @@ export interface DiamondCategory { _id: string; categoryName: string; size: stri
 export interface DiamondClarity { _id: string; name: string; isActive: boolean; }
 export interface CertificateOption { _id: string; name: string; logoUrl?: string; isActive: boolean; }
 export interface PricingConfig { _id: string; key: string; metal: "gold" | "silver"; categoryType: string; makingRatePerGram: number; weightBasis: "net" | "gross"; moissaniteRatePerCarat?: number; polkiValuePerUnit?: number; silverB2BMakingChargeRate?: number; certificateApplies: boolean; usesLabGrownFixedDiamondRates: boolean; b2bExcludeCharges?: boolean; isActive: boolean; }
-export interface B2BAccessStatus { active: boolean; lastChanged: string | null; }
+export interface B2BAccessStatus { active: boolean; lastChanged: string | null; lastAccessMobile?: string | null; }
 export interface AdminUser {
   id: string;
   name: string;

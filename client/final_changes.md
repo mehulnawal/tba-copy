@@ -83,8 +83,9 @@ For all non-diamond products (gold, silver), do not change how their price is re
 
 1. Admin Panel - calculation 
 2. Solve product update 
-3. 
-4. 
+3. Filters in B2B - not working - the kt and also remove the option All & also for the prices not working & why filter is applying for both gold & silver 
+4. fix dropdown in diamond entry in admin panel 
+5. metal rates b2b & b2c 
 
 
 

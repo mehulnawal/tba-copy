@@ -56,12 +56,15 @@ const calculatePrice = async (
   product,
   karat,
   buyer = "B2C",
-  rates = global.TBA_METAL_RATES,
+  suppliedRates,
 ) => {
+  const normalizedBuyer = String(buyer).toUpperCase();
+  const rates = suppliedRates || global.TBA_METAL_RATES?.[normalizedBuyer];
   product = await hydrateLiveDiamondEntryRates(product);
   // TEMPORARY FLOW — silver only: rate/category settings for manual Price + GST.
   if (String(product?.metal || "").toLowerCase() === "silver") {
-    const settings = await resolveSettings(product);
+    const baseSettings = await resolveSettings(product);
+    const settings = { ...baseSettings, makingRatePerGram: String(baseSettings.categoryType).toLowerCase() === "polki" ? rates?.silverPolkiMakingRate : rates?.silverMoissaniteMakingRate, moissaniteRatePerCarat: rates?.moissaniteRatePerCarat };
     return calculateSilverPrice({ product, buyer, rates, settings });
   }
 
