@@ -122,6 +122,8 @@ export const adminApi = {
   setB2BPassword: (password: string) => apiRequest<B2BAccessStatus>("/admin/b2b-access", { method: "PUT", body: JSON.stringify({ password }) }),
   revokeB2BPassword: () => apiRequest<B2BAccessStatus>("/admin/b2b-access", { method: "DELETE" }),
   diamondCategories: () => apiRequest<DiamondCategory[]>("/admin/diamond-categories"),
+  diamondSubcategories: () => apiRequest<{ _id: string; name: string }[]>("/admin/diamond-subcategories"),
+  saveDiamondSubcategory: (name: string) => apiRequest<{ _id: string; name: string }>("/admin/diamond-subcategories", { method: "POST", body: JSON.stringify({ name }) }),
   createDiamondCategory: (payload: Omit<DiamondCategory, "_id" | "createdAt">) => apiRequest<DiamondCategory>("/admin/diamond-categories", { method: "POST", body: JSON.stringify({ ...payload, name: payload.categoryName }) }),
   diamondCategorySizes: (categoryName: string) => apiRequest<string[]>(`/admin/diamond-categories/sizes?categoryName=${encodeURIComponent(categoryName)}`),
   updateDiamondCategory: (id: string, payload: Pick<DiamondCategory, "categoryName" | "size" | "b2bPrice" | "b2cPrice">) => apiRequest<DiamondCategory>(`/admin/diamond-categories/${id}`, { method: "PUT", body: JSON.stringify(payload) }),

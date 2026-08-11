@@ -42,8 +42,10 @@ const listForMetal = metal => asyncHandler(async (req, res) => {
 const selectedKarat = karat ? String(karat).toLowerCase() : null;
   if (selectedKarat && !["14kt", "18kt"].includes(selectedKarat)) throw new ApiError(400, "karat must be 14kt or 18kt");
   const matchingPrices = product => selectedKarat ? product.prices.filter(item => item.karat === selectedKarat) : product.prices;
-  const inRange = product => matchingPrices(product).map(item => Number(item.finalPrice)).some(value => (minPrice === undefined || value >= Number(minPrice)) && (maxPrice === undefined || value <= Number(maxPrice)));
-  if (minPrice !== undefined || maxPrice !== undefined) products = products.filter(inRange);
+  const hasMinPrice = minPrice !== undefined && String(minPrice).trim() !== "";
+  const hasMaxPrice = maxPrice !== undefined && String(maxPrice).trim() !== "";
+  const inRange = product => matchingPrices(product).map(item => Number(item.finalPrice)).some(value => (!hasMinPrice || value >= Number(minPrice)) && (!hasMaxPrice || value <= Number(maxPrice)));
+  if (hasMinPrice || hasMaxPrice) products = products.filter(inRange);
   const sortPrice = product => { const prices = matchingPrices(product).map(item => Number(item.finalPrice)); return prices.length ? Math.min(...prices) : Number.POSITIVE_INFINITY; };
   if (sort === "price-low-high") products.sort((a, b) => sortPrice(a) - sortPrice(b));
   if (sort === "price-high-low") products.sort((a, b) => sortPrice(b) - sortPrice(a));

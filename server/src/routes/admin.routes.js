@@ -1,4 +1,6 @@
 const express = require("express");
+const { list: listDiamondSubTypes, create: createDiamondSubType } = require("../controllers/diamondSubType.controller");
+const { list: listDiamondSubTypes, create: createDiamondSubType } = require("../controllers/diamondSubType.controller");
 const {
   adminLogin,
   adminLogout,
@@ -103,6 +105,10 @@ router.post("/upload-image", upload.single("image"), uploadImageHandler);
 router.post("/products/preview-price", previewPrice);
 router.get("/pricing-configs", listPricingConfigs);
 router.patch("/pricing-configs/:key", updatePricingConfig);
+router.get("/diamond-subcategories", listDiamondSubTypes);
+router.post("/diamond-subcategories", createDiamondSubType);
+router.get("/diamond-subcategories", listDiamondSubTypes);
+router.post("/diamond-subcategories", createDiamondSubType);
 router.get("/diamond-categories", listDiamondCategories);
 router.get("/diamond-categories/sizes", listDiamondCategorySizes);
 router.get("/diamond-categories/sizes/:categoryName", listDiamondCategorySizes);

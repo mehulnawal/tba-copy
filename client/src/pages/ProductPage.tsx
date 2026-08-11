@@ -12,11 +12,11 @@ import { useAddToWishlist, useRemoveFromWishlist, useWishlist } from "../hooks/u
 import type { Category, Product } from "../types";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-const PRICE_BUCKETS = [
-    { label: "Under INR 20,000", min: "0", max: "20000" },
-    { label: "INR 20,000 - INR 50,000", min: "20000", max: "50000" },
-    { label: "INR 50,000 - INR 1,000,000", min: "50000", max: "100000" },
-    { label: "Above INR 1,000,000", min: "100000", max: "99999999" },
+const PRICE_BUCKETS = [{ label: "All Prices", min: "", max: "" },
+{ label: "Under INR 20,000", min: "0", max: "20000" },
+{ label: "INR 20,000 - INR 50,000", min: "20000", max: "50000" },
+{ label: "INR 50,000 - INR 1,000,000", min: "50000", max: "100000" },
+{ label: "Above INR 1,000,000", min: "100000", max: "99999999" },
 ];
 
 const KARAT_OPTIONS = [
@@ -34,13 +34,13 @@ const SORT_OPTIONS = [
 
 const responsiveImage = (url: string, width = 800) => url.includes("res.cloudinary.com") ? url.replace("/upload/", `/upload/f_auto,q_auto,w_${width},c_limit/`) : url;
 
-export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silver" }) {
+export default function ProductPage({ metal = "gold", b2b = false }: { metal?: "gold" | "silver"; b2b?: boolean }) {
     const [params, setParams] = useSearchParams();
 
     const { data: categoryData = [] } = useCategories(metal);
     const categories = categoryData ?? [];
 
-    const [selectedKaratFilter, setSelectedKaratFilter] = useState<"" | "14kt" | "18kt">((params.get("karat") as "14kt" | "18kt") || "");
+    const [selectedKaratFilter, setSelectedKaratFilter] = useState<"14kt" | "18kt">((params.get("karat") as "14kt" | "18kt") || "14kt");
     const [isFilterMobileOpen, setIsFilterMobileOpen] = useState(false);
     const [isSortMobileOpen, setIsSortMobileOpen] = useState(false);
     const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -63,7 +63,7 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
 
     const { data: products = [], isLoading: loading } = useQuery({
         queryKey: ["products", metal, query],
-        queryFn: () => apiRequest<Product[]>(`/products/${metal}?${query}`),
+        queryFn: () => apiRequest<Product[]>(b2b ? `/b2b/products?metal=${metal}` : `/products/${metal}?${query}`),
         staleTime: 2 * 60 * 1000,
         gcTime: 15 * 60 * 1000,
     });
@@ -79,8 +79,10 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
     };
 
 
-    const categoryOptions = categories.filter((category) => category.categoryKind === "type").flatMap((type) => [type, ...categories.filter((child) => categoryId(child.parent) === type._id)]);
     const parentId = (category: Category) => category.parent ? categoryId(category.parent) : null;
+    const categoryOptions = metal === "gold"
+        ? categories.filter((category) => category.categoryKind === "subcategory" && parentId(category) === categories.find((root) => root.categoryKind === "metal-root")?._id)
+        : categories.filter((category) => category.categoryKind === "type").flatMap((type) => [type, ...categories.filter((child) => categoryId(child.parent) === type._id)]);
     const selectCategory = (category: Category | null) => {
         const next = new URLSearchParams(params);
         next.delete("category");
@@ -105,7 +107,10 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
 
     const handlePriceBucketChange = (min: string, max: string) => {
         const next = new URLSearchParams(params);
-        if (next.get("minPrice") === min && next.get("maxPrice") === max) {
+        if (!min && !max) {
+            next.delete("minPrice");
+            next.delete("maxPrice");
+        } else if (next.get("minPrice") === min && next.get("maxPrice") === max) {
             next.delete("minPrice");
             next.delete("maxPrice");
         } else {
@@ -137,19 +142,21 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
         if (product) void performWishlistToggle(product);
     };
 
-    const filteredProducts = products.filter((product) => (!selectedMainCategory || categoryId(product.mainCategory) === selectedMainCategory || (!selectedSubCategory && categoryId(product.subCategory) === selectedMainCategory)) && (!selectedSubCategory || categoryId(product.subCategory) === selectedSubCategory));
+    const productCategoryLabel = (product: Product) => {
+        const selectedCategoryId = categoryId(product.subCategory) || categoryId(product.mainCategory);
+        return categories.find((category) => category._id === selectedCategoryId)?.name || (typeof product.subCategory === "object" ? product.subCategory?.name : "") || (typeof product.mainCategory === "object" ? product.mainCategory?.name : "") || product.category || (product as Product & { Category?: string }).Category || "Jewellery";
+    };
+    const filteredProducts = products.filter((product) => (!selectedMainCategory || categoryId(product.mainCategory) === selectedMainCategory) && (!selectedSubCategory || categoryId(product.subCategory) === selectedSubCategory) && (metal !== "gold" || product.prices?.some((price) => price.karat === selectedKaratFilter)));
     const clearFilters = () => { setParams(new URLSearchParams()); };
 
     return (
         <div className="catalog-page min-h-screen flex flex-col antialiased">
 
-            <Navbar
+            {!b2b && <Navbar
                 onSearchChange={(v) => changeParam("search", v || null)}
                 activeCategory={params.get("category") || "All"}
                 onCategoryChange={(cat) => changeParam("category", cat === "All" ? null : cat)}
-            />
-
-            <main className="flex-grow mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 py-8 pb-24 lg:pb-8">
+            />}<main className="flex-grow mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 py-8 pb-24 lg:pb-8">
                 <div className="catalog-title-bar border-b pb-5 sm:flex sm:items-center sm:justify-between">
                     <div>
                         <h1 className="text-3xl font-serif font-semibold tracking-tight text-gray-900">{metal === "gold" ? "Gold Jewellery" : "Silver Jewellery"}</h1>
@@ -165,9 +172,9 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
                     </div>
                 </div>
 
-                <div className="pt-8 lg:grid lg:grid-cols-4 lg:gap-x-8">
+                <div className="pt-5 lg:grid lg:grid-cols-4 lg:gap-x-8">
                     {/* Desktop Sidebar Filters */}
-                    <aside className="catalog-filter-panel hidden lg:sticky lg:top-4 lg:self-start lg:block lg:max-h-[calc(100vh-1rem)] lg:overflow-y-auto lg:pr-2 space-y-6">
+                    <aside className="catalog-filter-panel hidden lg:sticky lg:top-4 lg:self-start lg:block lg:max-h-[calc(100vh-1rem)] lg:overflow-y-auto lg:pr-2 space-y-0">
                         <div className="flex items-center justify-between border-b border-gray-200 pb-4">
                             <h2 className="text-lg font-medium text-gray-900">Filters</h2>
                             <button onClick={clearFilters} className="text-xs font-medium text-amber-700 hover:text-amber-800 underline">
@@ -187,7 +194,7 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
                                     <button
                                         key={cat._id}
                                         onClick={() => selectCategory(cat)}
-                                        className={`block text-sm text-left w-full transition ${cat.categoryKind === "type" ? "font-semibold text-gray-900" : "ml-4 border-l border-gray-200 pl-3"} ${selectedSubCategory === cat._id || selectedMainCategory === cat._id ? "text-amber-700 font-semibold" : "text-gray-600 hover:text-gray-900"}`}
+                                        className={`block text-sm text-left w-full transition ${metal === "gold" ? "" : cat.categoryKind === "type" ? "font-semibold text-gray-900" : "ml-4 border-l border-gray-200 pl-3"} ${selectedSubCategory === cat._id || selectedMainCategory === cat._id ? "text-amber-700 font-semibold" : "text-gray-600 hover:text-gray-900"}`}
                                     >
                                         {cat.name}
                                     </button>
@@ -198,7 +205,7 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
                         <FilterSection title="Price Range">
                             <div className="space-y-2 pt-2">
                                 {PRICE_BUCKETS.map((bucket) => {
-                                    const isActive = params.get("minPrice") === bucket.min && params.get("maxPrice") === bucket.max;
+                                    const isActive = !bucket.min && !bucket.max ? !params.get("minPrice") && !params.get("maxPrice") : params.get("minPrice") === bucket.min && params.get("maxPrice") === bucket.max;
                                     return (
                                         <label key={bucket.label} className="flex items-center space-x-3 cursor-pointer text-sm text-gray-600 hover:text-gray-900">
                                             <input
@@ -214,14 +221,14 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
                             </div>
                         </FilterSection>
 
-                        {metal === "gold" && <FilterSection title="Purity / KT"><div className="flex gap-2 pt-2">{[{ label: "All", value: "" }, { label: "14KT", value: "14kt" }, { label: "18KT", value: "18kt" }].map((option) => (<button key={option.label} type="button" onClick={() => { setSelectedKaratFilter(option.value as "" | "14kt" | "18kt"); changeParam("karat", option.value || null); }} className={`rounded border px-3 py-2 text-xs font-semibold ${selectedKaratFilter === option.value ? "border-amber-600 bg-amber-50 text-amber-800" : "border-gray-200 text-gray-600 hover:bg-gray-50"}`}>{option.label}</button>))}</div></FilterSection>}
+                        {metal === "gold" && <FilterSection title="Purity / KT"><div className="flex gap-2 pt-2">{[{ label: "14KT", value: "14kt" }, { label: "18KT", value: "18kt" }].map((option) => (<button key={option.label} type="button" onClick={() => { setSelectedKaratFilter(option.value as "14kt" | "18kt"); changeParam("karat", option.value || null); }} className={`rounded border px-3 py-2 text-xs font-semibold ${selectedKaratFilter === option.value ? "border-amber-600 bg-amber-50 text-amber-800" : "border-gray-200 text-gray-600 hover:bg-gray-50"}`}>{option.label}</button>))}</div></FilterSection>}
                     </aside>
 
                     {/* Product Grid Area */}
                     <div className="lg:col-span-3">
                         <div className="flex items-center justify-between border-b border-gray-200 pb-4 mb-6">
                             <p className="text-sm text-gray-500 font-medium">
-                                Showing <span className="text-gray-900 font-semibold">{products.length}</span> individual items
+                                Showing <span className="text-gray-900 font-semibold">{filteredProducts.length}</span> individual items
                             </p>
 
                             <div className="hidden lg:flex items-center space-x-2">
@@ -264,7 +271,8 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
                                     <ProductCard
                                         key={product.id}
                                         product={product}
-                                        defaultKarat={selectedKaratFilter || "14kt"}
+                                        categoryLabel={productCategoryLabel(product)}
+                                        defaultKarat={selectedKaratFilter || "14kt"} b2b={b2b}
                                         onWishlistToggle={handleWishlistToggle}
                                         isWishlisted={wishlist.some((item) => item.productId === product.SKU)}
                                     />
@@ -295,21 +303,21 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
                                 <h2 className="text-lg font-medium text-gray-900">Filters</h2>
                                 <button onClick={() => setIsFilterMobileOpen(false)} className="text-gray-500 text-xl font-bold">&times;</button>
                             </div>
-                            <div className="mt-4 space-y-6 flex-grow">
+                            <div className="mt-3 space-y-4 flex-grow">
                                 <div>
-                                    <h3 className="text-sm font-semibold text-gray-900 mb-2">Categories</h3>
+                                    <h3 className="text-sm font-semibold text-gray-900 mb-1">Categories</h3>
                                     <button onClick={() => { selectCategory(null); setIsFilterMobileOpen(false); }} className={`block py-1 text-sm text-left w-full ${!selectedMainCategory ? "text-amber-700 font-bold" : "text-gray-600"}`}>All Categories</button>
                                     {categoryOptions.map((c) => (
-                                        <button key={c._id} onClick={() => { selectCategory(c); setIsFilterMobileOpen(false); }} className={`block py-1 text-sm text-left w-full ${c.categoryKind === "type" ? "font-semibold text-gray-900" : "ml-4 border-l border-gray-200 pl-3"} ${selectedSubCategory === c._id || selectedMainCategory === c._id ? "text-amber-700 font-bold" : "text-gray-600"}`}>
+                                        <button key={c._id} onClick={() => { selectCategory(c); setIsFilterMobileOpen(false); }} className={`block py-1 text-sm text-left w-full ${metal === "gold" ? "" : c.categoryKind === "type" ? "font-semibold text-gray-900" : "ml-4 border-l border-gray-200 pl-3"} ${selectedSubCategory === c._id || selectedMainCategory === c._id ? "text-amber-700 font-bold" : "text-gray-600"}`}>
                                             {c.name}
                                         </button>
                                     ))}
                                 </div>
-                                {metal === "gold" && <div className="border-t pt-4"><h3 className="text-sm font-semibold text-gray-900 mb-2">Purity / KT</h3><div className="flex gap-2">{[{ label: "All", value: "" }, { label: "14KT", value: "14kt" }, { label: "18KT", value: "18kt" }].map((option) => (<button key={option.label} type="button" onClick={() => { setSelectedKaratFilter(option.value as "" | "14kt" | "18kt"); changeParam("karat", option.value || null); }} className={`rounded border px-3 py-2 text-xs font-semibold ${selectedKaratFilter === option.value ? "border-amber-600 bg-amber-50 text-amber-800" : "border-gray-200 text-gray-600 hover:bg-gray-50"}`}>{option.label}</button>))}</div></div>}
+                                {metal === "gold" && <div className="border-t pt-4"><h3 className="text-sm font-semibold text-gray-900 mb-1">Purity / KT</h3><div className="flex gap-2">{[{ label: "14KT", value: "14kt" }, { label: "18KT", value: "18kt" }].map((option) => (<button key={option.label} type="button" onClick={() => { setSelectedKaratFilter(option.value as "14kt" | "18kt"); changeParam("karat", option.value || null); }} className={`rounded border px-3 py-2 text-xs font-semibold ${selectedKaratFilter === option.value ? "border-amber-600 bg-amber-50 text-amber-800" : "border-gray-200 text-gray-600 hover:bg-gray-50"}`}>{option.label}</button>))}</div></div>}
                                 <div className="border-t pt-4">
-                                    <h3 className="text-sm font-semibold text-gray-900 mb-2">Price Ranges</h3>
+                                    <h3 className="text-sm font-semibold text-gray-900 mb-1">Price Ranges</h3>
                                     {PRICE_BUCKETS.map((b) => (
-                                        <button key={b.label} onClick={() => { handlePriceBucketChange(b.min, b.max); setIsFilterMobileOpen(false); }} className={`block py-1 text-sm text-left w-full ${params.get("minPrice") === b.min ? "text-amber-700 font-bold" : "text-gray-600"}`}>
+                                        <button key={b.label} onClick={() => { handlePriceBucketChange(b.min, b.max); setIsFilterMobileOpen(false); }} className={`block py-1 text-sm text-left w-full ${(params.get("minPrice") || "") === b.min && (params.get("maxPrice") || "") === b.max ? "text-amber-700 font-bold" : "text-gray-600"}`}>
                                             {b.label}
                                         </button>
                                     ))}
@@ -344,7 +352,7 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
                 )
             }
 
-            <Footer onCategoryChange={() => { }} />
+            {!b2b && <Footer onCategoryChange={() => { }} />}
             <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} onAuthenticated={handleWishlistAuthenticated} />
         </div >
     );
@@ -353,19 +361,19 @@ export default function ProductPage({ metal = "gold" }: { metal?: "gold" | "silv
 function FilterSection({ title, children }: { title: string; children: React.ReactNode }) {
     const [isOpen, setIsOpen] = useState(true);
     return (
-        <div className="border-b border-gray-200 py-6">
+        <div className="border-b border-gray-200 py-4">
             <button onClick={() => setIsOpen(!isOpen)} className="flex w-full items-center justify-between text-sm text-gray-400 hover:text-gray-500">
                 <span className="font-medium text-gray-900">{title}</span>
                 <span className="ml-6 flex items-center transform transition-transform duration-200 text-gray-600">
                     {isOpen ? "-" : "+"}
                 </span>
             </button>
-            {isOpen && <div className="pt-4 transition-all duration-300">{children}</div>}
+            {isOpen && <div className="pt-2 transition-all duration-300">{children}</div>}
         </div>
     );
 }
 
-function ProductCard({ product, defaultKarat, onWishlistToggle, isWishlisted }: { product: Product; defaultKarat: "14kt" | "18kt"; onWishlistToggle: (product: Product) => void; isWishlisted: boolean }) {
+function ProductCard({ product, categoryLabel, defaultKarat, onWishlistToggle, isWishlisted, b2b = false }: { product: Product; categoryLabel: string; defaultKarat: "14kt" | "18kt"; onWishlistToggle: (product: Product) => void; isWishlisted: boolean; b2b?: boolean }) {
 
     const categoryName = (
         category?: Category | string | null
@@ -400,7 +408,7 @@ function ProductCard({ product, defaultKarat, onWishlistToggle, isWishlisted }: 
 
     const productPrices = Array.isArray(product.prices) ? product.prices : [];
     const targetPriceObj = productPrices.find((p) => p.karat === activeKarat) || productPrices[0];
-    const displaysPrice = targetPriceObj ? Math.round(targetPriceObj.finalPrice) : 0;
+    const displaysPrice = targetPriceObj ? Math.round(b2b ? (targetPriceObj.b2bFinalPrice ?? targetPriceObj.finalPrice) : targetPriceObj.finalPrice) : 0;
     const isSilver = product.metal === "silver";
 
     return (
@@ -411,7 +419,7 @@ function ProductCard({ product, defaultKarat, onWishlistToggle, isWishlisted }: 
         >
             {/* FIX #3: Proportional portrait aspect-ratio layout for card structure */}
             <div className="relative aspect-[4/5] w-full bg-gray-50 overflow-hidden">
-                <Link to={`/product/${product.slug}`} className="block w-full h-full">
+                <Link to={`${b2b ? "/b2b/product/" : "/product/"}${product.slug || product.SKU}`} className="block w-full h-full">
                     {images[currentImgIndex] ? <img src={responsiveImage(images[currentImgIndex], 800)} alt={product.title} className="h-full w-full object-contain object-center transition duration-500 group-hover:scale-102" /> : <div className="grid h-full place-items-center p-6 text-center text-xs text-gray-500">Product image unavailable</div>}
                 </Link>
 
@@ -439,20 +447,20 @@ function ProductCard({ product, defaultKarat, onWishlistToggle, isWishlisted }: 
                 </button>
 
                 {displaysCarousel && (<><button type="button" onClick={() => setCurrentImgIndex((current) => (current - 1 + images.length) % images.length)} className="absolute left-3 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/90 p-2 text-gray-700 shadow" aria-label="Previous product image"><ChevronLeft className="h-4 w-4" /></button><button type="button" onClick={() => setCurrentImgIndex((current) => (current + 1) % images.length)} className="absolute right-3 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/90 p-2 text-gray-700 shadow" aria-label="Next product image"><ChevronRight className="h-4 w-4" /></button><div className="absolute inset-x-0 bottom-3 flex justify-center space-x-1.5 pointer-events-none">
-                        {images.map((_, idx) => (
-                            <span
-                                key={idx}
-                                className={`h-1 rounded-full transition-all ${idx === currentImgIndex ? "bg-amber-600 w-3" : "bg-gray-300 w-1 opacity-60"}`}
-                            />
-                        ))}
-                    </div>
+                    {images.map((_, idx) => (
+                        <span
+                            key={idx}
+                            className={`h-1 rounded-full transition-all ${idx === currentImgIndex ? "bg-amber-600 w-3" : "bg-gray-300 w-1 opacity-60"}`}
+                        />
+                    ))}
+                </div>
                 </>)}
             </div>
 
             <div className="flex flex-1 flex-col p-4 space-y-2">
-                <span className="text-xs sm:text-[10px] tracking-wider text-gray-400 uppercase font-semibold">{categoryName(product.subCategory)}</span>
+                <span className="text-xs sm:text-[10px] tracking-wider text-gray-400 uppercase font-semibold">{categoryLabel}</span>
 
-                <Link to={`/product/${product.slug}`} className="block">
+                <Link to={`${b2b ? "/b2b/product/" : "/product/"}${product.slug || product.SKU}`} className="block">
                     <h3 className="text-base sm:text-sm font-medium text-gray-900 hover:text-amber-700 line-clamp-2 min-h-[40px] transition">
                         {product.title}
                     </h3>
