@@ -82,7 +82,6 @@ export default function PriceBreakup({ product, price, b2b = false, className = 
       <h3 className="py-2 font-semibold text-[var(--color-teal)]">{(product.diamonds || []).length > 0 ? `Lab-Grown Diamonds${Number(product.totalNumberOfDiamonds || 0) > 0 ? ` (Total diamonds - ${product.totalNumberOfDiamonds})` : ""}` : "Moissanite"}</h3>
       <div className="overflow-x-auto">
         <table className="w-full table-fixed text-left text-xs">
-          {b2b && <colgroup><col className="w-2/5" /><col className="w-1/4" /><col className="w-1/6" /><col className="w-[11%]" /></colgroup>}
           <colgroup><col className="w-[30%]" /><col className="w-[22%]" /><col className="w-[14%]" /><col className="w-[17%]" /><col className="w-[17%]" /></colgroup><thead className="border-t border-[var(--color-border)] text-[var(--color-text-muted)]"><tr><th className="py-2 font-semibold">Component</th><th className="py-2 font-semibold">Colour/Clarity</th><th className="py-2 font-semibold">Ct</th><th className="py-2 text-right font-semibold">Rate/Ct</th><th className="py-2 text-right font-semibold">Price</th></tr></thead>
           <tbody>{stoneEntries.map(entry => <tr key={entry.key} className="border-b border-[var(--color-border)]"><td className="py-2">{entry.component}</td><td className="py-2">{entry.clarity}</td><td className="py-2">{entry.carat}</td><td className="whitespace-nowrap py-2 text-right tabular-nums">{formatINR(entry.rate)}</td><td className="whitespace-nowrap py-2 text-right tabular-nums">{formatINR(entry.value)}</td></tr>)}</tbody>
         </table>
