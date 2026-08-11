@@ -19,8 +19,8 @@ export default function PriceBreakup({ product, price, b2b = false, className = 
   const metalValue = number(isGold ? price.goldValue : (price.silverValue ?? price.metalValue));
   const metalLabel = isGold ? `${price.karat?.toUpperCase() || "Gold"} Gold` : "Fine Silver";
   const stoneEntries = (product.diamonds || []).length > 0
-    ? (product.diamonds || []).map((entry, index) => ({ key: `diamond-${index}`, component: entry.category || "Diamond", clarity: entry.colorClarity || "—", carat: number(entry.caratWeight), rate: number(b2b ? (entry.ratePerCtB2B ?? entry.ratePerCt) : (entry.ratePerCtB2C ?? entry.ratePerCt)) }))
-    : (product.moissaniteEntries || (product.moissaniteCaratWeight === undefined ? [] : [{ caratWeight: product.moissaniteCaratWeight }])).map((entry, index) => ({ key: `moissanite-${index}`, component: "Moissanite", clarity: entry.colorClarity || "—", carat: number(entry.caratWeight), rate: number(price.moissaniteRatePerCarat) }));
+    ? (product.diamonds || []).map((entry, index) => ({ key: `diamond-${index}`, component: entry.category || "Diamond", clarity: entry.colorClarity || "—", carat: number(entry.caratWeight), rate: number(b2b ? (entry.ratePerCtB2B ?? entry.ratePerCt) : (entry.ratePerCtB2C ?? entry.ratePerCt)), value: number(entry.caratWeight) * number(b2b ? (entry.ratePerCtB2B ?? entry.ratePerCt) : (entry.ratePerCtB2C ?? entry.ratePerCt)) }))
+    : (product.moissaniteEntries || (product.moissaniteCaratWeight === undefined ? [] : [{ caratWeight: product.moissaniteCaratWeight }])).map((entry, index) => ({ key: `moissanite-${index}`, component: "Moissanite", clarity: entry.colorClarity || "—", carat: number(entry.caratWeight), rate: number(price.moissaniteRatePerCarat), value: number(entry.caratWeight) * number(price.moissaniteRatePerCarat) }));
 
   const totals = (fixedColumns: boolean, columnCount = 2) => <div>
     <div className="overflow-x-auto">
@@ -83,8 +83,8 @@ export default function PriceBreakup({ product, price, b2b = false, className = 
       <div className="overflow-x-auto">
         <table className="w-full table-fixed text-left text-xs">
           {b2b && <colgroup><col className="w-2/5" /><col className="w-1/4" /><col className="w-1/6" /><col className="w-[11%]" /></colgroup>}
-          <thead className="border-t border-[var(--color-border)] text-[var(--color-text-muted)]"><tr><th className="py-2 font-semibold">Component</th><th className="py-2 font-semibold">Colour/Clarity</th><th className="py-2 font-semibold">Ct</th><th className="py-2 font-semibold">Rate/Ct</th></tr></thead>
-          <tbody>{stoneEntries.map(entry => <tr key={entry.key} className="border-b border-[var(--color-border)]"><td className="py-2">{entry.component}</td><td className="py-2">{entry.clarity}</td><td className="py-2">{entry.carat}</td><td className={b2b ? "whitespace-nowrap py-2 text-right tabular-nums" : "py-2"}>{formatINR(entry.rate)}</td></tr>)}</tbody>
+          <colgroup><col className="w-[30%]" /><col className="w-[22%]" /><col className="w-[14%]" /><col className="w-[17%]" /><col className="w-[17%]" /></colgroup><thead className="border-t border-[var(--color-border)] text-[var(--color-text-muted)]"><tr><th className="py-2 font-semibold">Component</th><th className="py-2 font-semibold">Colour/Clarity</th><th className="py-2 font-semibold">Ct</th><th className="py-2 text-right font-semibold">Rate/Ct</th><th className="py-2 text-right font-semibold">Price</th></tr></thead>
+          <tbody>{stoneEntries.map(entry => <tr key={entry.key} className="border-b border-[var(--color-border)]"><td className="py-2">{entry.component}</td><td className="py-2">{entry.clarity}</td><td className="py-2">{entry.carat}</td><td className="whitespace-nowrap py-2 text-right tabular-nums">{formatINR(entry.rate)}</td><td className="whitespace-nowrap py-2 text-right tabular-nums">{formatINR(entry.value)}</td></tr>)}</tbody>
         </table>
       </div>
     </div>}
