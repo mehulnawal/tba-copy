@@ -63,4 +63,5 @@ export interface Testimonial {
   rating: number;
   avatar: string;
   review: string;
+  images: [string, string];
 }

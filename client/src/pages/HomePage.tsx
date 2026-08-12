@@ -55,7 +55,8 @@ const TESTIMONIALS: Testimonial[] = [
         location: "Ahemdabad",
         rating: 4.5,
         avatar: AVATAR_ASSETS.a1,
-        review: "Made Silvering & Diamond Bangles. My Mom loved it ♥"
+        review: "Made Silvering & Diamond Bangles. My Mom loved it ♥",
+        images: ["https://res.cloudinary.com/dkrchgmhx/image/upload/v1786538743/WhatsApp_Image_2026-08-06_at_4.37.36_PM-_1_cstupx.jpg", ""]
     },
     {
         id: "2",
@@ -64,14 +65,15 @@ const TESTIMONIALS: Testimonial[] = [
         rating: 5,
         avatar: AVATAR_ASSETS.a2,
         review: "Made Necklace for my wedding day. Goes perfect with the outfit 😀",
-        url: ""
+        images: ["https://res.cloudinary.com/dkrchgmhx/image/upload/v1786538406/WhatsApp_Image_2026-08-06_at_4.37.37_PM_iyytgj.jpg", ""]
     },
     {
         id: "3",
         name: "Kavita Desai",
         location: "Ahmedabad",
         rating: 5, avatar: AVATAR_ASSETS.a4,
-        review: "Found Solitaire Ring IGI Certified at the most reasonable price in the market. Genuine and loved the finishing"
+        review: "Found Solitaire Ring IGI Certified at the most reasonable price in the market. Genuine and loved the finishing",
+        images: ["https://res.cloudinary.com/dkrchgmhx/image/upload/v1786531509/WhatsApp_Image_2026-08-06_at_4.37.36_PM_wmlbms.jpg", "https://res.cloudinary.com/dkrchgmhx/image/upload/v1786538802/WhatsApp_Image_2026-08-06_at_4.37.36_PM-2_kznihk.jpg"]
     },
 ];
 
@@ -138,6 +140,8 @@ export default function HomePage() {
     const [activeSlide, setActiveSlide] = useState(0);
     const [isHoveringHero, setIsHoveringHero] = useState(false);
     const [testimonialIndex, setTestimonialIndex] = useState(0);
+    const testimonial = TESTIMONIALS[testimonialIndex];
+    const testimonialImages = testimonial.images.filter((image) => image.trim());
     const [faqOpenId, setFaqOpenId] = useState<string | null>(null);
     const [isAuthOpen, setIsAuthOpen] = useState(false);
     const [authReturnTo, setAuthReturnTo] = useState("");
@@ -438,21 +442,26 @@ export default function HomePage() {
                                         "{TESTIMONIALS[testimonialIndex].review}"
                                     </blockquote>
 
-                                    <div className="flex items-center gap-3 border-t border-[var(--color-border-subtle)] pt-5">
-                                        <img
-                                            src={TESTIMONIALS[testimonialIndex].avatar}
-                                            alt={TESTIMONIALS[testimonialIndex].name}
-                                            className="w-12 h-12 rounded-full object-cover shrink-0 border border-cream"
-                                            referrerPolicy="no-referrer"
-                                        />
-                                        <div>
-                                            <h4 className="font-secondary text-sm font-semibold text-[var(--color-teal)]">
-                                                {TESTIMONIALS[testimonialIndex].name}
-                                            </h4>
-                                            <address className="font-secondary text-xs text-[var(--color-text-muted)] not-italic">
-                                                {TESTIMONIALS[testimonialIndex].location}
-                                            </address>
+                                    <div className="flex flex-col gap-4 border-t border-[var(--color-border-subtle)] pt-5 sm:flex-row sm:items-center sm:justify-between">
+                                        <div className="flex min-w-0 items-center gap-3">
+                                            <img
+                                                src={testimonial.avatar}
+                                                alt={testimonial.name}
+                                                className="w-12 h-12 rounded-full object-cover shrink-0 border border-cream"
+                                                referrerPolicy="no-referrer"
+                                            />
+                                            <div>
+                                                <h4 className="font-secondary text-sm font-semibold text-[var(--color-teal)]">
+                                                    {testimonial.name}
+                                                </h4>
+                                                <address className="font-secondary text-xs text-[var(--color-text-muted)] not-italic">
+                                                    {testimonial.location}
+                                                </address>
+                                            </div>
                                         </div>
+                                        {testimonialImages.length > 0 && <div className="flex flex-wrap gap-2 sm:justify-end">
+                                            {testimonialImages.map((image, index) => <img key={image} src={image} alt={`${testimonial.name}'s shared image ${index + 1}`} className="h-16 w-16 rounded-md border border-[var(--color-border-subtle)] object-cover sm:h-20 sm:w-20" loading="lazy" />)}
+                                        </div>}
                                     </div>
                                 </motion.div>
                             </AnimatePresence>

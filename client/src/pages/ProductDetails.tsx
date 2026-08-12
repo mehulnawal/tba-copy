@@ -9,6 +9,7 @@ import { useToast } from "../context/ToastContext";
 import { useAddToCart } from "../hooks/useCart";
 import { useAddToWishlist, useRemoveFromWishlist, useWishlist } from "../hooks/useWishlist";
 import { RING_SIZES } from "../constants/product";
+import { getDefaultProductDescription } from "../constants/productDescriptions";
 import type { Product } from "../types";
 import { formatINR } from "../utils/currency";
 import { detailImage, publicAssetUrl, responsiveImage } from "../utils/image";
@@ -134,6 +135,11 @@ export default function ProductDetails() {
         return category._id ?? "";
     };
 
+    const defaultDescription = getDefaultProductDescription(product.metal, [categoryName(product.mainCategory), categoryName(product.subCategory)]);
+    const storedDescription = product.description?.trim();
+    const productDescription = storedDescription || defaultDescription?.plainText || "";
+    const productDescriptionContent = storedDescription || defaultDescription?.content || productDescription;
+
     const isGold = product.metal === "gold";
     const catalogPath = `/${isGold ? "gold-jewellery" : "silver-jewellery"}`;
     const mainCategoryId = categoryId(product.mainCategory);
@@ -156,7 +162,7 @@ export default function ProductDetails() {
     const productPath = `/product/${product.slug || slug}`;
     const productSchema = {
         "@context": "https://schema.org", "@type": "Product", name: product.title,
-        description: product.description || `TBA Jewelry ${product.title}`, sku: product.SKU,
+        description: productDescription || `TBA Jewelry ${product.title}`, sku: product.SKU,
         image: (product.images || []).map((item) => item.url),
         brand: { "@type": "Brand", name: "TBA Jewelry" },
         category: [categoryName(product.mainCategory), categoryName(product.subCategory)].filter(Boolean).join(" > "),
@@ -232,7 +238,7 @@ export default function ProductDetails() {
 
     return (
         <>
-            <Seo title={`${product.title} | TBA Jewelry`} description={product.description || `Explore ${product.title} at TBA Jewelry, with product specifications and complete price details.`} image={product.images[0]?.url} type="product" structuredData={[productSchema, breadcrumbSchema]} />
+            <Seo title={`${product.title} | TBA Jewelry`} description={productDescription || `Explore ${product.title} at TBA Jewelry, with product specifications and complete price details.`} image={product.images[0]?.url} type="product" structuredData={[productSchema, breadcrumbSchema]} />
             <div className="min-h-screen bg-[#FAF9F6] text-stone-900 antialiased font-sans pb-0">
                 <Navbar onSearchChange={() => { }} activeCategory="All" onCategoryChange={() => { }} />
 
@@ -297,7 +303,7 @@ export default function ProductDetails() {
 
                             {/* FIX 3: Description relocated under the image */}
                             <div className="hidden space-y-3 lg:block">
-                                <MobileAccordion title="Description"><p className="whitespace-pre-line text-base leading-relaxed text-stone-600 lg:text-xs">{product.description}</p></MobileAccordion>
+                                <MobileAccordion title="Description"><p className="whitespace-pre-line text-base leading-relaxed text-stone-600 lg:text-xs">{productDescriptionContent}</p></MobileAccordion>
                                 {(product.certificates || []).length > 0 && <MobileAccordion title="Certificates of Authenticity"><div className="flex gap-3">{product.certificates?.map((certificate) => <div key={certificate._id} className="flex items-center gap-3 text-lg lg:text-sm"><img src={publicAssetUrl(certificate.logoUrl)} alt="" className="h-14 w-14 object-contain lg:h-10 lg:w-10" />{certificate.name}</div>)}</div></MobileAccordion>}
                                 <MobileAccordion title="Shipping & Handling"><ul className="list-disc space-y-1.5 pl-5 text-base leading-relaxed text-stone-600 lg:text-xs"><li>Free shipping perks on all orders within India</li><li>Avail your items within 15 business days</li><li>Inspect your package carefully before signing off</li><li>Package will be sealed and wrapped in bubble wrap, small box, or padded envelope</li></ul></MobileAccordion>
                             </div>
@@ -310,6 +316,9 @@ export default function ProductDetails() {
                                 <span className="text-xs uppercase tracking-[0.2em] font-semibold text-amber-900">
                                     {categoryName(product.mainCategory)}
                                 </span>
+                                <p className="mt-2 text-sm text-stone-500">
+                                    SKU: {product.SKU}
+                                </p>
                                 <h1 className="text-2xl md:text-3xl font-serif text-stone-900 tracking-tight mt-1">
                                     {product.title}
                                 </h1>
@@ -362,7 +371,7 @@ export default function ProductDetails() {
 
                             <PriceBreakup product={product} price={activePriceObj} className="order-7 lg:order-7" />
 
-                            <div className="order-8 lg:hidden"><MobileAccordion title="Description"><p className="whitespace-pre-line text-base leading-relaxed text-stone-600">{product.description}</p></MobileAccordion></div>
+                            <div className="order-8 lg:hidden"><MobileAccordion title="Description"><p className="whitespace-pre-line text-base leading-relaxed text-stone-600">{productDescriptionContent}</p></MobileAccordion></div>
                             {(product.certificates || []).length > 0 && <div className="order-9 lg:hidden"><MobileAccordion title="Certificates of Authenticity">
                                 <div className="mt-3 flex flex-col gap-3">{product.certificates?.map((certificate) => <div key={certificate._id} className="flex min-w-0 items-center gap-2 text-xs">
                                     <img src={publicAssetUrl(certificate.logoUrl)} alt="" className="h-14 w-14 shrink-0 object-contain lg:h-10 lg:w-10" /><span className="min-w-0 break-words">{certificate.name}</span>
