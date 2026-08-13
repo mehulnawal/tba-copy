@@ -143,6 +143,7 @@ export default function HomePage() {
     const testimonial = TESTIMONIALS[testimonialIndex];
     const testimonialImages = testimonial.images.filter((image) => image.trim());
     const [faqOpenId, setFaqOpenId] = useState<string | null>(null);
+    const [areAllFaqsVisible, setAreAllFaqsVisible] = useState(false);
     const [isAuthOpen, setIsAuthOpen] = useState(false);
     const [authReturnTo, setAuthReturnTo] = useState("");
     const [isHomepagePopupOpen, setIsHomepagePopupOpen] = useState(false);
@@ -204,7 +205,7 @@ export default function HomePage() {
         return () => window.removeEventListener("keydown", handleKeyDown);
     }, []);
 
-    useEffect(() => { const shownCount = Number(sessionStorage.getItem("tba_homepage_popup_count") || "0"); if (shownCount >= 2) return; const timer = window.setTimeout(() => { setIsHomepagePopupOpen(true); sessionStorage.setItem("tba_homepage_popup_count", String(shownCount + 1)); }, 5500); return () => window.clearTimeout(timer); }, []);
+    useEffect(() => { if (sessionStorage.getItem("tba_homepage_popup_shown")) return; const timer = window.setTimeout(() => { setIsHomepagePopupOpen(true); sessionStorage.setItem("tba_homepage_popup_shown", "true"); }, 5500); return () => window.clearTimeout(timer); }, []);
 
     // Locking standard layout dimensions for layers
     useEffect(() => {
@@ -508,7 +509,7 @@ export default function HomePage() {
                         </div>
 
                         <div className="w-full flex flex-col gap-3 reveal-section">
-                            {FAQS.map((faq) => {
+                            {FAQS.slice(0, areAllFaqsVisible ? FAQS.length : 2).map((faq) => {
                                 const isOpen = faqOpenId === faq.id;
                                 return (
                                     <div key={faq.id} className="bg-[var(--color-white)] rounded-lg border border-[var(--color-border)] overflow-hidden shadow-xs">
@@ -545,6 +546,11 @@ export default function HomePage() {
                                 );
                             })}
                         </div>
+                        {FAQS.length > 2 && <div className="flex justify-center reveal-section">
+                            <button type="button" onClick={() => setAreAllFaqsVisible((visible) => { if (visible) window.requestAnimationFrame(() => document.getElementById("faq-section")?.scrollIntoView({ behavior: "smooth", block: "start" })); return !visible; })} className="w-full max-w-xs border border-[var(--color-teal)] bg-transparent px-6 py-3 text-xs font-semibold uppercase tracking-widest text-[var(--color-teal)] transition hover:bg-[var(--color-teal)] hover:text-white sm:w-auto">
+                                {areAllFaqsVisible ? "Show fewer FAQs" : "View all FAQs"}
+                            </button>
+                        </div>}
                     </div>
                 </section>
 
@@ -666,7 +672,7 @@ export default function HomePage() {
                     <motion.section role="dialog" aria-modal="true" aria-label="Homepage offer" className="relative w-full max-w-2xl overflow-hidden rounded-[var(--radius-md)] border border-[#cbb58b] bg-[linear-gradient(135deg,_#eee8dc,_#d9cfbd)] p-6 text-center shadow-[0_24px_70px_rgba(31,38,36,0.34)] sm:p-9" initial={{ scale: 0.96, y: 12 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.96, y: 12 }}>
                         <button type="button" onClick={() => setIsHomepagePopupOpen(false)} aria-label="Close popup" className="absolute right-4 top-4 z-10 rounded-full border border-[#173b3a]/15 bg-[#f7f2e9]/80 p-2 text-[#173b3a] transition hover:bg-white"><X size={18} /></button>
                         <h2 className="font-primary text-3xl text-[#173b3a]">Pay for the Jewellery, Not the Middleman</h2>
-                        <video className="mt-5 block max-h-[60vh] w-full rounded-[var(--radius-sm)] border border-[#173b3a]/15 bg-black object-contain shadow-[0_12px_30px_rgba(23,59,58,0.22)]" src="/videos/popup-video.mp4" autoPlay loop playsInline controls preload="auto">Your browser does not support this video.</video>
+                        <video className="mt-5 block max-h-[60vh] w-full rounded-[var(--radius-sm)] border border-[#173b3a]/15 bg-black object-contain shadow-[0_12px_30px_rgba(23,59,58,0.22)]" src="/videos/popup-video.mp4" autoPlay muted loop playsInline controls preload="auto">Your browser does not support this video.</video>
                         <button type="button" onClick={() => setIsHomepagePopupOpen(false)} className="mt-6 border border-[#173b3a] bg-[#173b3a] px-6 py-3 text-xs font-semibold uppercase tracking-widest text-white shadow-sm transition hover:bg-[#285653]">Shop Now</button>
                     </motion.section>
                 </motion.div>}

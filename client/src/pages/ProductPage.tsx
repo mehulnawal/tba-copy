@@ -234,7 +234,7 @@ export default function ProductPage({ metal = "gold", b2b = false }: { metal?: "
                             <div className="hidden lg:flex items-center space-x-2">
                                 <span className="text-sm text-gray-500">Sort by:</span>
                                 <select
-                                    value={params.get("sort") || ""}
+                                    value={params.get("sort") || "price-low-high"}
                                     onChange={(e) => changeParam("sort", e.target.value || null)}
                                     className="rounded-md border-gray-300 text-sm focus:border-amber-500 focus:ring-amber-500 p-1 border"
                                 >
@@ -341,7 +341,7 @@ export default function ProductPage({ metal = "gold", b2b = false }: { metal?: "
                                     <button
                                         key={opt.value}
                                         onClick={() => { changeParam("sort", opt.value || null); setIsSortMobileOpen(false); }}
-                                        className={`block w-full text-left py-2 text-sm ${params.get("sort") === opt.value || (!params.get("sort") && !opt.value) ? "text-amber-700 font-semibold" : "text-gray-700"}`}
+                                        className={`block w-full text-left py-2 text-sm ${params.get("sort") === opt.value || (!params.get("sort") && opt.value === "price-low-high") ? "text-amber-700 font-semibold" : "text-gray-700"}`}
                                     >
                                         {opt.label}
                                     </button>

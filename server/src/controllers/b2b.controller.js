@@ -36,7 +36,7 @@ const validatePassword = asyncHandler(async (req, res) => {
 });
 const listProducts = asyncHandler(async (req, res) => {
   const metal = String(req.query.metal || "gold").trim().toLowerCase();
-  const { mainCategory, subCategory, minPrice, maxPrice, karat } = req.query;
+  const { mainCategory, subCategory, minPrice, maxPrice, karat, sort } = req.query;
   if (!["gold", "silver"].includes(metal)) throw new ApiError(400, "Metal must be gold or silver");
   const hasMinPrice = minPrice !== undefined && String(minPrice).trim() !== "";
   const hasMaxPrice = maxPrice !== undefined && String(maxPrice).trim() !== "";
@@ -56,6 +56,9 @@ const listProducts = asyncHandler(async (req, res) => {
       return (!hasMinPrice || value >= minimum) && (!hasMaxPrice || value <= maximum);
     }));
   }
+  const sortPrice = (product) => { const prices = product.prices.map((price) => Number(price.finalPrice)); return prices.length ? Math.min(...prices) : Number.POSITIVE_INFINITY; };
+  if (!sort || sort === "price-low-high") products.sort((a, b) => sortPrice(a) - sortPrice(b));
+  if (sort === "price-high-low") products.sort((a, b) => sortPrice(b) - sortPrice(a));
   res.json(new ApiResponse(200, products, `B2B ${metal} catalogue fetched`));
 });
 const getProduct = asyncHandler(async (req, res) => {

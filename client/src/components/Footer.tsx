@@ -1,19 +1,23 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { useCategories } from "../hooks/useCategories";
 import { motion } from "framer-motion";
 import { SOCIAL_LINKS } from "../constants/assets";
 import { Phone, Mail, MapPin, Instagram, Heart, Shield, Award } from "lucide-react";
 import logo from "../assets/logo/footer-logo.png";
 
-export default function Footer({ onCategoryChange }: { onCategoryChange: (category: string) => void }) {
-  const handleExploreClick = (category: string) => {
-    onCategoryChange(category);
-    const mainSection = document.getElementById("featured-collection-section");
-    if (mainSection) {
-      mainSection.scrollIntoView({ behavior: "smooth" });
-    }
+export default function Footer({ onCategoryChange: _onCategoryChange }: { onCategoryChange: (category: string) => void }) {
+  const { data: categories } = useCategories();
+  const silverTypePath = (name: string) => {
+    const category = categories.find((item) => item.metal === "silver" && item.categoryKind === "type" && item.name.toLowerCase() === name.toLowerCase());
+    return category ? `/silver-jewellery?mainCategory=${encodeURIComponent(category._id)}` : "/silver-jewellery";
   };
-
+  const exploreLinks = [
+    { label: "Gold Jewellery", to: "/gold-jewellery" },
+    { label: "Silver Jewellery", to: "/silver-jewellery" },
+    { label: "Polki Jewellery", to: silverTypePath("Polki") },
+    { label: "Moissanite Jewellery", to: silverTypePath("Moissanite") },
+  ];
   return (
     <footer className="w-full bg-[var(--color-teal-dark)] text-white pt-4">
       <div className="container grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 pb-4 lg-pb-2">
@@ -77,35 +81,10 @@ export default function Footer({ onCategoryChange }: { onCategoryChange: (catego
         {/* COLUMN 2: EXPLORE SECTIONS */}
         <div className="flex flex-col gap-4">
           <h4 className="font-secondary text-xs uppercase tracking-[0.3em] font-bold mb-2 !text-[var(--color-cream)]">Explore</h4>
-          <ul className="flex flex-col gap-3 font-secondary text-xs ">
-            <li>
-              <button onClick={() => handleExploreClick("All")} className="hover:text-[var(--color-cream)] bg-transparent border-none text-left cursor-pointer p-0 hover:pl-1 transition-all duration-300">
-                All Collections
-              </button>
-            </li>
-            <li>
-              <button onClick={() => handleExploreClick("Rings")} className="hover:text-[var(--color-cream)] bg-transparent border-none text-left cursor-pointer p-0 hover:pl-1 transition-all duration-300">
-                Gold & Diamond Rings
-              </button>
-            </li>
-            <li>
-              <button onClick={() => handleExploreClick("Necklaces")} className="hover:text-[var(--color-cream)] bg-transparent border-none text-left cursor-pointer p-0 hover:pl-1 transition-all duration-300">
-                Designer Necklaces
-              </button>
-            </li>
-            <li>
-              <button onClick={() => handleExploreClick("Earrings")} className="hover:text-[var(--color-cream)] bg-transparent border-none text-left cursor-pointer p-0 hover:pl-1 transition-all duration-300">
-                Statement Earrings
-              </button>
-            </li>
-            <li>
-              <button onClick={() => handleExploreClick("Bracelets")} className="hover:text-[var(--color-cream)] bg-transparent border-none text-left cursor-pointer p-0 hover:pl-1 transition-all duration-300">
-                Luxury Bracelets
-              </button>
-            </li>
+          <ul className="flex flex-col gap-3 font-secondary text-xs">
+            {exploreLinks.map((item) => <li key={item.label}><Link to={item.to} className="hover:text-[var(--color-cream)] transition-all duration-300 hover:pl-1">{item.label}</Link></li>)}
           </ul>
         </div>
-
         {/* COLUMN 3: DIRECT CONNECT */}
         <div className="flex flex-col gap-4">
           <h4 className="font-secondary text-xs uppercase tracking-[0.3em] !text-[var(--color-cream)] font-bold mb-2">Get In Touch</h4>

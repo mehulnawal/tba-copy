@@ -47,7 +47,7 @@ const selectedKarat = karat ? String(karat).toLowerCase() : null;
   const inRange = product => matchingPrices(product).map(item => Number(item.finalPrice)).some(value => (!hasMinPrice || value >= Number(minPrice)) && (!hasMaxPrice || value <= Number(maxPrice)));
   if (hasMinPrice || hasMaxPrice) products = products.filter(inRange);
   const sortPrice = product => { const prices = matchingPrices(product).map(item => Number(item.finalPrice)); return prices.length ? Math.min(...prices) : Number.POSITIVE_INFINITY; };
-  if (sort === "price-low-high") products.sort((a, b) => sortPrice(a) - sortPrice(b));
+  if (!sort || sort === "price-low-high") products.sort((a, b) => sortPrice(a) - sortPrice(b));
   if (sort === "price-high-low") products.sort((a, b) => sortPrice(b) - sortPrice(a));
   if (sort === "newest") products.sort((a, b) => Number(b.isNewProduct) - Number(a.isNewProduct));
   if (sort === "best-sellers") products.sort((a, b) => Number(b.isBestSeller) - Number(a.isBestSeller));

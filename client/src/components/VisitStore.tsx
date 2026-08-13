@@ -6,7 +6,7 @@ export default function VisitStore() {
             className="w-full overflow-hidden relative"
             style={{ background: "#1c3b48", fontFamily: "Montserrat, Helvetica Neue, sans-serif" }}
             id="visit-store-section"
-            aria-label="Visit The Brilliance Atelier store"
+            aria-label=""
         >
             {/* Corner bracket mark */}
             <div
@@ -58,7 +58,7 @@ export default function VisitStore() {
                     className="flex flex-col justify-center gap-8 px-8 md:px-12 py-12 sm:py-14"
                     style={{ borderLeft: "1px solid rgba(219,213,181,0.1)" }}
                 >
-                    <p style={{
+                    {/* <p style={{
                         fontSize: "9px",
                         letterSpacing: "0.35em",
                         textTransform: "uppercase",
@@ -67,7 +67,7 @@ export default function VisitStore() {
                         fontWeight: 600,
                     }}>
                         The Brilliance Atelier · Surat
-                    </p>
+                    </p> */}
 
                     <h2
                         className="font-primary m-0"
@@ -96,7 +96,7 @@ export default function VisitStore() {
                     {/* Info Pills */}
                     <div className="flex flex-wrap gap-2">
                         {[
-                            { icon: "", label: "610 , The Lenora Complex , opp saint thomas school ,New Citylight road , surat 395007" },
+                            { icon: "", label: "610 , The Lenora Complex , Opp Saint Thomas School ,New Citylight Road , Surat 395007" },
                         ].map((item) => (
                             <span
                                 key={item.label}
