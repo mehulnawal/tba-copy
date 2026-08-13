@@ -12,6 +12,8 @@ export default function Footer({ onCategoryChange: _onCategoryChange }: { onCate
     const category = categories.find((item) => item.metal === "silver" && item.categoryKind === "type" && item.name.toLowerCase() === name.toLowerCase());
     return category ? `/silver-jewellery?mainCategory=${encodeURIComponent(category._id)}` : "/silver-jewellery";
   };
+  const appointmentMessage = "Hello, I would like to book an appointment with The Brilliance Atelier. Please help me with the available dates and timings.";
+  const appointmentWhatsAppUrl = `${SOCIAL_LINKS.whatsapp}?text=${encodeURIComponent(appointmentMessage)}`;
   const exploreLinks = [
     { label: "Gold Jewellery", to: "/gold-jewellery" },
     { label: "Silver Jewellery", to: "/silver-jewellery" },
@@ -100,6 +102,9 @@ export default function Footer({ onCategoryChange: _onCategoryChange }: { onCate
             <li className="flex gap-3 items-start">
               <MapPin size={14} className="text-[var(--color-cream)] shrink-0 mt-0.5" />
               <span>Surat, Gujarat, India</span>
+            </li>            <li className="flex gap-3 items-start">
+              <Phone size={14} className="text-[var(--color-cream)] shrink-0 mt-0.5" />
+              <a href={appointmentWhatsAppUrl} target="_blank" rel="noopener noreferrer" className="hover:text-[var(--color-cream)] transition-colors">Book an Appointment</a>
             </li>
           </ul>
         </div>

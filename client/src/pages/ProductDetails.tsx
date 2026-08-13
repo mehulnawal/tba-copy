@@ -98,12 +98,13 @@ export default function ProductDetails() {
 apiRequest<Review[]>(`/reviews/${p.SKU}`).then(setReviews).catch(() => { });
                 apiRequest<Product[]>(`/products/${p.metal || "gold"}`).then((products) => {
                     const currentId = p.id || p._id || p.SKU;
-                    const sameMainCategory = productCategoryId(p.mainCategory);
                     const sameSubCategory = productCategoryId(p.subCategory);
+                    const sameMainCategory = productCategoryId(p.mainCategory);
                     const candidates = products.filter((item) => item.isActive !== false && (item.id || item._id || item.SKU) !== currentId);
-                    const sameSubcategory = sameSubCategory ? candidates.filter((item) => productCategoryId(item.subCategory) === sameSubCategory) : [];
-                    const sameMainCategoryProducts = sameMainCategory ? candidates.filter((item) => productCategoryId(item.mainCategory) === sameMainCategory && !sameSubcategory.some((related) => (related.id || related._id || related.SKU) === (item.id || item._id || item.SKU))) : [];
-                    setSimilarProducts([...sameSubcategory, ...sameMainCategoryProducts].slice(0, 12));
+                    const exactCategoryProducts = candidates.filter((item) => sameSubCategory ? productCategoryId(item.subCategory) === sameSubCategory : productCategoryId(item.mainCategory) === sameMainCategory);
+                    const otherCategoryProducts = candidates.filter((item) => !exactCategoryProducts.some((related) => (related.id || related._id || related.SKU) === (item.id || item._id || item.SKU)));
+                    // Keep recommendations category-led: up to six exact matches, plus at most two same-metal alternatives.
+                    setSimilarProducts([...exactCategoryProducts.slice(0, 6), ...otherCategoryProducts.slice(0, 2)]);
                 }).catch(() => setSimilarProducts([]));
             })
             .catch(() => setProduct(null));
@@ -329,7 +330,7 @@ const handleSimilarWishlistToggle = async (relatedProduct: Product) => {
                             {/* FIX 3: Description relocated under the image */}
                             <div className="hidden space-y-3 lg:block">
                                 <MobileAccordion title="Description"><p className="whitespace-pre-line text-base leading-relaxed text-stone-600 lg:text-xs">{productDescriptionContent}</p></MobileAccordion>
-                                {(product.certificates || []).length > 0 && <MobileAccordion title="Certificates of Authenticity"><div className="flex gap-3">{product.certificates?.map((certificate) => <div key={certificate._id} className="flex items-center gap-3 text-lg lg:text-sm"><img src={publicAssetUrl(certificate.logoUrl)} alt="" className="h-14 w-14 object-contain lg:h-10 lg:w-10" />{certificate.name}</div>)}</div></MobileAccordion>}
+                                {(product.certificates || []).length > 0 && <MobileAccordion title="Certificates of Authenticity"><div className="flex gap-3">{product.certificates?.map((certificate) => <div key={certificate._id} className="flex items-center gap-3 text-lg lg:text-sm"><img src={publicAssetUrl(certificate.logoUrl)} alt="" className="h-14 w-14 object-contain lg:h-10 lg:w-10" />{certificate.name}</div>)}</div><a href="/certificates/viewCertificate.pdf" target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex w-fit items-center rounded border border-[var(--color-teal)] px-3 py-2 text-xs font-semibold uppercase tracking-wider text-[var(--color-teal)] transition hover:bg-[var(--color-teal)] hover:!text-white">View PDF</a></MobileAccordion>}
                                 <MobileAccordion title="Shipping & Handling"><ul className="list-disc space-y-1.5 pl-5 text-base leading-relaxed text-stone-600 lg:text-xs"><li>Free shipping perks on all orders within India</li><li>Avail your items within 15 business days</li><li>Inspect your package carefully before signing off</li><li>Package will be sealed and wrapped in bubble wrap, small box, or padded envelope</li></ul></MobileAccordion><MobileAccordion title="Important Guide"><ol className="list-decimal space-y-1.5 pl-5 text-base leading-relaxed text-stone-600 lg:text-xs"><li>The prices are indicative of approximate gold rate, as there are daily fluctuations. Expect a call from Team Ivana once you place the order.</li><li>The price is also subject to the final diamond weight of +/- 5% on the basis of size selected.</li><li>Each piece is customized and made to order. Center solitaires can be set according to your preference.</li></ol></MobileAccordion>
                             </div>
                         </div>
