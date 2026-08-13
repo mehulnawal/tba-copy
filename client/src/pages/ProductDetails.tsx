@@ -139,7 +139,7 @@ export default function ProductDetails() {
     const storedDescription = product.description?.trim();
     // Always append the category description after any admin-entered text.
     const productDescription = [storedDescription, defaultDescription?.plainText].filter(Boolean).join("\n\n");
-    const productDescriptionContent = productDescription;
+    const productDescriptionContent = <>{storedDescription}{storedDescription && defaultDescription ? "\n\n" : null}{defaultDescription?.content}</>;
 
     const isGold = product.metal === "gold";
     const catalogPath = `/${isGold ? "gold-jewellery" : "silver-jewellery"}`;
