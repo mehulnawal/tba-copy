@@ -15,7 +15,7 @@ export default function ComingSoonPage() {
     return (
         <div
             className="relative min-h-screen w-full flex flex-col justify-between select-none antialiased bg-[#faf8f5] text-[#0f1a1c] px-6 sm:px-8 md:px-12"
-            style={{ fontFamily: 'Georgia, Cambria, "Times New Roman", Times, serif' }}
+            style={{ fontFamily: 'var(--font-secondary)' }}
         >
             {/* --- HEADER LOGO & BRAND SECTION --- */}
             <header className="w-full pt-10 md:pt-16 flex flex-col items-center text-center z-10 shrink-0">
@@ -28,13 +28,13 @@ export default function ComingSoonPage() {
                         onError={(e) => { e.currentTarget.style.display = 'none'; }}
                     /> */}
 
-                    <span className="text-2xl md:text-3xl font-light tracking-[0.25em] leading-none block break-words max-w-xs sm:max-w-md">
+                    <span className="font-primary text-2xl md:text-3xl font-light tracking-[0.25em] leading-none block break-words max-w-xs sm:max-w-md">
                         {BRAND_NAME}
                     </span>
 
                     <span
                         className="text-[9px] md:text-[10px] tracking-[0.35em] uppercase font-medium mt-3 opacity-70 block break-words max-w-xs sm:max-w-md"
-                        style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
+                        style={{ fontFamily: 'var(--font-secondary)' }}
                     >
                         {BRAND_SUBTEXT}
                     </span>
@@ -47,13 +47,13 @@ export default function ComingSoonPage() {
                 <div className="max-w-2xl w-full mx-auto flex flex-col items-center text-center">
 
                     {/* Core Typography Block */}
-                    <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extralight tracking-tight leading-tight text-balance">
+                    <h1 className="font-primary text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extralight tracking-tight leading-tight text-balance">
                         {HERO_TITLE}
                     </h1>
 
                     <p
                         className="max-w-md mx-auto text-sm sm:text-base font-light leading-relaxed tracking-wide opacity-80 mt-6 md:mt-8 text-balance"
-                        style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
+                        style={{ fontFamily: 'var(--font-secondary)' }}
                     >
                         {HERO_SUBTEXT}
                     </p>
@@ -64,7 +64,7 @@ export default function ComingSoonPage() {
                             disabled
                             aria-disabled="true"
                             className="px-8 py-3.5 rounded-none text-[11px] font-light tracking-[0.2em] uppercase border border-[#005c53]/20 bg-white/60 text-[#1c2b29] cursor-not-allowed opacity-70 flex items-center justify-center gap-2.5"
-                            style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
+                            style={{ fontFamily: 'var(--font-secondary)' }}
                         >
                             <span>Launching Soon</span>
                             <ArrowRight className="w-3.5 h-3.5 opacity-50 stroke-[1.5]" aria-hidden="true" />
@@ -81,7 +81,7 @@ export default function ComingSoonPage() {
 
                 <p
                     className="text-[10px] md:text-xs tracking-widest text-center font-light opacity-50 text-balance"
-                    style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
+                    style={{ fontFamily: 'var(--font-secondary)' }}
                 >
                     &copy; {currentYear} {BRAND_SUBTEXT}. {FOOTER_TEXT}
                 </p>

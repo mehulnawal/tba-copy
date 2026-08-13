@@ -4,7 +4,7 @@ export default function VisitStore() {
     return (
         <section
             className="w-full overflow-hidden relative"
-            style={{ background: "#1c3b48", fontFamily: "Montserrat, Helvetica Neue, sans-serif" }}
+            style={{ background: "#1c3b48", fontFamily: "var(--font-secondary)" }}
             id="visit-store-section"
             aria-label=""
         >

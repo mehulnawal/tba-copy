@@ -188,7 +188,7 @@ export default function Checkout() {
                         <span className="text-xs uppercase tracking-widest text-gray-500 font-medium block mb-1">
                             Finalize Purchase
                         </span>
-                        <h1 className="text-3xl font-serif uppercase tracking-wide text-gray-900">
+                        <h1 className="text-3xl font-primary uppercase tracking-wide text-gray-900">
                             Checkout
                         </h1>
                     </div>
@@ -318,7 +318,7 @@ export default function Checkout() {
                                             <span className="text-sm font-semibold uppercase tracking-wider">
                                                 Grand Total
                                             </span>
-                                            <span className="text-lg font-serif font-bold">
+                                            <span className="text-lg font-secondary font-bold">
                                                 {formatCurrency(summary.total)}
                                             </span>
                                         </div>

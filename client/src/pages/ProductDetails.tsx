@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { AuthModal } from "./AuthModal";
 import { useAuth } from "../context/AuthContext";
@@ -8,7 +8,7 @@ import Footer from "../components/Footer";
 import { useToast } from "../context/ToastContext";
 import { useAddToCart } from "../hooks/useCart";
 import { useAddToWishlist, useRemoveFromWishlist, useWishlist } from "../hooks/useWishlist";
-import { RING_SIZES } from "../constants/product";
+import { BANGLE_SIZES, RING_SIZES } from "../constants/product";
 import { getDefaultProductDescription } from "../constants/productDescriptions";
 import type { Product } from "../types";
 import { formatINR, formatMeasurement } from "../utils/currency";
@@ -16,7 +16,8 @@ import { detailImage, publicAssetUrl, responsiveImage } from "../utils/image";
 import PriceBreakup from "../components/PriceBreakup";
 import { Seo } from "../components/Seo";
 import { ProductSkeleton } from "../components/LoadingSkeleton";
-import { ChevronDown, Heart, Share2 } from "lucide-react";
+import { ProductCard } from "./ProductPage";
+import { ChevronDown, ChevronLeft, ChevronRight, Heart, Share2 } from "lucide-react";
 
 type Review = {
     _id: string;
@@ -24,6 +25,8 @@ type Review = {
     text: string;
     user?: { name: string };
 };
+
+const productCategoryId = (category?: Product["mainCategory"] | Product["subCategory"] | null) => !category ? "" : typeof category === "string" ? category : category._id || "";
 
 function getSwatchHexColor(colorName: string): string {
     const normalized = colorName.toLowerCase();
@@ -68,6 +71,8 @@ export default function ProductDetails() {
     const [color, setColor] = useState("");
     const [size, setSize] = useState("");
     const [reviews, setReviews] = useState<Review[]>([]);
+    const [similarProducts, setSimilarProducts] = useState<Product[]>([]);
+    const similarProductsRef = useRef<HTMLDivElement>(null);
 
     const [rating, setRating] = useState(5);
     const [hoverRating, setHoverRating] = useState(0);
@@ -81,6 +86,7 @@ export default function ProductDetails() {
     const [isHoveringMainImage, setIsHoveringMainImage] = useState(false);
 
     useEffect(() => {
+        setSimilarProducts([]);
         window.scrollTo(0, 0);
         apiRequest<Product>(`/products/${slug}`)
             .then((p) => {
@@ -89,7 +95,16 @@ export default function ProductDetails() {
                 setColor(defaultColors[0]);
                 setSize("");
 
-                apiRequest<Review[]>(`/reviews/${p.SKU}`).then(setReviews).catch(() => { });
+apiRequest<Review[]>(`/reviews/${p.SKU}`).then(setReviews).catch(() => { });
+                apiRequest<Product[]>(`/products/${p.metal || "gold"}`).then((products) => {
+                    const currentId = p.id || p._id || p.SKU;
+                    const sameMainCategory = productCategoryId(p.mainCategory);
+                    const sameSubCategory = productCategoryId(p.subCategory);
+                    const candidates = products.filter((item) => item.isActive !== false && (item.id || item._id || item.SKU) !== currentId);
+                    const sameSubcategory = sameSubCategory ? candidates.filter((item) => productCategoryId(item.subCategory) === sameSubCategory) : [];
+                    const sameMainCategoryProducts = sameMainCategory ? candidates.filter((item) => productCategoryId(item.mainCategory) === sameMainCategory && !sameSubcategory.some((related) => (related.id || related._id || related.SKU) === (item.id || item._id || item.SKU))) : [];
+                    setSimilarProducts([...sameSubcategory, ...sameMainCategoryProducts].slice(0, 12));
+                }).catch(() => setSimilarProducts([]));
             })
             .catch(() => setProduct(null));
     }, [slug]);
@@ -101,7 +116,7 @@ export default function ProductDetails() {
                 <main className="flex items-center justify-center min-h-[60vh] bg-[#FAF9F6]">
                     <div className="text-center space-y-3">
                         <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-amber-800 mx-auto" />
-                        <p className="text-xs uppercase tracking-widest text-amber-900 font-medium font-serif">Loading Product Details...</p>
+                        <p className="text-xs uppercase tracking-widest text-amber-900 font-medium font-secondary">Loading Product Details...</p>
                     </div>
                 </main>
                 <Footer onCategoryChange={() => { }} />
@@ -155,6 +170,7 @@ export default function ProductDetails() {
         }).toString()}`
         : mainCategoryPath;
     const isRing = [categoryName(product.mainCategory), categoryName(product.subCategory)].some((name) => /\brings?\b/i.test(name));
+    const isBangle = !isRing && [categoryName(product.mainCategory), categoryName(product.subCategory)].some((name) => /\bbangles?\b/i.test(name));
     const mediaList = [...(product.images || []).filter((image) => Boolean(image?.url)).map((image) => ({ type: "image" as const, url: image.url })), ...(product.videoLink ? [{ type: "video" as const, url: product.videoLink }] : [])];
     const productImage = mediaList[activeMediaIndex]?.url;
 
@@ -207,9 +223,17 @@ export default function ProductDetails() {
         } catch (err: unknown) { showToast(err instanceof Error ? err.message : "Could not update wishlist.", "error"); }
     };
     const handleAddToCart = async () => {
-        if (isRing && !size) { showToast("Select a size before adding this product.", "error"); return; }
+        if ((isRing || isBangle) && !size) { showToast(`Select a ${isBangle ? "bangle" : "ring"} size before adding this product.`, "error"); return; }
         if (!isAuthenticated) { setPendingAction("cart"); setIsAuthOpen(true); return; }
         await addProductToCart();
+    };
+const handleSimilarWishlistToggle = async (relatedProduct: Product) => {
+        if (!isAuthenticated) { setIsAuthOpen(true); return; }
+        const relatedKarat = relatedProduct.prices?.find((price) => price.karat === "14kt")?.karat || relatedProduct.prices?.[0]?.karat || "14kt";
+        try {
+            if (wishlist.some((item) => item.productId === relatedProduct.SKU)) { await removeFromWishlistMutation.mutateAsync(relatedProduct.SKU); showToast("Removed from wishlist.", "success"); }
+            else { await addToWishlistMutation.mutateAsync({ productId: relatedProduct.SKU, karat: relatedKarat }); showToast("Product saved to wishlist.", "success"); }
+        } catch (err: unknown) { showToast(err instanceof Error ? err.message : "Could not update wishlist.", "error"); }
     };
     const handleWishlistClick = () => {
         if (!isAuthenticated) { setPendingAction("wishlist"); setIsAuthOpen(true); return; }
@@ -240,7 +264,7 @@ export default function ProductDetails() {
     return (
         <>
             <Seo title={`${product.title} | TBA Jewelry`} description={productDescription || `Explore ${product.title} at TBA Jewelry, with product specifications and complete price details.`} image={product.images[0]?.url} type="product" structuredData={[productSchema, breadcrumbSchema]} />
-            <div className="min-h-screen bg-[#FAF9F6] text-stone-900 antialiased font-sans pb-0">
+            <div className="min-h-screen bg-[#FAF9F6] text-stone-900 antialiased font-secondary pb-0">
                 <Navbar onSearchChange={() => { }} activeCategory="All" onCategoryChange={() => { }} />
 
                 <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-6 pb-16">
@@ -306,7 +330,7 @@ export default function ProductDetails() {
                             <div className="hidden space-y-3 lg:block">
                                 <MobileAccordion title="Description"><p className="whitespace-pre-line text-base leading-relaxed text-stone-600 lg:text-xs">{productDescriptionContent}</p></MobileAccordion>
                                 {(product.certificates || []).length > 0 && <MobileAccordion title="Certificates of Authenticity"><div className="flex gap-3">{product.certificates?.map((certificate) => <div key={certificate._id} className="flex items-center gap-3 text-lg lg:text-sm"><img src={publicAssetUrl(certificate.logoUrl)} alt="" className="h-14 w-14 object-contain lg:h-10 lg:w-10" />{certificate.name}</div>)}</div></MobileAccordion>}
-                                <MobileAccordion title="Shipping & Handling"><ul className="list-disc space-y-1.5 pl-5 text-base leading-relaxed text-stone-600 lg:text-xs"><li>Free shipping perks on all orders within India</li><li>Avail your items within 15 business days</li><li>Inspect your package carefully before signing off</li><li>Package will be sealed and wrapped in bubble wrap, small box, or padded envelope</li></ul></MobileAccordion>
+                                <MobileAccordion title="Shipping & Handling"><ul className="list-disc space-y-1.5 pl-5 text-base leading-relaxed text-stone-600 lg:text-xs"><li>Free shipping perks on all orders within India</li><li>Avail your items within 15 business days</li><li>Inspect your package carefully before signing off</li><li>Package will be sealed and wrapped in bubble wrap, small box, or padded envelope</li></ul></MobileAccordion><MobileAccordion title="Important Guide"><ol className="list-decimal space-y-1.5 pl-5 text-base leading-relaxed text-stone-600 lg:text-xs"><li>The prices are indicative of approximate gold rate, as there are daily fluctuations. Expect a call from Team Ivana once you place the order.</li><li>The price is also subject to the final diamond weight of +/- 5% on the basis of size selected.</li><li>Each piece is customized and made to order. Center solitaires can be set according to your preference.</li></ol></MobileAccordion>
                             </div>
                         </div>
 
@@ -320,7 +344,7 @@ export default function ProductDetails() {
                                 <p className="mt-2 text-sm text-stone-500">
                                     SKU: {product.SKU}
                                 </p>
-                                <h1 className="text-2xl md:text-3xl font-serif text-stone-900 tracking-tight mt-1">
+                                <h1 className="text-2xl md:text-3xl font-primary text-stone-900 tracking-tight mt-1">
                                     {product.title}
                                 </h1>
                             </div>
@@ -328,7 +352,7 @@ export default function ProductDetails() {
                             {/* Price Row */}
                             <div className="order-2 flex items-baseline justify-between border-y border-stone-200/80 py-3 lg:order-2">
                                 <div>
-                                    <span className="text-3xl font-serif text-stone-900">
+                                    <span className="text-3xl font-secondary text-stone-900">
                                         {formatINR(activePriceObj.finalPrice)}
                                     </span>
                                     <span className="text-[11px] text-stone-500 block">Inclusive of all taxes</span><span className="text-[11px] text-stone-500 block">*This is an estimated price, actual price may differ as per actual weights.</span>
@@ -343,9 +367,9 @@ export default function ProductDetails() {
                                 <div className="grid grid-cols-2 gap-4 text-xs">
                                     <div className="bg-white p-3 rounded border border-stone-100">
                                         <span className="block text-[10px] text-stone-400 uppercase">Gross Weight</span>
-                                        <span className="text-sm font-serif font-semibold text-stone-900">{formatMeasurement(grossWeight ?? 0)} g</span>
+                                        <span className="text-sm font-secondary font-semibold text-stone-900">{formatMeasurement(grossWeight ?? 0)} g</span>
                                     </div>
-                                    {isGold && <div className="bg-white p-3 rounded border border-stone-100"><span className="block text-[10px] text-stone-400 uppercase">Net Weight</span><span className="text-sm font-serif font-semibold text-stone-900">{formatMeasurement(netWeight ?? 0)} g</span></div>}
+                                    {isGold && <div className="bg-white p-3 rounded border border-stone-100"><span className="block text-[10px] text-stone-400 uppercase">Net Weight</span><span className="text-sm font-secondary font-semibold text-stone-900">{formatMeasurement(netWeight ?? 0)} g</span></div>}
                                 </div>
                             </div>
 
@@ -378,7 +402,7 @@ export default function ProductDetails() {
                                     <img src={publicAssetUrl(certificate.logoUrl)} alt="" className="h-14 w-14 shrink-0 object-contain lg:h-10 lg:w-10" /><span className="min-w-0 break-words">{certificate.name}</span>
                                 </div>)}</div>
                             </MobileAccordion></div>}
-                            <div className="order-[10] lg:hidden"><MobileAccordion title="Shipping & Handling"><ul className="list-disc space-y-1.5 pl-5 text-base leading-relaxed text-stone-600"><li>Free shipping perks on all orders within India</li><li>Avail your items within 15 business days</li><li>Inspect your package carefully before signing off</li><li>Package will be sealed and wrapped in bubble wrap, small box, or padded envelope</li></ul></MobileAccordion></div>
+                            <div className="order-[10] lg:hidden"><MobileAccordion title="Shipping & Handling"><ul className="list-disc space-y-1.5 pl-5 text-base leading-relaxed text-stone-600"><li>Free shipping perks on all orders within India</li><li>Avail your items within 15 business days</li><li>Inspect your package carefully before signing off</li><li>Package will be sealed and wrapped in bubble wrap, small box, or padded envelope</li></ul></MobileAccordion><MobileAccordion title="Important Guide"><ol className="list-decimal space-y-1.5 pl-5 text-base leading-relaxed text-stone-600 lg:text-xs"><li>The prices are indicative of approximate gold rate, as there are daily fluctuations. Expect a call from Team Ivana once you place the order.</li><li>The price is also subject to the final diamond weight of +/- 5% on the basis of size selected.</li><li>Each piece is customized and made to order. Center solitaires can be set according to your preference.</li></ol></MobileAccordion></div>
 {/* Metal Finish Swatches with Proper White Color */}
                             <div className="order-5 space-y-2 lg:order-5">
                                 <label className="block text-xs uppercase tracking-widest font-semibold text-stone-600">
@@ -408,6 +432,13 @@ export default function ProductDetails() {
                                         <option value="">Select size</option>
                                         {RING_SIZES.map((ringSize) => <option key={ringSize} value={ringSize}>{ringSize}</option>)}
                                     </select>
+                                </div>}
+                                {isBangle && <div className="mt-5 space-y-2">
+                                    <label htmlFor="bangle-size" className="block text-xs uppercase tracking-widest font-semibold text-stone-600">Bangle Size (inches)</label>
+                                    <select id="bangle-size" value={size} onChange={(event) => setSize(event.target.value)} className="w-full rounded border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-800 focus:border-amber-800 focus:outline-none" aria-required="true">
+                                        <option value="">Select size</option>
+                                        {BANGLE_SIZES.map((bangleSize) => <option key={bangleSize} value={bangleSize}>{bangleSize}</option>)}
+                                    </select>
                                 </div>}                            </div>
 
                                                         {/* CTA Buttons */}
@@ -430,7 +461,7 @@ export default function ProductDetails() {
 
                     {/* Reviews Section */}
                     <section className="mt-16 pt-12 border-t border-stone-200">
-                        <h2 className="text-xl font-serif text-stone-900 mb-6">Customer Reviews</h2>
+                        <h2 className="text-xl font-primary text-stone-900 mb-6">Customer Reviews</h2>
 
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                             {/* Interactive Review Star Selector */}
@@ -502,7 +533,16 @@ export default function ProductDetails() {
                             </div>
                         </div>
                     </section>
-                </main>
+
+                    {similarProducts.length > 0 && <section className="mt-16 border-t border-stone-200 pt-12" aria-labelledby="similar-products-heading">
+                        <div className="mb-6 flex items-center justify-between gap-4">
+                            <div><p className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500">Curated for you</p><h2 id="similar-products-heading" className="mt-1 text-2xl font-primary text-stone-900 sm:text-3xl">Similar Products</h2></div>
+                            <div className="flex gap-2"><button type="button" onClick={() => similarProductsRef.current?.scrollBy({ left: -Math.max(similarProductsRef.current.clientWidth * 0.85, 300), behavior: "smooth" })} className="grid h-10 w-10 place-items-center rounded-full border border-stone-300 bg-white text-stone-700 transition hover:border-[var(--color-teal)] hover:text-[var(--color-teal)]" aria-label="Previous similar products"><ChevronLeft size={18} /></button><button type="button" onClick={() => similarProductsRef.current?.scrollBy({ left: Math.max(similarProductsRef.current.clientWidth * 0.85, 300), behavior: "smooth" })} className="grid h-10 w-10 place-items-center rounded-full border border-stone-300 bg-white text-stone-700 transition hover:border-[var(--color-teal)] hover:text-[var(--color-teal)]" aria-label="Next similar products"><ChevronRight size={18} /></button></div>
+                        </div>
+                        <div ref={similarProductsRef} className="grid snap-x snap-mandatory auto-cols-[minmax(240px,85vw)] grid-flow-col gap-4 overflow-x-auto pb-3 pr-1 sm:auto-cols-[minmax(260px,calc((100%-1rem)/2))] lg:auto-cols-[minmax(260px,calc((100%-2rem)/3))]">
+                            {similarProducts.map((relatedProduct) => <div key={relatedProduct.id || relatedProduct._id || relatedProduct.SKU} className="snap-start"><ProductCard product={relatedProduct} categoryLabel={categoryName(relatedProduct.subCategory) !== "Jewellery" ? categoryName(relatedProduct.subCategory) : categoryName(relatedProduct.mainCategory)} defaultKarat="14kt" onWishlistToggle={(item) => void handleSimilarWishlistToggle(item)} isWishlisted={wishlist.some((item) => item.productId === relatedProduct.SKU)} /></div>)}
+                        </div>
+                    </section>}                </main>
 
                 <Footer onCategoryChange={() => { }} />
                 <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} onAuthenticated={handleAuthenticated} />

@@ -159,7 +159,7 @@ export default function ProductPage({ metal = "gold", b2b = false }: { metal?: "
             />}<main className="flex-grow mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 py-8 pb-24 lg:pb-8">
                 <div className="catalog-title-bar border-b pb-5 sm:flex sm:items-center sm:justify-between">
                     <div>
-                        <h1 className="text-3xl font-serif font-semibold tracking-tight text-gray-900">{metal === "gold" ? "Gold Jewellery" : "Silver Jewellery"}</h1>
+                        <h1 className="text-3xl font-primary font-semibold tracking-tight text-gray-900">{metal === "gold" ? "Gold Jewellery" : "Silver Jewellery"}</h1>
                     </div>
                     <div className="mt-3 sm:mt-0 sm:ml-4">
                         <input
@@ -373,7 +373,7 @@ function FilterSection({ title, children }: { title: string; children: React.Rea
     );
 }
 
-function ProductCard({ product, categoryLabel, defaultKarat, onWishlistToggle, isWishlisted, b2b = false }: { product: Product; categoryLabel: string; defaultKarat: "14kt" | "18kt"; onWishlistToggle: (product: Product) => void; isWishlisted: boolean; b2b?: boolean }) {
+export function ProductCard({ product, categoryLabel, defaultKarat, onWishlistToggle, isWishlisted, b2b = false }: { product: Product; categoryLabel: string; defaultKarat: "14kt" | "18kt"; onWishlistToggle: (product: Product) => void; isWishlisted: boolean; b2b?: boolean }) {
 
     const categoryName = (
         category?: Category | string | null
@@ -391,7 +391,7 @@ function ProductCard({ product, categoryLabel, defaultKarat, onWishlistToggle, i
         setActiveKarat(defaultKarat);
     }, [defaultKarat]);
 
-    const images = product.images.map((image) => image.url);
+    const images = (product.images ?? []).map((image) => image.url);
     const displaysCarousel = images.length > 1;
 
     const handleMouseEnter = () => {

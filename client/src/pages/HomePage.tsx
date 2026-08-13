@@ -1,7 +1,6 @@
 ﻿import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { AVATAR_ASSETS } from "../constants/assets";
 import { Product, PrimeHotspot, FAQ, Testimonial, Category } from "../types";
 import FloatingButtons from "../components/FloatingButtons";
 import Footer from "../components/Footer";
@@ -54,7 +53,6 @@ const TESTIMONIALS: Testimonial[] = [
         name: "Shivani Chandak",
         location: "Ahemdabad",
         rating: 4.5,
-        avatar: AVATAR_ASSETS.a1,
         review: "Made Silvering & Diamond Bangles. My Mom loved it ♥",
         images: ["https://res.cloudinary.com/dkrchgmhx/image/upload/v1786538743/WhatsApp_Image_2026-08-06_at_4.37.36_PM-_1_cstupx.jpg", ""]
     },
@@ -63,7 +61,6 @@ const TESTIMONIALS: Testimonial[] = [
         name: "Radika Somani",
         location: "Surat",
         rating: 5,
-        avatar: AVATAR_ASSETS.a2,
         review: "Made Necklace for my wedding day. Goes perfect with the outfit 😀",
         images: ["https://res.cloudinary.com/dkrchgmhx/image/upload/v1786538406/WhatsApp_Image_2026-08-06_at_4.37.37_PM_iyytgj.jpg", ""]
     },
@@ -71,7 +68,7 @@ const TESTIMONIALS: Testimonial[] = [
         id: "3",
         name: "Kavita Desai",
         location: "Ahmedabad",
-        rating: 5, avatar: AVATAR_ASSETS.a4,
+        rating: 5,
         review: "Found Solitaire Ring IGI Certified at the most reasonable price in the market. Genuine and loved the finishing",
         images: ["https://res.cloudinary.com/dkrchgmhx/image/upload/v1786531509/WhatsApp_Image_2026-08-06_at_4.37.36_PM_wmlbms.jpg", "https://res.cloudinary.com/dkrchgmhx/image/upload/v1786538802/WhatsApp_Image_2026-08-06_at_4.37.36_PM-2_kznihk.jpg"]
     },
@@ -445,13 +442,7 @@ export default function HomePage() {
 
                                     <div className="flex flex-col gap-4 border-t border-[var(--color-border-subtle)] pt-5 sm:flex-row sm:items-center sm:justify-between">
                                         <div className="flex min-w-0 items-center gap-3">
-                                            <img
-                                                src={testimonial.avatar}
-                                                alt={testimonial.name}
-                                                className="w-12 h-12 rounded-full object-cover shrink-0 border border-cream"
-                                                referrerPolicy="no-referrer"
-                                            />
-                                            <div>
+                                            1                                            <div>
                                                 <h4 className="font-secondary text-sm font-semibold text-[var(--color-teal)]">
                                                     {testimonial.name}
                                                 </h4>

@@ -1,16 +1,4 @@
-/* Local fonts: only the compressed web formats are shipped. */
-@font-face {
-  font-family: "Clash Display";
-  src:
-    url("./assets/font/ClashDisplay_Complete/ClashDisplay_Complete/Fonts/WEB/fonts/ClashDisplay-Variable.woff2")
-      format("woff2"),
-    url("./assets/font/ClashDisplay_Complete/ClashDisplay_Complete/Fonts/WEB/fonts/ClashDisplay-Variable.woff")2
-      format("woff");
-  font-weight: 200 700;
-  font-style: normal;
-  font-display: swap;
-}
-
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@400;500;600;700&family=Jost:wght@300;400;500;600;700&display=swap");
 @import "tailwindcss";
 
 @theme {
@@ -39,8 +27,11 @@
   --color-error: #c0392b;
 
   /* ── Fonts ── */
-  --font-primary: "Clash Display", "Georgia", serif;
-  --font-secondary: "Montserrat", "Helvetica Neue", sans-serif;
+  --font-primary: "Cormorant SC", Georgia, serif;
+  --font-secondary: "Jost", "Helvetica Neue", sans-serif;
+  --font-sans: "Jost", "Helvetica Neue", sans-serif;
+  --font-serif: "Cormorant SC", Georgia, serif;
+  --font-mono: "Jost", "Helvetica Neue", sans-serif;
 
   /* ── Type Scale ── */
   --text-xs: 0.75rem;

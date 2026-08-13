@@ -91,4 +91,11 @@ For all non-diamond products (gold, silver), do not change how their price is re
 
 
 13-08-26 = 
-b2b filters not working
+1. change the on scrolling the prices change - admin panel - add products
+2. Moissanite Carat (ct) - Manual entry - make it compulsory - admin panel add products
+3. change font of entire website 
+4. bangles inches 
+5. automatically remove 0 when entering a value
+6. change footer - book appointment - admin panel add products
+7. admin panel add products - add a filter(category wise filter) option 
+8. add similar products section 
