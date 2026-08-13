@@ -45,7 +45,7 @@ const HERO_SLIDES = [
     { id: "1", image: banner1, mobileImage: banner1 },
     { id: "2", image: banner2, mobileImage: banner2 },
     { id: "3", image: banner3, mobileImage: banner3 },
-    { id: "4", image: banner4, mobileImage: banner4 },
+    // { id: "4", image: banner4, mobileImage: banner4 },
 ];
 
 const TESTIMONIALS: Testimonial[] = [
