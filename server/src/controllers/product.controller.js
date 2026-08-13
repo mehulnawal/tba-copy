@@ -99,8 +99,28 @@ const updatePricingConfig = asyncHandler(async (req, res) => {
   res.json(new ApiResponse(200, config, "Charge settings updated"));
 });
 const adminGetProduct = asyncHandler(async (req, res) => { const product = await populated(Product.findById(req.params.productId)); if (!product) throw new ApiError(404, "Product not found"); res.json(new ApiResponse(200, await toProductResponse(product), "Product fetched")); });
-const createProduct = asyncHandler(async (req, res) => { const body = normalizeGoldWeights(req.body); await validateCategories(body); const category = await Category.findById(body.subCategory).select("name shortCode").lean(); const metalCode = body.metal === "gold" ? "GLD" : "SLV"; const categoryCode = category?.shortCode || String(category?.name || "XX").replace(/[^a-z]/gi, "").slice(0, 2).toUpperCase().padEnd(2, "X"); const seriesPrefix = `TBA-${metalCode}-${categoryCode}`; const matchingSkus = await Product.find({ SKU: new RegExp(`^${seriesPrefix}-?\\d{3,4}$`) }).select("SKU").lean(); const nextNumber = matchingSkus.reduce((highest, product) => Math.max(highest, Number(String(product.SKU).match(/(\d+)$/)?.[1] || 0)), 0) + 1; const SKU = body.SKU && !String(body.SKU).startsWith("TBA-") ? body.SKU : `${seriesPrefix}${String(nextNumber).padStart(4, "0")}`; const product = await Product.create({ ...body, SKU, slug: slugify(body.title) }); res.status(201).json(new ApiResponse(201, await toProductResponse(await populated(Product.findById(product._id))), "Product created")); });
-const updateProduct = asyncHandler(async (req, res) => { const current = await Product.findById(req.params.productId); if (!current) throw new ApiError(404, "Product not found"); const update = normalizeGoldWeights({ ...req.body, grossWeight: req.body.grossWeight === undefined ? current.grossWeight : req.body.grossWeight, diamonds: req.body.diamonds === undefined ? current.diamonds : req.body.diamonds }, req.body.metal || current.metal); if (update.title) update.slug = slugify(update.title); if (update.mainCategory || update.subCategory || update.metal) await validateCategories({ ...current.toObject(), ...update }); const product = await Product.findByIdAndUpdate(current._id, update, { new: true, runValidators: true }); res.json(new ApiResponse(200, await toProductResponse(await populated(Product.findById(product._id))), "Product updated")); });
+const productSkuPrefix = async (metal, subCategory) => {
+  const category = await Category.findById(subCategory).select("name shortCode").lean();
+  const metalCode = metal === "gold" ? "GLD" : "SLV";
+  const categoryCode = category?.shortCode || String(category?.name || "XX").replace(/[^a-z]/gi, "").slice(0, 2).toUpperCase().padEnd(2, "X");
+  return `TBA-${metalCode}-${categoryCode}`;
+};
+const nextProductSku = async (metal, subCategory, excludedProductId) => {
+  const seriesPrefix = await productSkuPrefix(metal, subCategory);
+  const filter = { SKU: new RegExp(`^${seriesPrefix}-?\\d{3,4}$`) };
+  if (excludedProductId) filter._id = { $ne: excludedProductId };
+  const matchingSkus = await Product.find(filter).select("SKU").lean();
+  const nextNumber = matchingSkus.reduce((highest, product) => Math.max(highest, Number(String(product.SKU).match(/(\d+)$/)?.[1] || 0)), 0) + 1;
+  return `${seriesPrefix}${String(nextNumber).padStart(4, "0")}`;
+};
+const createProduct = asyncHandler(async (req, res) => {
+  const body = normalizeGoldWeights(req.body);
+  await validateCategories(body);
+  const SKU = body.SKU && !String(body.SKU).startsWith("TBA-") ? body.SKU : await nextProductSku(body.metal, body.subCategory);
+  const product = await Product.create({ ...body, SKU, slug: slugify(body.title) });
+  res.status(201).json(new ApiResponse(201, await toProductResponse(await populated(Product.findById(product._id))), "Product created"));
+});
+const updateProduct = asyncHandler(async (req, res) => { const current = await Product.findById(req.params.productId); if (!current) throw new ApiError(404, "Product not found"); const update = normalizeGoldWeights({ ...req.body, grossWeight: req.body.grossWeight === undefined ? current.grossWeight : req.body.grossWeight, diamonds: req.body.diamonds === undefined ? current.diamonds : req.body.diamonds }, req.body.metal || current.metal); if (update.title) update.slug = slugify(update.title); if (update.mainCategory || update.subCategory || update.metal) { const nextProduct = { ...current.toObject(), ...update }; await validateCategories(nextProduct); const expectedPrefix = await productSkuPrefix(nextProduct.metal, nextProduct.subCategory); if (String(current.SKU || "").startsWith("TBA-") && !String(current.SKU).startsWith(expectedPrefix)) update.SKU = await nextProductSku(nextProduct.metal, nextProduct.subCategory, current._id); } const product = await Product.findByIdAndUpdate(current._id, update, { new: true, runValidators: true }); res.json(new ApiResponse(200, await toProductResponse(await populated(Product.findById(product._id))), "Product updated")); });
 const deleteProduct = asyncHandler(async (req, res) => { const product = await Product.findByIdAndDelete(req.params.productId); if (!product) throw new ApiError(404, "Product not found"); res.json(new ApiResponse(200, null, "Product deleted")); });
 const previewPrice = asyncHandler(async (req, res) => {
   const previewProduct = normalizeGoldWeights(req.body);

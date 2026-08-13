@@ -11,7 +11,7 @@ import { useAddToWishlist, useRemoveFromWishlist, useWishlist } from "../hooks/u
 import { RING_SIZES } from "../constants/product";
 import { getDefaultProductDescription } from "../constants/productDescriptions";
 import type { Product } from "../types";
-import { formatINR } from "../utils/currency";
+import { formatINR, formatMeasurement } from "../utils/currency";
 import { detailImage, publicAssetUrl, responsiveImage } from "../utils/image";
 import PriceBreakup from "../components/PriceBreakup";
 import { Seo } from "../components/Seo";
@@ -137,8 +137,9 @@ export default function ProductDetails() {
 
     const defaultDescription = getDefaultProductDescription(product.metal, [categoryName(product.mainCategory), categoryName(product.subCategory)]);
     const storedDescription = product.description?.trim();
-    const productDescription = storedDescription || defaultDescription?.plainText || "";
-    const productDescriptionContent = storedDescription || defaultDescription?.content || productDescription;
+    // Always append the category description after any admin-entered text.
+    const productDescription = [storedDescription, defaultDescription?.plainText].filter(Boolean).join("\n\n");
+    const productDescriptionContent = productDescription;
 
     const isGold = product.metal === "gold";
     const catalogPath = `/${isGold ? "gold-jewellery" : "silver-jewellery"}`;
@@ -342,9 +343,9 @@ export default function ProductDetails() {
                                 <div className="grid grid-cols-2 gap-4 text-xs">
                                     <div className="bg-white p-3 rounded border border-stone-100">
                                         <span className="block text-[10px] text-stone-400 uppercase">Gross Weight</span>
-                                        <span className="text-sm font-serif font-semibold text-stone-900">{grossWeight ?? 0} g</span>
+                                        <span className="text-sm font-serif font-semibold text-stone-900">{formatMeasurement(grossWeight ?? 0)} g</span>
                                     </div>
-                                    {isGold && <div className="bg-white p-3 rounded border border-stone-100"><span className="block text-[10px] text-stone-400 uppercase">Net Weight</span><span className="text-sm font-serif font-semibold text-stone-900">{netWeight ?? 0} g</span></div>}
+                                    {isGold && <div className="bg-white p-3 rounded border border-stone-100"><span className="block text-[10px] text-stone-400 uppercase">Net Weight</span><span className="text-sm font-serif font-semibold text-stone-900">{formatMeasurement(netWeight ?? 0)} g</span></div>}
                                 </div>
                             </div>
 

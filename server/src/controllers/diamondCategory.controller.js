@@ -31,12 +31,27 @@ const listSizes = asyncHandler(async (req, res) => {
 });
 
 const update = asyncHandler(async (req, res) => {
-  const { b2bPrice, b2cPrice } = req.body;
-  const row = await DiamondCategory.findByIdAndUpdate(req.params.diamondCategoryId, { $set: { b2bPrice, b2cPrice } }, { new: true, runValidators: true });
-  if (!row) throw new ApiError(404, "Diamond category not found");
-  res.json(new ApiResponse(200, row, "Diamond category updated"));
+  const current = await DiamondCategory.findById(req.params.diamondCategoryId);
+  if (!current) throw new ApiError(404, "Diamond category not found");
+  const categoryName = String(req.body.categoryName ?? current.categoryName).trim();
+  const size = String(req.body.size ?? current.size).trim();
+  const b2bPrice = Number(req.body.b2bPrice);
+  const b2cPrice = Number(req.body.b2cPrice);
+  if (!categoryName || !size) throw new ApiError(400, "Diamond category name and size are required");
+  if (!Number.isFinite(b2bPrice) || b2bPrice < 0 || !Number.isFinite(b2cPrice) || b2cPrice < 0) throw new ApiError(400, "B2B and B2C prices must be non-negative numbers");
+  const previousCategoryName = current.categoryName;
+  const previousSize = current.size;
+  current.set({ categoryName, size, b2bPrice, b2cPrice });
+  await current.save();
+  if (previousCategoryName !== categoryName || previousSize !== size) {
+    await Product.updateMany(
+      { diamonds: { $elemMatch: { $or: [{ diamondCategoryRef: current._id }, { category: previousCategoryName, subType: previousSize }] } } },
+      { $set: { "diamonds.$[diamond].category": categoryName, "diamonds.$[diamond].subType": size } },
+      { arrayFilters: [{ $or: [{ "diamond.diamondCategoryRef": current._id }, { "diamond.category": previousCategoryName, "diamond.subType": previousSize }] }] },
+    );
+  }
+  res.json(new ApiResponse(200, current, "Diamond category updated"));
 });
-
 const remove = asyncHandler(async (req, res) => {
   const row = await DiamondCategory.findById(req.params.diamondCategoryId);
   if (!row) throw new ApiError(404, "Diamond category not found");

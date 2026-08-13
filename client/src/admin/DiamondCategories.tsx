@@ -17,6 +17,8 @@ export default function DiamondCategories() {
   const [b2bPrice, setB2bPrice] = useState("");
   const [b2cPrice, setB2cPrice] = useState("");
   const [editing, setEditing] = useState<DiamondCategory | null>(null);
+  const [editCategoryName, setEditCategoryName] = useState("");
+  const [editSize, setEditSize] = useState("");
   const [editB2b, setEditB2b] = useState("");
   const [editB2c, setEditB2c] = useState("");
   const [saving, setSaving] = useState(false);

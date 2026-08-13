@@ -5,7 +5,7 @@ import { ApiRequestError, apiRequest } from "../api/client";
 import type { PriceBreakdown, Product } from "../types";
 import { useB2BSessionGuard } from "../hooks/useB2BSessionGuard";
 import { detailImage, publicAssetUrl, responsiveImage } from "../utils/image";
-import { formatINR } from "../utils/currency";
+import { formatINR, formatMeasurement } from "../utils/currency";
 import PriceBreakup from "../components/PriceBreakup";
 import { ProductSkeleton } from "../components/LoadingSkeleton";
 import { getDefaultProductDescription } from "../constants/productDescriptions";
@@ -56,9 +56,10 @@ export default function B2BProductDetails() {
   const netWeight = selectedPrice.netWeight ?? weightFor(product.netWeight, karat);
   const defaultDescription = getDefaultProductDescription(product.metal, [categoryName(product.mainCategory), categoryName(product.subCategory)]);
   const storedDescription = product.description?.trim();
-  const productDescription = storedDescription || defaultDescription?.plainText || "";
-  const productDescriptionContent = storedDescription || defaultDescription?.content || productDescription;
-  const specificationRows = [["SKU", product.SKU], ["Metal", product.metal?.toUpperCase()], ["Category", [categoryName(product.mainCategory), categoryName(product.subCategory)].filter(Boolean).join(" / ")], ["Gross weight", grossWeight !== undefined ? `${grossWeight} g` : ""], ["Net weight", netWeight !== undefined ? `${netWeight} g` : ""], ["Diamond weight", diamondWeight(product) ? `${diamondWeight(product)} ct` : ""]].filter(([, value]) => Boolean(value));
+  // Always append the category description after any admin-entered text.
+  const productDescription = [storedDescription, defaultDescription?.plainText].filter(Boolean).join("\n\n");
+  const productDescriptionContent = productDescription;
+  const specificationRows = [["SKU", product.SKU], ["Metal", product.metal?.toUpperCase()], ["Category", [categoryName(product.mainCategory), categoryName(product.subCategory)].filter(Boolean).join(" / ")], ["Gross weight", grossWeight !== undefined ? `${formatMeasurement(grossWeight)} g` : ""], ["Net weight", netWeight !== undefined ? `${formatMeasurement(netWeight)} g` : ""], ["Diamond weight", diamondWeight(product) ? `${formatMeasurement(diamondWeight(product))} ct` : ""]].filter(([, value]) => Boolean(value));
   const activeMedia = media[activeMediaIndex];
   return <><Seo title={`${product.title} | TBA B2B`} description={productDescription || `Review ${product.title} specifications and B2B pricing at TBA Jewelry.`} /><main className="min-h-screen bg-[var(--color-bg)] px-5 py-10 md:px-12"><Link to="/b2b/catalog" className="inline-flex items-center gap-1 text-sm text-[var(--color-teal)]"><ChevronLeft size={16} /> Back to catalogue</Link><section className="mx-auto mt-6 grid max-w-7xl gap-8 xl:grid-cols-12 xl:gap-12"><div className="xl:col-span-6 space-y-6"><div className="flex flex-col-reverse gap-4 md:flex-row"><div className="flex shrink-0 gap-3 overflow-x-auto md:flex-col md:overflow-x-visible">{media.map((item, index) => <button key={`${item.url}-${index}`} type="button" onClick={() => setActiveMediaIndex(index)} className={`h-20 w-20 shrink-0 overflow-hidden rounded border bg-white ${index === activeMediaIndex ? "border-[var(--color-teal)] ring-1 ring-[var(--color-teal)]" : "border-[var(--color-border)] opacity-70"}`}>{item.type === "video" ? <video src={item.url} muted className="h-full w-full object-cover" /> : <img src={responsiveImage(item.url, 180)} alt="" className="h-full w-full object-cover" />}</button>)}
   </div>
