@@ -667,7 +667,7 @@ export default function HomePage() {
                         <button type="button" onClick={() => setIsHomepagePopupOpen(false)} aria-label="Close popup" className="absolute right-4 top-4 z-10 rounded-full border border-[#173b3a]/15 bg-[#f7f2e9]/80 p-2 text-[#173b3a] transition hover:bg-white"><X size={18} /></button>
                         <h2 className="font-primary text-3xl text-[#173b3a]">Pay for the Jewellery, Not the Middleman</h2>
                         <video className="mt-5 block max-h-[60vh] w-full rounded-[var(--radius-sm)] border border-[#173b3a]/15 bg-black object-contain shadow-[0_12px_30px_rgba(23,59,58,0.22)]" src="/videos/popup-video.mp4" autoPlay loop playsInline controls preload="auto">Your browser does not support this video.</video>
-                        <button type="button" onClick={() => setIsHomepagePopupOpen(false)} className="mt-6 border border-[#173b3a] bg-[#173b3a] px-6 py-3 text-xs font-semibold uppercase tracking-widest text-white shadow-sm transition hover:bg-[#285653]">Placeholder Button</button>
+                        <button type="button" onClick={() => setIsHomepagePopupOpen(false)} className="mt-6 border border-[#173b3a] bg-[#173b3a] px-6 py-3 text-xs font-semibold uppercase tracking-widest text-white shadow-sm transition hover:bg-[#285653]">Shop Now</button>
                     </motion.section>
                 </motion.div>}
             </AnimatePresence></div>
