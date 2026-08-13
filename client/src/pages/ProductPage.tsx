@@ -63,7 +63,7 @@ export default function ProductPage({ metal = "gold", b2b = false }: { metal?: "
 
     const { data: products = [], isLoading: loading } = useQuery({
         queryKey: ["products", metal, query],
-        queryFn: () => apiRequest<Product[]>(b2b ? `/b2b/products?metal=${metal}` : `/products/${metal}?${query}`),
+        queryFn: () => { const b2bParams = new URLSearchParams({ metal }); ["minPrice", "maxPrice", "karat"].forEach((key) => { const value = params.get(key); if (value) b2bParams.set(key, value); }); return apiRequest<Product[]>(b2b ? `/b2b/products?${b2bParams.toString()}` : `/products/${metal}?${query}`); },
         staleTime: 2 * 60 * 1000,
         gcTime: 15 * 60 * 1000,
     });

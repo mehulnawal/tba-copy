@@ -90,3 +90,5 @@ For all non-diamond products (gold, silver), do not change how their price is re
 
 
 
+13-08-26 = 
+b2b filters not working
