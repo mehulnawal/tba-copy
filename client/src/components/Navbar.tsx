@@ -521,7 +521,7 @@ export default function Navbar({
                         <div key={item.title} className="border-b border-white/10 pb-2">
                           <button
                             onClick={() => toggleMobileAccordion(item.title)}
-                            className="w-full flex items-center justify-between text-left font-medium text-2xl sm:text-3xl py-2 cursor-pointer bg-transparent border-none text-[var(--color-cream)] hover:text-white transition-colors"
+                            className="font-primary w-full flex items-center justify-between text-left text-2xl sm:text-3xl py-2 cursor-pointer bg-transparent border-none text-[var(--color-cream)] hover:text-white transition-colors"
                           >
                             <span>{item.title}</span>
                             <ChevronDown
@@ -540,8 +540,8 @@ export default function Navbar({
                                 transition={{ duration: 0.25 }}
                                 className="overflow-hidden flex flex-col pl-4 border-l border-white/20 mt-1 space-y-2 py-2"
                               >
-                                <button onClick={() => handleCategorySelect(null, item.metal)} className="text-left text-sm font-secondary tracking-wider uppercase py-2 cursor-pointer bg-transparent border-none text-white/70 hover:text-white">All</button>
-                                {item.categories?.map((category) => category.children.length ? <div key={category.id} className="pt-2"><button onClick={() => handleCategorySelect(category, item.metal)} className="text-left text-base font-semibold tracking-wider uppercase py-2 cursor-pointer bg-transparent border-none text-white">{category.name}</button>{category.children.map((child) => <button key={child.id} onClick={() => handleCategorySelect({ ...child, parentId: category.id }, item.metal)} className="block w-full text-left text-sm font-secondary tracking-wider uppercase py-2 pl-5 cursor-pointer bg-transparent border-none text-white/75 hover:text-white">{child.name}</button>)}</div> : <button key={category.id} onClick={() => handleCategorySelect({ ...category, parentId: item.categoryId }, item.metal)} className="text-left text-base font-medium tracking-wider uppercase py-2 cursor-pointer bg-transparent border-none text-white/75 hover:text-white">{category.name}</button>)}
+                                <button onClick={() => handleCategorySelect(null, item.metal)} className="font-primary text-left text-base tracking-wider uppercase py-2 cursor-pointer bg-transparent border-none text-white/70 hover:text-white">All</button>
+                                {item.categories?.map((category) => category.children.length ? <div key={category.id} className="pt-2"><button onClick={() => handleCategorySelect(category, item.metal)} className="font-primary text-left text-base tracking-wider uppercase py-2 cursor-pointer bg-transparent border-none text-white">{category.name}</button>{category.children.map((child) => <button key={child.id} onClick={() => handleCategorySelect({ ...child, parentId: category.id }, item.metal)} className="font-primary block w-full text-left text-base tracking-wider uppercase py-2 pl-5 cursor-pointer bg-transparent border-none text-white/75 hover:text-white">{child.name}</button>)}</div> : <button key={category.id} onClick={() => handleCategorySelect({ ...category, parentId: item.categoryId }, item.metal)} className="font-primary text-left text-base tracking-wider uppercase py-2 cursor-pointer bg-transparent border-none text-white/75 hover:text-white">{category.name}</button>)}
                               </motion.div>
                             )}
                           </AnimatePresence>

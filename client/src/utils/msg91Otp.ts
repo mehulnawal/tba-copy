@@ -11,7 +11,7 @@ type Failure = (error: unknown) => void;
 
 declare global {
   interface Window {
-    initSendOTP?: (configuration: { widgetId: string; tokenAuth: string; identifier: string; exposeMethods: boolean; captchaRenderId: string }) => void;
+    initSendOTP?: (configuration: { widgetId: string; tokenAuth: string; identifier: string; exposeMethods: boolean; captchaRenderId: string; success: Success; failure: Failure }) => void;
     sendOtp?: (identifier: string, success: Success, failure: Failure) => void;
     retryOtp?: (channelValue: string | null, success: Success, failure: Failure, reqId?: string) => void;
     verifyOtp?: (otpValue: number, success: Success, failure: Failure, reqId?: string) => void;
@@ -54,7 +54,7 @@ const loadScript = async () => {
 const initialise = async (identifier = activeIdentifier) => {
   await loadScript();
   activeIdentifier = identifier || activeIdentifier;
-  window.initSendOTP!({ widgetId: WIDGET_ID, tokenAuth: TOKEN_AUTH, identifier: activeIdentifier, exposeMethods: true, captchaRenderId: "" });
+  window.initSendOTP!({ widgetId: WIDGET_ID, tokenAuth: TOKEN_AUTH, identifier: activeIdentifier, exposeMethods: true, captchaRenderId: "", success: () => undefined, failure: () => undefined });
   await waitFor(() => Boolean(window.sendOtp && window.verifyOtp && window.retryOtp));
 };
 
