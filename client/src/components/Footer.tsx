@@ -93,7 +93,7 @@ export default function Footer({ onCategoryChange: _onCategoryChange }: { onCate
           <ul className="flex flex-col gap-4 font-secondary text-xs ">
             <li className="flex gap-3 items-start">
               <Phone size={14} className="text-[var(--color-cream)] shrink-0 mt-0.5" />
-              <a href="tel:+919999999999" className="hover:text-[var(--color-cream)] transition-colors">+918160797411</a>
+              <a href="tel:+918160797411" className="hover:text-[var(--color-cream)] transition-colors">+918160797411</a>
             </li>
             <li className="flex gap-3 items-start">
               <Mail size={14} className="text-[var(--color-cream)] shrink-0 mt-0.5" />
