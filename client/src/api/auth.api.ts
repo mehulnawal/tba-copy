@@ -33,6 +33,13 @@ export const authApi = {
       body: JSON.stringify(payload),
     }),
 
+
+  otpLogin: (mobile: string, accessToken: string) =>
+    apiRequest<AuthUser>("/auth/otp", {
+      method: "POST",
+      body: JSON.stringify({ mobile, accessToken }),
+    }),
+
   logout: () => apiRequest<null>("/auth/logout", { method: "POST" }),
 
   refresh: () => apiRequest<AuthUser>("/auth/refresh", { method: "POST" }),

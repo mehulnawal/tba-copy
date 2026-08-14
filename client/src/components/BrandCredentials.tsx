@@ -54,12 +54,12 @@ export default function BrandPromise() {
                         <div className="w-12 h-[1px] bg-[var(--color-cream)] mt-4" />
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 max-w-5xl mx-auto">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
 
                         {/* Card 1 */}
                         <div className="bg-[var(--color-white)] rounded-lg p-8 border border-[var(--color-border-subtle)] shadow-xs flex flex-col gap-4 reveal-section">
                             <Handshake size={36} className="text-[var(--color-teal)] shrink-0" />
-                            <h3 className="font-primary text-xl font-medium text-[var(--color-teal)]">
+                            <h3 className="font-primary text-xl font-bold text-[var(--color-teal)]">
                                 Direct-to-Consumer Pricing
                             </h3>
                             <p className="font-secondary text-sm text-[var(--color-text-secondary)] leading-relaxed">
@@ -70,7 +70,7 @@ export default function BrandPromise() {
                         {/* Card 1 */}
                         <div className="bg-[var(--color-white)] rounded-lg p-8 border border-[var(--color-border-subtle)] shadow-xs flex flex-col gap-4 reveal-section">
                             <Gem size={36} className="text-[var(--color-teal)] shrink-0" />
-                            <h3 className="font-primary text-xl font-medium text-[var(--color-teal)]">
+                            <h3 className="font-primary text-xl font-bold text-[var(--color-teal)]">
                                 Highest Clarity &
                                 EF/VVS-VS Ideal cut diamonds
                             </h3>
@@ -83,7 +83,7 @@ export default function BrandPromise() {
                         {/* Card 2 */}
                         <div className="bg-[var(--color-white)] rounded-lg p-8 border border-[var(--color-border-subtle)] shadow-xs flex flex-col gap-4 reveal-section">
                             <Award size={36} className="text-[var(--color-teal)] shrink-0" />
-                            <h3 className="font-primary text-xl font-medium text-[var(--color-teal)]">
+                            <h3 className="font-primary text-xl font-bold text-[var(--color-teal)]">
                                 Bespoke Customization
                             </h3>
                             <p className="font-secondary text-sm text-[var(--color-text-secondary)] leading-relaxed">
@@ -94,7 +94,7 @@ export default function BrandPromise() {
                         {/* Card 3 */}
                         <div className="bg-[var(--color-white)] rounded-lg p-8 border border-[var(--color-border-subtle)] shadow-xs flex flex-col gap-4 reveal-section">
                             <Hammer size={36} className="text-[var(--color-teal)] shrink-0" />
-                            <h3 className="font-primary text-xl font-medium text-[var(--color-teal)]">
+                            <h3 className="font-primary text-xl font-bold text-[var(--color-teal)]">
                                 Master Craftsmanship
                             </h3>
                             <p className="font-secondary text-sm text-[var(--color-text-secondary)] leading-relaxed">

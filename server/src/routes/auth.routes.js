@@ -2,6 +2,7 @@ const express = require("express");
 const {
   register,
   login,
+  otpLogin,
   logout,
   refreshToken,
   getMe,
@@ -17,6 +18,7 @@ const router = express.Router();
 
 router.post("/register", authLimiter, register);
 router.post("/login", authLimiter, login);
+router.post("/otp", authLimiter, otpLogin);
 router.post("/logout", logout);
 router.post("/refresh", refreshToken);
 router.get("/me", authenticate, getMe);

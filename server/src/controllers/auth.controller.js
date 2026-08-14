@@ -17,6 +17,7 @@ const { sendEmail } = require("../utils/emailUtils");
 const { verifyGoogleAccessToken } = require("../utils/oauthUtils");
 const { verifyFacebookToken } = require("../utils/facebookOAuthUtils");
 const { ROLES } = require("../constants/roles");
+const { verifyMsg91AccessToken } = require("../utils/msg91");
 
 const setAuthCookies = (res, userId) => {
   const accessToken = generateAccessToken(userId);
@@ -105,6 +106,18 @@ const login = asyncHandler(async (req, res) => {
     );
 });
 
+const otpLogin = asyncHandler(async (req, res) => {
+  const mobile = String(req.body?.mobile || "").replace(/\D/g, "").replace(/^91(?=\d{10}$)/, "");
+  const accessToken = String(req.body?.accessToken || "");
+  if (!/^\d{10}$/.test(mobile)) throw new ApiError(400, "A valid 10-digit Indian mobile number is required");
+  await verifyMsg91AccessToken(accessToken);
+  const phoneVariants = [mobile, `91${mobile}`, `+91${mobile}`];
+  let user = await User.findOne({ phone: { $in: phoneVariants } });
+  if (!user) user = await User.create({ name: "TBA Customer", email: `otp-${mobile}@tba.local`, password: crypto.randomBytes(32).toString("hex"), phone: `91${mobile}`, role: ROLES.USER });
+  if (user.isBlocked) throw new ApiError(403, "Your account has been blocked");
+  setAuthCookies(res, user._id);
+  res.status(200).json(new ApiResponse(200, formatUserResponse(user), "OTP login successful"));
+});
 const logout = asyncHandler(async (req, res) => {
   clearAuthCookies(res);
   res.status(200).json(new ApiResponse(200, null, "Logged out successfully"));
@@ -343,6 +356,7 @@ const facebookLogin = asyncHandler(async (req, res) => {
 module.exports = {
   register,
   login,
+  otpLogin,
   logout,
   refreshToken,
   getMe,

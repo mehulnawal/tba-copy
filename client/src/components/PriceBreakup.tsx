@@ -27,9 +27,9 @@ export default function PriceBreakup({ product, price, b2b = false, className = 
       <table className={`w-full text-left text-xs${fixedColumns ? " table-fixed" : ""}`}>
         {fixedColumns && (columnCount === 3 ? <colgroup><col className="w-1/3" /><col className="w-1/3" /><col className="w-1/3" /></colgroup> : <colgroup><col className="w-2/3" /><col className="w-1/3" /></colgroup>)}
         <tbody>
-          <tr className="border-b border-[var(--color-border)]"><td className="py-2" colSpan={fixedColumns ? columnCount - 1 : 1}><h3 className="font-semibold text-[14px] text-[var(--color-teal)]">Subtotal</h3></td><td className={fixedColumns ? "whitespace-nowrap py-2 text-right tabular-nums" : "py-2 text-right"}>{formatINR(number(price.totalCost))}</td></tr>
-          {showGst && <tr className="border-b border-[var(--color-border)]"><td className="py-2" colSpan={fixedColumns ? columnCount - 1 : 1}><h3 className="font-semibold text-[14px] text-[var(--color-teal)]">GST (3%)</h3></td><td className={fixedColumns ? "whitespace-nowrap py-2 text-right tabular-nums" : "py-2 text-right"}>{formatINR(number(price.gst))}</td></tr>}
-          <tr className="border-b-2 border-[var(--color-teal)] bg-[var(--color-cream)] font-bold text-[var(--color-teal)]"><td className="py-3 px-1" colSpan={fixedColumns ? columnCount - 1 : 1}>Total Amount</td><td className={fixedColumns ? "whitespace-nowrap py-3 px-1 text-right tabular-nums" : "py-3 px-1 text-right"}>{formatINR(number(price.finalPrice))}</td></tr>
+          <tr className="border-b border-[var(--color-border)]"><td className="py-2" colSpan={fixedColumns ? columnCount - 1 : 1}><h3 className="font-bold [-webkit-text-stroke:0.2px_currentColor] text-[14px] text-[var(--color-teal)]">Subtotal</h3></td><td className={fixedColumns ? "whitespace-nowrap py-2 text-right tabular-nums" : "py-2 text-right"}>{formatINR(number(price.totalCost))}</td></tr>
+          {showGst && <tr className="border-b border-[var(--color-border)]"><td className="py-2" colSpan={fixedColumns ? columnCount - 1 : 1}><h3 className="font-bold [-webkit-text-stroke:0.2px_currentColor] text-[14px] text-[var(--color-teal)]">GST (3%)</h3></td><td className={fixedColumns ? "whitespace-nowrap py-2 text-right tabular-nums" : "py-2 text-right"}>{formatINR(number(price.gst))}</td></tr>}
+          <tr className="border-b-2 border-[var(--color-teal)] bg-[var(--color-cream)] font-bold [-webkit-text-stroke:0.2px_currentColor] text-[var(--color-teal)]"><td className="py-3 px-1" colSpan={fixedColumns ? columnCount - 1 : 1}>Total Amount</td><td className={fixedColumns ? "whitespace-nowrap py-3 px-1 text-right tabular-nums" : "py-3 px-1 text-right"}>{formatINR(number(price.finalPrice))}</td></tr>
         </tbody>
       </table>
     </div>
@@ -39,24 +39,24 @@ export default function PriceBreakup({ product, price, b2b = false, className = 
 
   const silverBreakup = <>
     <div>
-      <h3 className="mb-2 font-bold text-[var(--color-teal)]">Fine Silver</h3>
+      <h3 className="mb-2 font-bold [-webkit-text-stroke:0.2px_currentColor] text-[var(--color-teal)]">Fine Silver</h3>
       <div className="overflow-x-auto">
         <table className="w-full table-fixed text-left text-xs">
           <colgroup><col className="w-1/3" /><col className="w-1/3" /><col className="w-1/3" /></colgroup>
-          <thead className="border-t border-[var(--color-border)] text-[var(--color-text-muted)]"><tr><th className="py-2 font-semibold">Component</th><th className="whitespace-nowrap py-2 text-right font-semibold">Weight</th><th className="whitespace-nowrap py-2 text-right font-semibold">Price</th></tr></thead>
+          <thead className="border-t border-[var(--color-border)] text-[var(--color-text-muted)]"><tr><th className="py-2 font-bold [-webkit-text-stroke:0.2px_currentColor]">Component</th><th className="whitespace-nowrap py-2 text-right font-bold [-webkit-text-stroke:0.2px_currentColor]">Weight</th><th className="whitespace-nowrap py-2 text-right font-bold [-webkit-text-stroke:0.2px_currentColor]">Price</th></tr></thead>
           <tbody>
             <tr className="border-b border-[var(--color-border)]"><td className="py-2">Silver</td><td className="whitespace-nowrap py-2 text-right tabular-nums">{formatMeasurement(silverWeight)} g</td><td className="py-2" /></tr>
-            {showMaking && <tr className="border-b border-[var(--color-border)]"><td className="py-2">Making</td><td className="whitespace-nowrap py-2 text-right tabular-nums">{formatMeasurement(silverWeight)} g</td><td className="py-2" /></tr>}
+            {showMaking && <tr className="border-b border-[var(--color-border)]"><td className="py-2">Design and Craftsmanship</td><td className="whitespace-nowrap py-2 text-right tabular-nums">{formatMeasurement(silverWeight)} g</td><td className="py-2" /></tr>}
           </tbody>
         </table>
       </div>
     </div>
     {hasMoissanite && <div>
-      <h3 className="py-2 font-semibold text-[var(--color-teal)]">Moissanite</h3>
+      <h3 className="py-2 font-bold [-webkit-text-stroke:0.2px_currentColor] text-[var(--color-teal)]">Moissanite</h3>
       <div className="overflow-x-auto">
         <table className="w-full table-fixed text-left text-xs">
           <colgroup><col className="w-1/3" /><col className="w-1/3" /><col className="w-1/3" /></colgroup>
-          <thead className="border-t border-[var(--color-border)] text-[var(--color-text-muted)]"><tr><th className="py-2 font-semibold">Component</th><th className="whitespace-nowrap py-2 text-right font-semibold">Carat</th><th className="whitespace-nowrap py-2 text-right font-semibold">Price</th></tr></thead>
+          <thead className="border-t border-[var(--color-border)] text-[var(--color-text-muted)]"><tr><th className="py-2 font-bold [-webkit-text-stroke:0.2px_currentColor]">Component</th><th className="whitespace-nowrap py-2 text-right font-bold [-webkit-text-stroke:0.2px_currentColor]">Carat</th><th className="whitespace-nowrap py-2 text-right font-bold [-webkit-text-stroke:0.2px_currentColor]">Price</th></tr></thead>
           <tbody><tr className="border-b border-[var(--color-border)]"><td className="py-2">Moissanite</td><td className="whitespace-nowrap py-2 text-right tabular-nums">{formatMeasurement(number(price.totalMoissaniteWeight ?? product.moissaniteCaratWeight))} ct</td><td className="py-2" /></tr></tbody>
         </table>
       </div>
@@ -66,23 +66,23 @@ export default function PriceBreakup({ product, price, b2b = false, className = 
 
   const goldBreakup = <>
     <div>
-      <h3 className="mb-2 font-bold text-[var(--color-teal)]">{metalLabel}</h3>
+      <h3 className="mb-2 font-bold [-webkit-text-stroke:0.2px_currentColor] text-[var(--color-teal)]">{metalLabel}</h3>
       <div className="overflow-x-auto">
         <table className="w-full table-fixed text-left text-xs">
           <colgroup><col className="w-1/3" /><col className="w-1/5" /><col className="w-1/5" /><col className="w-[27%]" /></colgroup>
-          <thead className="border-t border-[var(--color-border)] text-[var(--color-text-muted)]"><tr><th className="py-2 font-semibold">Component</th><th className="py-2 font-semibold">Rate/Gm</th><th className="whitespace-nowrap py-2 text-right font-semibold">Weight</th><th className="whitespace-nowrap py-2 text-right font-semibold">Price</th></tr></thead>
+          <thead className="border-t border-[var(--color-border)] text-[var(--color-text-muted)]"><tr><th className="py-2 font-bold [-webkit-text-stroke:0.2px_currentColor]">Component</th><th className="py-2 font-bold [-webkit-text-stroke:0.2px_currentColor]">Rate/Gm</th><th className="whitespace-nowrap py-2 text-right font-bold [-webkit-text-stroke:0.2px_currentColor]">Weight</th><th className="whitespace-nowrap py-2 text-right font-bold [-webkit-text-stroke:0.2px_currentColor]">Price</th></tr></thead>
           <tbody>
             <tr className="border-b border-[var(--color-border)]"><td className="py-2">{metalLabel}</td><td className="py-2">{formatINR(number(price.goldRate))}</td><td className="whitespace-nowrap py-2 text-right tabular-nums">{formatMeasurement(number(price.grossWeight))} g</td><td className="whitespace-nowrap py-2 text-right tabular-nums">{formatINR(metalValue)}</td></tr>
-            {showMaking && <tr className="border-b border-[var(--color-border)]"><td className="py-2">Making</td><td className="py-2">{formatINR(number(price.makingRatePerGram))}</td><td className="whitespace-nowrap py-2 text-right tabular-nums">{formatMeasurement(number(price.netWeight ?? price.grossWeight))} g</td><td className="whitespace-nowrap py-2 text-right tabular-nums">{formatINR(makingValue)}</td></tr>}
+            {showMaking && <tr className="border-b border-[var(--color-border)]"><td className="py-2">Design and Craftsmanship</td><td className="py-2">{formatINR(number(price.makingRatePerGram))}</td><td className="whitespace-nowrap py-2 text-right tabular-nums">{formatMeasurement(number(price.netWeight ?? price.grossWeight))} g</td><td className="whitespace-nowrap py-2 text-right tabular-nums">{formatINR(makingValue)}</td></tr>}
           </tbody>
         </table>
       </div>
     </div>
     {stoneEntries.length > 0 && <div>
-      <h3 className="py-2 font-semibold text-[var(--color-teal)]">{(product.diamonds || []).length > 0 ? `Lab-Grown Diamonds${Number(product.totalNumberOfDiamonds || 0) > 0 ? ` (Total diamonds - ${product.totalNumberOfDiamonds})` : ""}` : "Moissanite"}</h3>
+      <h3 className="py-2 font-bold [-webkit-text-stroke:0.2px_currentColor] text-[var(--color-teal)]">{(product.diamonds || []).length > 0 ? `Lab-Grown Diamonds${Number(product.totalNumberOfDiamonds || 0) > 0 ? ` (Total diamonds - ${product.totalNumberOfDiamonds})` : ""}` : "Moissanite"}</h3>
       <div className="overflow-x-auto">
-        <table className="w-full table-fixed text-left text-xs">
-          <colgroup><col className="w-[30%]" /><col className="w-[22%]" /><col className="w-[14%]" /><col className="w-[17%]" /><col className="w-[17%]" /></colgroup><thead className="border-t border-[var(--color-border)] text-[var(--color-text-muted)]"><tr><th className="py-2 font-semibold">Component</th><th className="py-2 font-semibold">Colour/Clarity</th><th className="py-2 font-semibold">Ct</th><th className="py-2 text-right font-semibold">Rate/Ct</th><th className="py-2 text-right font-semibold">Price</th></tr></thead>
+        <table className="w-full min-w-[520px] table-fixed text-left text-xs">
+          <colgroup><col className="w-[30%]" /><col className="w-[22%]" /><col className="w-[14%]" /><col className="w-[17%]" /><col className="w-[17%]" /></colgroup><thead className="border-t border-[var(--color-border)] text-[var(--color-text-muted)]"><tr><th className="py-2 font-bold [-webkit-text-stroke:0.2px_currentColor]">Component</th><th className="py-2 font-bold [-webkit-text-stroke:0.2px_currentColor]">Colour/Clarity</th><th className="py-2 font-bold [-webkit-text-stroke:0.2px_currentColor]">Ct</th><th className="py-2 text-right font-bold [-webkit-text-stroke:0.2px_currentColor]">Rate/Ct</th><th className="py-2 text-right font-bold [-webkit-text-stroke:0.2px_currentColor]">Price</th></tr></thead>
           <tbody>{stoneEntries.map(entry => <tr key={entry.key} className="border-b border-[var(--color-border)]"><td className="py-2">{entry.component}</td><td className="py-2">{entry.clarity}</td><td className="py-2">{formatMeasurement(entry.carat)}</td><td className="whitespace-nowrap py-2 text-right tabular-nums">{formatINR(entry.rate)}</td><td className="whitespace-nowrap py-2 text-right tabular-nums">{formatINR(entry.value)}</td></tr>)}</tbody>
         </table>
       </div>
@@ -91,7 +91,7 @@ export default function PriceBreakup({ product, price, b2b = false, className = 
   </>;
 
   return <section className={`rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-4 ${className}`}>
-    <div className="flex items-center justify-between border-b border-[var(--color-border)] pb-3"><h2 className="font-primary text-lg text-[var(--color-teal)]">Price Breakup</h2><button type="button" onClick={() => setOpen(value => !value)} className="text-xs font-semibold uppercase tracking-wide text-[var(--color-teal)] underline">{open ? "Hide details" : "View breakdown"}</button></div>
+    <div className="flex items-center justify-between border-b border-[var(--color-border)] pb-3"><h2 className="font-primary text-lg font-bold [-webkit-text-stroke:0.2px_currentColor] text-[var(--color-teal)]">Price Breakup</h2><button type="button" onClick={() => setOpen(value => !value)} className="text-xs font-semibold uppercase tracking-wide text-[var(--color-teal)] underline">{open ? "Hide details" : "View breakdown"}</button></div>
     {open && <div className="space-y-5 pt-4 text-sm">{isGold ? goldBreakup : silverBreakup}</div>}
   </section>;
 }

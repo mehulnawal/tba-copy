@@ -37,11 +37,11 @@ function getSwatchHexColor(colorName: string): string {
 }
 
 function ShippingHandling() {
-    return <section className="border-t border-stone-200 pt-4"><h3 className="text-base font-bold uppercase tracking-widest text-stone-700 lg:text-xs">Shipping &amp; Handling</h3><ul className="mt-3 list-disc space-y-1.5 pl-5 text-base leading-relaxed text-stone-600 lg:text-xs"><li>Free shipping perks on all orders within India</li><li>Avail your items within 15 business days</li><li>Inspect your package carefully before signing off</li><li>Package will be sealed and wrapped in bubble wrap, small box, or padded envelope</li></ul></section>;
+    return <section className="border-t border-stone-200 pt-4"><h3 className="text-base font-bold [-webkit-text-stroke:0.2px_currentColor] uppercase tracking-widest text-stone-700 lg:text-xs">Shipping &amp; Handling</h3><ul className="mt-3 list-disc space-y-1.5 pl-5 text-base leading-relaxed text-stone-600 lg:text-xs"><li>Free shipping perks on all orders within India</li><li>Avail your items within 15 business days</li><li>Inspect your package carefully before signing off</li><li>Package will be sealed and wrapped in bubble wrap, small box, or padded envelope</li></ul></section>;
 }
 function MobileAccordion({ title, children }: { title: string; children: React.ReactNode }) {
     const [open, setOpen] = useState(() => typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches);
-    return <section className="border border-stone-200 bg-white p-4"><button type="button" onClick={() => setOpen(value => !value)} className="flex w-full items-center justify-between text-left"><h3 className="text-base text-stone-700 lg:text-xs">{title}</h3><ChevronDown size={20} className={`transition-transform ${open ? "rotate-180" : ""}`} /></button>{open && <div className="mt-3">{children}</div>}</section>;
+    return <section className="border border-stone-200 bg-white p-4"><button type="button" onClick={() => setOpen(value => !value)} className="flex w-full items-center justify-between text-left"><h3 className="text-base font-bold [-webkit-text-stroke:0.2px_currentColor] text-stone-700 lg:text-xs">{title}</h3><ChevronDown size={20} className={`transition-transform ${open ? "rotate-180" : ""}`} /></button>{open && <div className="mt-3">{children}</div>}</section>;
 }
 
 function formatFinishLabel(colorName?: string): string {
@@ -331,7 +331,7 @@ const handleSimilarWishlistToggle = async (relatedProduct: Product) => {
                             <div className="hidden space-y-3 lg:block">
                                 <MobileAccordion title="Description"><p className="whitespace-pre-line text-base leading-relaxed text-stone-600 lg:text-xs">{productDescriptionContent}</p></MobileAccordion>
                                 {(product.certificates || []).length > 0 && <MobileAccordion title="Certificates of Authenticity"><div className="flex gap-3">{product.certificates?.map((certificate) => <div key={certificate._id} className="flex items-center gap-3 text-lg lg:text-sm"><img src={publicAssetUrl(certificate.logoUrl)} alt="" className="h-14 w-14 object-contain lg:h-10 lg:w-10" />{certificate.name}</div>)}</div><a href="/certificates/viewCertificate.pdf" target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex w-fit items-center rounded border border-[var(--color-teal)] px-3 py-2 text-xs font-semibold uppercase tracking-wider text-[var(--color-teal)] transition hover:bg-[var(--color-teal)] hover:!text-white">View PDF</a></MobileAccordion>}
-                                <MobileAccordion title="Shipping & Handling"><ul className="list-disc space-y-1.5 pl-5 text-base leading-relaxed text-stone-600 lg:text-xs"><li>Free shipping perks on all orders within India</li><li>Avail your items within 15 business days</li><li>Inspect your package carefully before signing off</li><li>Package will be sealed and wrapped in bubble wrap, small box, or padded envelope</li></ul></MobileAccordion><MobileAccordion title="Important Guide"><ol className="list-decimal space-y-1.5 pl-5 text-base leading-relaxed text-stone-600 lg:text-xs"><li>The prices are indicative of approximate gold rate, as there are daily fluctuations. Expect a call from Team Ivana once you place the order.</li><li>The price is also subject to the final diamond weight of +/- 5% on the basis of size selected.</li><li>Each piece is customized and made to order. Center solitaires can be set according to your preference.</li></ol></MobileAccordion>
+                                <MobileAccordion title="Shipping & Handling"><ul className="list-disc space-y-1.5 pl-5 text-base leading-relaxed text-stone-600 lg:text-xs"><li>Free shipping perks on all orders within India</li><li>Avail your items within 15 business days</li><li>Inspect your package carefully before signing off</li><li>Package will be sealed and wrapped in bubble wrap, small box, or padded envelope</li></ul></MobileAccordion><MobileAccordion title="Important Guide"><ol className="list-decimal space-y-1.5 pl-5 text-base leading-relaxed text-stone-600 lg:text-xs"><li>The prices are indicative of approximate gold rate, as there are daily fluctuations. Expect a call from Team TBA once you place the order.</li><li>The price is also subject to the final diamond weight of +/- 5% on the basis of size selected.</li><li>Each piece is customized and made to order. Center solitaires can be set according to your preference.</li></ol></MobileAccordion>
                             </div>
                         </div>
 
@@ -362,7 +362,7 @@ const handleSimilarWishlistToggle = async (relatedProduct: Product) => {
                             </div>
                             {/* Specs */}
                             <div className="order-4 rounded-lg border border-stone-200/80 bg-stone-50 p-4 space-y-3 lg:order-3">
-                                <h4 className="text-[11px] font-bold uppercase tracking-widest text-stone-700">
+                                <h4 className="text-[11px] font-bold [-webkit-text-stroke:0.2px_currentColor] uppercase tracking-widest text-stone-700">
                                     Weight Specifications
                                 </h4>
                                 <div className="grid grid-cols-2 gap-4 text-xs">
@@ -376,7 +376,7 @@ const handleSimilarWishlistToggle = async (relatedProduct: Product) => {
 
                             {/* Purity Selection */}
                             {isGold && <div className="order-6 space-y-2 lg:order-6">
-                                <label className="block text-xs uppercase tracking-widest font-semibold text-stone-600">
+                                <label className="block text-xs uppercase tracking-widest font-bold [-webkit-text-stroke:0.2px_currentColor] text-stone-600">
                                     Select Purity Standard: <span className="text-stone-900">{karat.toUpperCase()} Gold</span>
                                 </label>
                                 <div className="grid grid-cols-3 gap-3">
@@ -406,7 +406,7 @@ const handleSimilarWishlistToggle = async (relatedProduct: Product) => {
                             <div className="order-[10] lg:hidden"><MobileAccordion title="Shipping & Handling"><ul className="list-disc space-y-1.5 pl-5 text-base leading-relaxed text-stone-600"><li>Free shipping perks on all orders within India</li><li>Avail your items within 15 business days</li><li>Inspect your package carefully before signing off</li><li>Package will be sealed and wrapped in bubble wrap, small box, or padded envelope</li></ul></MobileAccordion><MobileAccordion title="Important Guide"><ol className="list-decimal space-y-1.5 pl-5 text-base leading-relaxed text-stone-600 lg:text-xs"><li>The prices are indicative of approximate gold rate, as there are daily fluctuations. Expect a call from Team Ivana once you place the order.</li><li>The price is also subject to the final diamond weight of +/- 5% on the basis of size selected.</li><li>Each piece is customized and made to order. Center solitaires can be set according to your preference.</li></ol></MobileAccordion></div>
 {/* Metal Finish Swatches with Proper White Color */}
                             <div className="order-5 space-y-2 lg:order-5">
-                                <label className="block text-xs uppercase tracking-widest font-semibold text-stone-600">
+                                <label className="block text-xs uppercase tracking-widest font-bold [-webkit-text-stroke:0.2px_currentColor] text-stone-600">
                                     Metal Finish: <span className="text-stone-900">{formatFinishLabel(color)}</span>
                                 </label>
                                 <div className="flex gap-3">
@@ -428,14 +428,14 @@ const handleSimilarWishlistToggle = async (relatedProduct: Product) => {
                                     ))}
                                 </div>
                                 {isRing && <div className="mt-5 space-y-2">
-                                    <label htmlFor="ring-size" className="block text-xs uppercase tracking-widest font-semibold text-stone-600">Ring Size</label>
+                                    <label htmlFor="ring-size" className="block text-xs uppercase tracking-widest font-bold [-webkit-text-stroke:0.2px_currentColor] text-stone-600">Ring Size</label>
                                     <select id="ring-size" value={size} onChange={(event) => setSize(event.target.value)} className="w-full rounded border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-800 focus:border-amber-800 focus:outline-none" aria-required="true">
                                         <option value="">Select size</option>
                                         {RING_SIZES.map((ringSize) => <option key={ringSize} value={ringSize}>{ringSize}</option>)}
                                     </select>
                                 </div>}
                                 {isBangle && <div className="mt-5 space-y-2">
-                                    <label htmlFor="bangle-size" className="block text-xs uppercase tracking-widest font-semibold text-stone-600">Bangle Size (inches)</label>
+                                    <label htmlFor="bangle-size" className="block text-xs uppercase tracking-widest font-bold [-webkit-text-stroke:0.2px_currentColor] text-stone-600">Bangle Size (inches)</label>
                                     <select id="bangle-size" value={size} onChange={(event) => setSize(event.target.value)} className="w-full rounded border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-800 focus:border-amber-800 focus:outline-none" aria-required="true">
                                         <option value="">Select size</option>
                                         {BANGLE_SIZES.map((bangleSize) => <option key={bangleSize} value={bangleSize}>{bangleSize}</option>)}

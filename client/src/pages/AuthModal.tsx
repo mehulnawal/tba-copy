@@ -6,6 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { authApi } from "../api/auth.api";
 import { ApiRequestError } from "../api/client";
+import { sendMsg91Otp, verifyMsg91Otp } from "../utils/msg91Otp";
 import logo from "../assets/logo/logo.png";
 
 interface LuxuryAuthModalProps {
@@ -31,6 +32,8 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
   const [phone, setPhone] = useState("");
   const [loginMethod, setLoginMethod] = useState<"email" | "otp">("email");
   const [otp, setOtp] = useState("");
+  const [otpRequestId, setOtpRequestId] = useState<string>();
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false); // Visibility state for password
 
@@ -67,6 +70,18 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
 
   if (!isOpen) return null;
 
+  const sendCustomerOtp = async () => {
+    const mobile = phone.replace(/\D/g, "").replace(/^91(?=\d{10}$)/, "");
+    if (!/^\d{10}$/.test(mobile)) { showToast("Enter a valid 10-digit Indian mobile number.", "error"); return; }
+    setIsSendingOtp(true);
+    try {
+      setOtpRequestId(await sendMsg91Otp(`91${mobile}`));
+      setOtp("");
+      showToast("OTP sent to your mobile number.", "success");
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "Unable to send OTP. Please try again.", "error");
+    } finally { setIsSendingOtp(false); }
+  };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -81,11 +96,16 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
 
       if (authMode === "login") {
         if (loginMethod === "otp") {
-          showToast(otp ? "OTP sign-in will be available soon." : "Enter your mobile number, then send an OTP.", "info");
-          return;
+          const mobile = phone.replace(/\D/g, "").replace(/^91(?=\d{10}$)/, "");
+          if (!/^\d{10}$/.test(mobile)) throw new Error("Enter a valid 10-digit Indian mobile number.");
+          if (!/^\d{6}$/.test(otp)) throw new Error("Enter the six-digit OTP.");
+          const accessToken = await verifyMsg91Otp(otp, otpRequestId);
+          setUser(await authApi.otpLogin(mobile, accessToken));
+          showToast("Signed in with OTP", "success");
+        } else {
+          await login(email, password);
+          showToast("Welcome back", "success");
         }
-        await login(email, password);
-        showToast("Welcome back", "success");
       } else {
         await register(name, email, password, phone);
         showToast("Account created successfully", "success");
@@ -319,7 +339,7 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
           {authMode === "login" && loginMethod === "otp" && (
             <>
               <div className="space-y-1.5"><label className="font-secondary text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] font-medium block">Mobile Number</label><div className="relative"><Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-muted)]" /><input type="tel" required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+91 98765 43210" className="w-full bg-[var(--color-bg-secondary)] border border-[var(--color-border)] py-2.5 pl-10 pr-4 font-secondary text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)]/50 focus:outline-none focus:border-[var(--color-teal)] transition-colors" /></div></div>
-              <div className="space-y-1.5"><div className="flex items-center justify-between"><label className="font-secondary text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] font-medium block">OTP</label><button type="button" onClick={() => showToast(phone ? "OTP sending will be available soon." : "Enter a mobile number first.", "info")} className="font-secondary text-[11px] text-[var(--color-teal)] hover:underline">Send OTP</button></div><input type="text" inputMode="numeric" value={otp} onChange={(e) => setOtp(e.target.value)} placeholder="Enter OTP" className="w-full bg-[var(--color-bg-secondary)] border border-[var(--color-border)] py-2.5 px-4 font-secondary text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)]/50 focus:outline-none focus:border-[var(--color-teal)] transition-colors" /></div>
+              <div className="space-y-1.5"><div className="flex items-center justify-between"><label className="font-secondary text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] font-medium block">OTP</label><button type="button" onClick={() => void sendCustomerOtp()} disabled={isSendingOtp} className="font-secondary text-[11px] text-[var(--color-teal)] hover:underline">{isSendingOtp ? "Sending..." : "Send OTP"}</button></div><input type="text" inputMode="numeric" value={otp} onChange={(e) => setOtp(e.target.value)} placeholder="Enter OTP" className="w-full bg-[var(--color-bg-secondary)] border border-[var(--color-border)] py-2.5 px-4 font-secondary text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)]/50 focus:outline-none focus:border-[var(--color-teal)] transition-colors" /></div>
             </>
           )}
           {authMode === "login" && loginMethod === "email" && (
