@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Product, PrimeHotspot, FAQ, Testimonial, Category } from "../types";
@@ -53,7 +53,7 @@ const TESTIMONIALS: Testimonial[] = [
         name: "Shivani Chandak",
         location: "Ahemdabad",
         rating: 4.5,
-        review: "Made Silvering & Diamond Bangles. My Mom loved it ♥",
+        review: "Made Silvering & Diamond Bangles. My Mom loved it â™¥",
         images: ["https://res.cloudinary.com/dkrchgmhx/image/upload/v1786538743/WhatsApp_Image_2026-08-06_at_4.37.36_PM-_1_cstupx.jpg", ""]
     },
     {
@@ -61,7 +61,7 @@ const TESTIMONIALS: Testimonial[] = [
         name: "Radika Somani",
         location: "Surat",
         rating: 5,
-        review: "Made Necklace for my wedding day. Goes perfect with the outfit 😀",
+        review: "Made Necklace for my wedding day. Goes perfect with the outfit ðŸ˜€",
         images: ["https://res.cloudinary.com/dkrchgmhx/image/upload/v1786538406/WhatsApp_Image_2026-08-06_at_4.37.37_PM_iyytgj.jpg", ""]
     },
     {
@@ -83,7 +83,7 @@ const FAQS: FAQ[] = [
     {
         id: "2",
         question: "Are Lab Grown Diamonds real?",
-        answer: "A diamond is categorized by its chemical structure and compositionÃ¢â‚¬â€not its origin. Both lab-grown and mined diamonds possess the exact same crystalline structure of pure carbon atoms, ensuring that they share the identical properties of genuine diamonds."
+        answer: "A diamond is categorized by its chemical structure and composition - not its origin. Both lab-grown and mined diamonds possess the exact same crystalline structure of pure carbon atoms, ensuring that they share the identical properties of genuine diamonds."
     },
     {
         id: "3",
@@ -383,6 +383,11 @@ export default function HomePage() {
                     </div>
                 </section>}
 
+                <div className="container flex justify-center py-6 md:py-8">
+                    <button type="button" onClick={() => navigate("/products")} className="bg-[var(--color-teal)] px-7 py-3 font-secondary text-xs font-semibold uppercase tracking-widest text-[var(--color-cream)] transition hover:opacity-90">
+                        Explore Collection
+                    </button>
+                </div>
                 {/* 3. Best Seller Showcase */}
                 {bestSellerProducts.length > 0 && <section className="reveal-section py-3 bg-[var(--color-bg)]" id="collection-grid">
                     <div className="container">
@@ -619,7 +624,7 @@ export default function HomePage() {
                                                         <h5 className="font-primary text-sm font-semibold text-[var(--color-teal)]">{item.name}</h5>
                                                         <span className="font-secondary text-[10px] text-[var(--color-text-muted)] block">{item.category}</span>
                                                         <div className="font-mono text-xs font-bold text-[var(--color-teal)] mt-1.5">
-                                                            Ã¢â€šÂ¹{item.price.toLocaleString("en-IN")}
+                                                            {"\u20B9"}{item.price.toLocaleString("en-IN")}
                                                         </div>
                                                     </div>
 

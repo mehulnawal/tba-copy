@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingBag, Trash2, Heart, ArrowRight, RefreshCw, Sparkles } from 'lucide-react';
@@ -219,10 +219,6 @@ export default function WishlistPage() {
         }
     };
 
-    const handleBrowseCollections = () => {
-        navigate('/products');
-    };
-
     const [activeCategory, setActiveCategory] = useState<string>("All");
     const [searchQuery, setSearchQuery] = useState("");
 
@@ -250,14 +246,6 @@ export default function WishlistPage() {
                         </p>
 
                         {/* Wishlist navigation control */}
-                        {wishlist.length === 0 && !isPageLoading && (
-                            <button
-                                onClick={handleBrowseCollections}
-                                className="mt-4 font-secondary text-[10px] tracking-widest uppercase text-[var(--color-teal)]/40 hover:text-[var(--color-teal)] transition-colors duration-200 underline underline-offset-4"
-                            >
-                                Browse Collections
-                            </button>
-                        )}
                     </header>
 
                     <AnimatePresence mode="wait">

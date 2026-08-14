@@ -26,12 +26,15 @@ const getDiamondPricing = async ({ productId, diamondCategoryRef, product } = {}
 // Resolve referenced diamond-entry rates at request time. Legacy entries with
 // no reference retain their stored rate until an admin assigns a master row.
 const hydrateLiveDiamondEntryRates = async (product) => {
-  const diamonds = Array.isArray(product?.diamonds) ? product.diamonds : [];
+  // Mongoose documents do not expose schema fields through object spread. Convert
+  // them first so rebuilding diamond entries never loses fields such as `metal`.
+  const rawProduct = product?.toObject ? product.toObject() : product;
+  const diamonds = Array.isArray(rawProduct?.diamonds) ? rawProduct.diamonds : [];
   const ids = [...new Set(diamonds.map((entry) => entry?.diamondCategoryRef).filter(Boolean).map(String))];
-  if (!ids.length) return product;
+  if (!ids.length) return rawProduct;
   const categories = await DiamondCategory.find({ _id: { $in: ids } }).select("b2bPrice b2cPrice").lean();
   const byId = new Map(categories.map((category) => [String(category._id), category]));
-  return { ...product, diamonds: diamonds.map((entry, index) => {
+  return { ...rawProduct, diamonds: diamonds.map((entry, index) => {
     if (!entry?.diamondCategoryRef) return entry;
     const category = byId.get(String(entry.diamondCategoryRef));
     if (!category) throw new Error(`Diamond ${index + 1} category not found`);

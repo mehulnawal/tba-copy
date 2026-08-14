@@ -1,5 +1,5 @@
 const WIDGET_ID = "36686a677545373837323335";
-const TOKEN_AUTH = "557959Tk608urZnweaGa7ec1adP1";
+const TOKEN_AUTH = "557959Tk608urZnwea6a7ec1adP1";
 const SCRIPT_ID = "msg91-otp-provider";
 const SCRIPT_SRC = "https://verify.msg91.com/otp-provider.js";
 const WIDGET_READY_POLL_MS = 200;
