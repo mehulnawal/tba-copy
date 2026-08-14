@@ -8,7 +8,7 @@ import Footer from "../components/Footer";
 import { useToast } from "../context/ToastContext";
 import { useAddToCart } from "../hooks/useCart";
 import { useAddToWishlist, useRemoveFromWishlist, useWishlist } from "../hooks/useWishlist";
-import { BANGLE_SIZES, RING_SIZES } from "../constants/product";
+import { BANGLE_ANA_SIZES, BANGLE_SIZES, RING_SIZES } from "../constants/product";
 import { getDefaultProductDescription } from "../constants/productDescriptions";
 import type { Product } from "../types";
 import { formatINR, formatMeasurement } from "../utils/currency";
@@ -95,7 +95,7 @@ export default function ProductDetails() {
                 setColor(defaultColors[0]);
                 setSize("");
 
-apiRequest<Review[]>(`/reviews/${p.SKU}`).then(setReviews).catch(() => { });
+                apiRequest<Review[]>(`/reviews/${p.SKU}`).then(setReviews).catch(() => { });
                 apiRequest<Product[]>(`/products/${p.metal || "gold"}`).then((products) => {
                     const currentId = p.id || p._id || p.SKU;
                     const sameSubCategory = productCategoryId(p.subCategory);
@@ -171,6 +171,7 @@ apiRequest<Review[]>(`/reviews/${p.SKU}`).then(setReviews).catch(() => { });
         }).toString()}`
         : mainCategoryPath;
     const isRing = [categoryName(product.mainCategory), categoryName(product.subCategory)].some((name) => /\brings?\b/i.test(name));
+    const isBracelet = !isRing && [categoryName(product.mainCategory), categoryName(product.subCategory)].some((name) => /\bbracelets?\b/i.test(name));
     const isBangle = !isRing && [categoryName(product.mainCategory), categoryName(product.subCategory)].some((name) => /\bbangles?\b/i.test(name));
     const mediaList = [...(product.images || []).filter((image) => Boolean(image?.url)).map((image) => ({ type: "image" as const, url: image.url })), ...(product.videoLink ? [{ type: "video" as const, url: product.videoLink }] : [])];
     const productImage = mediaList[activeMediaIndex]?.url;
@@ -224,11 +225,11 @@ apiRequest<Review[]>(`/reviews/${p.SKU}`).then(setReviews).catch(() => { });
         } catch (err: unknown) { showToast(err instanceof Error ? err.message : "Could not update wishlist.", "error"); }
     };
     const handleAddToCart = async () => {
-        if ((isRing || isBangle) && !size) { showToast(`Select a ${isBangle ? "bangle" : "ring"} size before adding this product.`, "error"); return; }
+        if ((isRing || isBracelet || isBangle) && !size) { showToast(`Select a ${isBangle ? "bangle" : isBracelet ? "bracelet" : "ring"} size before adding this product.`, "error"); return; }
         if (!isAuthenticated) { setPendingAction("cart"); setIsAuthOpen(true); return; }
         await addProductToCart();
     };
-const handleSimilarWishlistToggle = async (relatedProduct: Product) => {
+    const handleSimilarWishlistToggle = async (relatedProduct: Product) => {
         if (!isAuthenticated) { setIsAuthOpen(true); return; }
         const relatedKarat = relatedProduct.prices?.find((price) => price.karat === "14kt")?.karat || relatedProduct.prices?.[0]?.karat || "14kt";
         try {
@@ -404,7 +405,7 @@ const handleSimilarWishlistToggle = async (relatedProduct: Product) => {
                                 </div>)}</div>
                             </MobileAccordion></div>}
                             <div className="order-[10] lg:hidden"><MobileAccordion title="Shipping & Handling"><ul className="list-disc space-y-1.5 pl-5 text-base leading-relaxed text-stone-600"><li>Free shipping perks on all orders within India</li><li>Avail your items within 15 business days</li><li>Inspect your package carefully before signing off</li><li>Package will be sealed and wrapped in bubble wrap, small box, or padded envelope</li></ul></MobileAccordion><MobileAccordion title="Important Guide"><ol className="list-decimal space-y-1.5 pl-5 text-base leading-relaxed text-stone-600 lg:text-xs"><li>The prices are indicative of approximate gold rate, as there are daily fluctuations. Expect a call from Team Ivana once you place the order.</li><li>The price is also subject to the final diamond weight of +/- 5% on the basis of size selected.</li><li>Each piece is customized and made to order. Center solitaires can be set according to your preference.</li></ol></MobileAccordion></div>
-{/* Metal Finish Swatches with Proper White Color */}
+                            {/* Metal Finish Swatches with Proper White Color */}
                             <div className="order-5 space-y-2 lg:order-5">
                                 <label className="block text-xs uppercase tracking-widest font-bold [-webkit-text-stroke:0.2px_currentColor] text-stone-600">
                                     Metal Finish: <span className="text-stone-900">{formatFinishLabel(color)}</span>
@@ -434,15 +435,23 @@ const handleSimilarWishlistToggle = async (relatedProduct: Product) => {
                                         {RING_SIZES.map((ringSize) => <option key={ringSize} value={ringSize}>{ringSize}</option>)}
                                     </select>
                                 </div>}
-                                {isBangle && <div className="mt-5 space-y-2">
-                                    <label htmlFor="bangle-size" className="block text-xs uppercase tracking-widest font-bold [-webkit-text-stroke:0.2px_currentColor] text-stone-600">Bangle Size (inches)</label>
-                                    <select id="bangle-size" value={size} onChange={(event) => setSize(event.target.value)} className="w-full rounded border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-800 focus:border-amber-800 focus:outline-none" aria-required="true">
+                                {isBracelet && <div className="mt-5 space-y-2">
+                                    <label htmlFor="bracelet-size" className="block text-xs uppercase tracking-widest font-bold [-webkit-text-stroke:0.2px_currentColor] text-stone-600">Bracelet Size (inches)</label>
+                                    <select id="bracelet-size" value={size} onChange={(event) => setSize(event.target.value)} className="w-full rounded border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-800 focus:border-amber-800 focus:outline-none" aria-required="true">
                                         <option value="">Select size</option>
                                         {BANGLE_SIZES.map((bangleSize) => <option key={bangleSize} value={bangleSize}>{bangleSize}</option>)}
                                     </select>
-                                </div>}                            </div>
+                                </div>}
+                                {isBangle && <div className="mt-5 space-y-2">
+                                    <label htmlFor="bangle-ana-size" className="block text-xs uppercase tracking-widest font-bold [-webkit-text-stroke:0.2px_currentColor] text-stone-600">Bangle (Ana)</label>
+                                    <select id="bangle-ana-size" value={size} onChange={(event) => setSize(event.target.value)} className="w-full rounded border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-800 focus:border-amber-800 focus:outline-none" aria-required="true">
+                                        <option value="">Select size</option>
+                                        {BANGLE_ANA_SIZES.map((bangleSize) => <option key={bangleSize} value={bangleSize}>{bangleSize}</option>)}
+                                    </select>
+                                </div>}
+                            </div>
 
-                                                        {/* CTA Buttons */}
+                            {/* CTA Buttons */}
                             <div className="order-[11] flex gap-4 pt-2 lg:order-11">
                                 <button
                                     onClick={handleAddToCart}
