@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { X, Mail, Lock, User, Phone, ArrowRight, Eye, EyeOff } from "lucide-react"; // Imported Eye and EyeOff icons
 import { useLocation, useNavigate } from "react-router-dom";
@@ -6,7 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { authApi } from "../api/auth.api";
 import { ApiRequestError } from "../api/client";
-import { sendMsg91Otp, verifyMsg91Otp } from "../utils/msg91Otp";
+import { retryMsg91Otp, sendMsg91Otp, verifyMsg91Otp } from "../utils/msg91Otp";
 import logo from "../assets/logo/logo.png";
 
 interface LuxuryAuthModalProps {
@@ -16,6 +16,8 @@ interface LuxuryAuthModalProps {
 }
 
 type AuthMode = "login" | "register" | "forgot";
+const OTP_LENGTH = 6;
+const RESEND_DELAY_SECONDS = 20;
 
 export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalProps) {
   const navigate = useNavigate();
@@ -34,6 +36,8 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
   const [otp, setOtp] = useState("");
   const [otpRequestId, setOtpRequestId] = useState<string>();
   const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [resendSeconds, setResendSeconds] = useState(0);
+  const otpRefs = useRef<Array<HTMLInputElement | null>>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false); // Visibility state for password
 
@@ -41,6 +45,11 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
   useEffect(() => {
     setShowPassword(false);
   }, [authMode]);
+  useEffect(() => {
+    if (resendSeconds <= 0) return;
+    const timer = window.setTimeout(() => setResendSeconds((seconds) => seconds - 1), 1_000);
+    return () => window.clearTimeout(timer);
+  }, [resendSeconds]);
 
   useEffect(() => {
     const loadScript = (id: string, src: string) => {
@@ -77,10 +86,32 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
     try {
       setOtpRequestId(await sendMsg91Otp(`91${mobile}`));
       setOtp("");
+      setResendSeconds(RESEND_DELAY_SECONDS);
       showToast("OTP sent to your mobile number.", "success");
     } catch (error) {
       showToast(error instanceof Error ? error.message : "Unable to send OTP. Please try again.", "error");
     } finally { setIsSendingOtp(false); }
+  };
+  const resendCustomerOtp = async () => {
+    if (resendSeconds > 0) return;
+    setIsSendingOtp(true);
+    try {
+      setOtpRequestId(await retryMsg91Otp(otpRequestId));
+      setOtp("");
+      setResendSeconds(RESEND_DELAY_SECONDS);
+      showToast("A new OTP has been sent.", "success");
+      otpRefs.current[0]?.focus();
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "Unable to resend OTP. Please try again.", "error");
+    } finally { setIsSendingOtp(false); }
+  };
+
+  const updateOtp = (index: number, value: string) => {
+    const digit = value.replace(/\D/g, "").slice(-1);
+    const nextOtp = Array.from({ length: OTP_LENGTH }, (_, digitIndex) => otp[digitIndex] || "");
+    nextOtp[index] = digit;
+    setOtp(nextOtp.join(""));
+    if (digit && index < OTP_LENGTH - 1) otpRefs.current[index + 1]?.focus();
   };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -339,7 +370,7 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
           {authMode === "login" && loginMethod === "otp" && (
             <>
               <div className="space-y-1.5"><label className="font-secondary text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] font-medium block">Mobile Number</label><div className="relative"><Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-muted)]" /><input type="tel" required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+91 98765 43210" className="w-full bg-[var(--color-bg-secondary)] border border-[var(--color-border)] py-2.5 pl-10 pr-4 font-secondary text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)]/50 focus:outline-none focus:border-[var(--color-teal)] transition-colors" /></div></div>
-              <div className="space-y-1.5"><div className="flex items-center justify-between"><label className="font-secondary text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] font-medium block">OTP</label><button type="button" onClick={() => void sendCustomerOtp()} disabled={isSendingOtp} className="font-secondary text-[11px] text-[var(--color-teal)] hover:underline">{isSendingOtp ? "Sending..." : "Send OTP"}</button></div><input type="text" inputMode="numeric" value={otp} onChange={(e) => setOtp(e.target.value)} placeholder="Enter OTP" className="w-full bg-[var(--color-bg-secondary)] border border-[var(--color-border)] py-2.5 px-4 font-secondary text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)]/50 focus:outline-none focus:border-[var(--color-teal)] transition-colors" /></div>
+              <div className="space-y-1.5"><div className="flex items-center justify-between"><label className="font-secondary text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] font-medium block">OTP</label><button type="button" onClick={() => void sendCustomerOtp()} disabled={isSendingOtp} className="font-secondary text-[11px] text-[var(--color-teal)] hover:underline">{isSendingOtp ? "Sending..." : "Send OTP"}</button></div><div className="grid w-full grid-cols-6 gap-1.5 sm:gap-2">{Array.from({ length: OTP_LENGTH }, (_, index) => <input key={index} ref={(element) => { otpRefs.current[index] = element; }} value={otp[index] || ""} onChange={(event) => updateOtp(index, event.target.value)} onKeyDown={(event) => { if (event.key === "Backspace" && !otp[index] && index > 0) otpRefs.current[index - 1]?.focus(); }} className="h-12 w-full min-w-0 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-center font-secondary text-lg font-semibold text-[var(--color-text)] focus:outline-none focus:border-[var(--color-teal)] transition-colors" inputMode="numeric" autoComplete={index === 0 ? "one-time-code" : "off"} maxLength={1} aria-label={`OTP digit ${index + 1}`} />)}</div><button type="button" onClick={() => void resendCustomerOtp()} disabled={isSendingOtp || resendSeconds > 0} className="font-secondary text-[11px] text-[var(--color-teal)] hover:underline disabled:opacity-60">{isSendingOtp ? "Sending..." : resendSeconds > 0 ? `Resend OTP in 0:${String(resendSeconds).padStart(2, "0")}` : "Resend OTP"}</button></div>
             </>
           )}
           {authMode === "login" && loginMethod === "email" && (

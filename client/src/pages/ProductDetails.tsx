@@ -300,7 +300,7 @@ export default function ProductDetails() {
                                             className={`w-20 h-20 aspect-square border rounded transition bg-white overflow-hidden ${idx === activeMediaIndex ? "border-amber-800 ring-1 ring-amber-800" : "border-stone-200 opacity-70"
                                                 }`}
                                         >
-                                            {media.type === "video" ? <video src={media.url} muted className="w-full h-full object-cover" /> : <img src={media.url} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />}
+                                            {media.type === "video" ? <video src={media.url} autoPlay muted loop playsInline className="w-full h-full object-cover" /> : <img src={media.url} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />}
                                         </button>
                                     ))}
                                 </div>
@@ -312,7 +312,7 @@ export default function ProductDetails() {
                                         onMouseMove={handleMouseMoveZoom}
                                         onMouseEnter={() => setIsHoveringMainImage(true)}
                                         onMouseLeave={() => setIsHoveringMainImage(false)}
-                                    >                                    {mediaList[activeMediaIndex]?.type === "video" ? <video controls className="w-full h-full object-contain" src={mediaList[activeMediaIndex]?.url} /> : <img src={detailImage(productImage)} alt={product.title || "Product image"} className={`w-full h-full object-cover transition-opacity duration-200 ${isHoveringMainImage ? "opacity-0" : "opacity-100"}`} />}{mediaList[activeMediaIndex]?.type !== "video" && isHoveringMainImage && (
+                                    >                                    {mediaList[activeMediaIndex]?.type === "video" ? <video autoPlay muted loop playsInline controls className="w-full h-full object-contain" src={mediaList[activeMediaIndex]?.url} /> : <img src={detailImage(productImage)} alt={product.title || "Product image"} className={`w-full h-full object-cover transition-opacity duration-200 ${isHoveringMainImage ? "opacity-0" : "opacity-100"}`} />}{mediaList[activeMediaIndex]?.type !== "video" && isHoveringMainImage && (
                                         <div
                                             className="absolute inset-0 bg-no-repeat pointer-events-none"
                                             style={{
@@ -404,7 +404,7 @@ export default function ProductDetails() {
                                     <img src={publicAssetUrl(certificate.logoUrl)} alt="" className="h-14 w-14 shrink-0 object-contain lg:h-10 lg:w-10" /><span className="min-w-0 break-words">{certificate.name}</span>
                                 </div>)}</div>
                             </MobileAccordion></div>}
-                            <div className="order-[10] lg:hidden"><MobileAccordion title="Shipping & Handling"><ul className="list-disc space-y-1.5 pl-5 text-base leading-relaxed text-stone-600"><li>Free shipping perks on all orders within India</li><li>Avail your items within 15 business days</li><li>Inspect your package carefully before signing off</li><li>Package will be sealed and wrapped in bubble wrap, small box, or padded envelope</li></ul></MobileAccordion><MobileAccordion title="Important Guide"><ol className="list-decimal space-y-1.5 pl-5 text-base leading-relaxed text-stone-600 lg:text-xs"><li>The prices are indicative of approximate gold rate, as there are daily fluctuations. Expect a call from Team Ivana once you place the order.</li><li>The price is also subject to the final diamond weight of +/- 5% on the basis of size selected.</li><li>Each piece is customized and made to order. Center solitaires can be set according to your preference.</li></ol></MobileAccordion></div>
+                            <div className="order-[10] space-y-3 lg:hidden"><MobileAccordion title="Shipping & Handling"><ul className="list-disc space-y-1.5 pl-5 text-base leading-relaxed text-stone-600"><li>Free shipping perks on all orders within India</li><li>Avail your items within 15 business days</li><li>Inspect your package carefully before signing off</li><li>Package will be sealed and wrapped in bubble wrap, small box, or padded envelope</li></ul></MobileAccordion><MobileAccordion title="Important Guide"><ol className="list-decimal space-y-1.5 pl-5 text-base leading-relaxed text-stone-600 lg:text-xs"><li>The prices are indicative of approximate gold rate, as there are daily fluctuations. Expect a call from Team Ivana once you place the order.</li><li>The price is also subject to the final diamond weight of +/- 5% on the basis of size selected.</li><li>Each piece is customized and made to order. Center solitaires can be set according to your preference.</li></ol></MobileAccordion></div>
                             {/* Metal Finish Swatches with Proper White Color */}
                             <div className="order-5 space-y-2 lg:order-5">
                                 <label className="block text-xs uppercase tracking-widest font-bold [-webkit-text-stroke:0.2px_currentColor] text-stone-600">
