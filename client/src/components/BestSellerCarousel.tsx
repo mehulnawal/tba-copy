@@ -133,7 +133,7 @@ return (
                                         {/* Text */}
                                         <div className="flex flex-col flex-1 px-1">
                                             <div className="flex justify-between items-start gap-2 mb-1">
-                                                <h3 className="font-primary text-base text-[var(--color-text)] tracking-wide font-light line-clamp-1 group-hover:text-[var(--color-teal-light)] transition-colors duration-300">
+                                                <h3 className="product-title font-primary text-base text-[var(--color-text)] tracking-wide line-clamp-1 group-hover:text-[var(--color-teal-light)] transition-colors duration-300">
                                                     {product.name}
                                                 </h3>
                                             </div>

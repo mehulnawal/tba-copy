@@ -461,7 +461,7 @@ export function ProductCard({ product, categoryLabel, defaultKarat, onWishlistTo
                 <span className="text-xs sm:text-[10px] tracking-wider text-gray-400 uppercase font-semibold">{categoryLabel}</span>
 
                 <Link to={`${b2b ? "/b2b/product/" : "/product/"}${product.slug || product.SKU}`} className="block">
-                    <h3 className="text-base sm:text-sm font-medium text-gray-900 hover:text-amber-700 line-clamp-2 min-h-[40px] transition">
+                    <h3 className="product-title text-base sm:text-sm text-gray-900 hover:text-amber-700 line-clamp-2 min-h-[40px] transition">
                         {product.title}
                     </h3>
                 </Link>

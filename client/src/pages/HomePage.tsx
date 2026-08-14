@@ -376,7 +376,7 @@ export default function HomePage() {
                                 const desktopTileSizes = ["lg:col-span-2 lg:row-span-2", "lg:row-span-2", "lg:row-span-1", "lg:row-span-1", "lg:row-span-1", "lg:col-span-2 lg:row-span-1", "lg:row-span-2", "lg:row-span-1"];
                                 return <button key={category._id} type="button" onClick={() => openCategory(category)} className={`group relative mb-3 block w-full break-inside-avoid overflow-hidden rounded-[var(--radius-md)] bg-[var(--color-bg-secondary)] md:mb-5 lg:mb-0 lg:h-auto ${tileSizes[index % tileSizes.length]} ${desktopTileSizes[index % desktopTileSizes.length]}`}>
                                     {category.homepageCoverImage && <img src={category.homepageCoverImage} alt={category.name} className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />}
-                                    <span className="absolute inset-x-0 bottom-0 z-10 bg-black/55 px-3 py-2.5 text-left font-secondary text-[10px] tracking-[0.08em] text-white sm:text-[11px]">Shop by Diamond {category.name}</span>
+                                    <span className="absolute inset-x-0 bottom-0 z-10 bg-black/55 px-3 py-2.5 text-left font-secondary text-[10px] tracking-[0.08em] text-white sm:text-[11px]">Shop by {category.name}</span>
                                 </button>;
                             })}
                         </div>
