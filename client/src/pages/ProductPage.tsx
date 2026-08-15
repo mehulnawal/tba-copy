@@ -34,6 +34,8 @@ const SORT_OPTIONS = [
 
 const responsiveImage = (url: string, width = 800) => url.includes("res.cloudinary.com") ? url.replace("/upload/", `/upload/f_auto,q_auto,w_${width},c_limit/`) : url;
 
+const formatCatalogProductTitle = (title: string) =>
+    title.toLocaleLowerCase("en-IN").replace(/\b\p{L}/gu, (letter) => letter.toLocaleUpperCase("en-IN"));
 export default function ProductPage({ metal = "gold", b2b = false }: { metal?: "gold" | "silver"; b2b?: boolean }) {
     const [params, setParams] = useSearchParams();
 
@@ -461,8 +463,8 @@ export function ProductCard({ product, categoryLabel, defaultKarat, onWishlistTo
                 <span className="text-xs sm:text-[10px] tracking-wider text-gray-400 uppercase font-semibold">{categoryLabel}</span>
 
                 <Link to={`${b2b ? "/b2b/product/" : "/product/"}${product.slug || product.SKU}`} className="block">
-                    <h3 className="product-title text-base sm:text-sm text-gray-900 hover:text-amber-700 line-clamp-2 min-h-[40px] transition">
-                        {product.title}
+                    <h3 className="product-title text-lg leading-snug text-gray-900 hover:text-amber-700 line-clamp-2 min-h-[48px] transition sm:text-xl">
+                        {formatCatalogProductTitle(product.title)}
                     </h3>
                 </Link>
 

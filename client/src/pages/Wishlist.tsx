@@ -309,6 +309,8 @@ export default function WishlistPage() {
                                     As you explore our seasonal haute collections, flag the timeless statement designs that inspire you.
                                 </p>
                                 <button
+                                    type="button"
+                                    onClick={() => navigate('/gold-jewellery')}
                                     className="group flex items-center justify-center gap-2.5 bg-[var(--color-teal)] text-[var(--color-cream)] font-secondary tracking-[0.25em] text-[11px] uppercase py-4 px-8 border border-transparent hover:bg-transparent hover:text-[var(--color-teal)] hover:border-[var(--color-teal)] transition-all duration-400 ease-out focus:outline-none focus:ring-1 focus:ring-[var(--color-teal)] cursor-pointer"
                                 >
                                     <span>Explore Creations</span>

@@ -193,13 +193,44 @@ const forgotPassword = asyncHandler(async (req, res) => {
   const resetToken = user.getResetPasswordToken();
   await user.save({ validateBeforeSave: false });
 
-  const resetUrl = `${process.env.CLIENT_URL}/reset-password?token=${resetToken}`;
+  const clientUrl = (process.env.CLIENT_URL || "http://localhost:5173").replace(/\/+$/, "");
+  const resetUrl = `${clientUrl}/reset-password?token=${encodeURIComponent(resetToken)}`;
+  const emailText = `Hello,
+
+We received a request to reset the password for your TBA – The Brilliance Atelier account.
+
+Reset your password using this secure link (valid for 15 minutes):
+${resetUrl}
+
+If you did not request a password reset, you can safely ignore this email. Your password will remain unchanged.
+
+TBA – The Brilliance Atelier`;
+  const emailHtml = `<!doctype html>
+<html lang="en">
+  <body style="margin:0;padding:0;background:#f7f5f1;color:#172f2b;font-family:Arial,sans-serif;">
+    <div style="max-width:600px;margin:32px auto;background:#ffffff;border:1px solid #e6e0d8;">
+      <div style="padding:28px 32px;border-bottom:1px solid #e6e0d8;">
+        <p style="margin:0;color:#7f6a43;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">TBA</p>
+        <h1 style="margin:12px 0 0;font-family:Georgia,serif;font-size:28px;font-weight:400;">Reset your password</h1>
+      </div>
+      <div style="padding:32px;line-height:1.6;font-size:15px;">
+        <p>Hello,</p>
+        <p>We received a request to reset the password for your TBA – The Brilliance Atelier account.</p>
+        <p style="margin:28px 0;text-align:center;"><a href="${resetUrl}" style="display:inline-block;background:#173d36;color:#ffffff;padding:14px 24px;text-decoration:none;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Reset password</a></p>
+        <p>This secure link expires in <strong>15 minutes</strong>.</p>
+        <p>If you did not request a password reset, you can safely ignore this email. Your password will remain unchanged.</p>
+        <p style="margin:28px 0 0;color:#6b7280;font-size:12px;word-break:break-all;">If the button does not work, copy and paste this link into your browser:<br><a href="${resetUrl}" style="color:#173d36;">${resetUrl}</a></p>
+      </div>
+    </div>
+  </body>
+</html>`;
 
   try {
     await sendEmail({
       to: user.email,
-      subject: "TBA Password Reset Request",
-      html: `...`,
+      subject: "Reset your TBA password",
+      text: emailText,
+      html: emailHtml,
     });
   } catch (error) {
     console.error("EMAIL ERROR:", error);

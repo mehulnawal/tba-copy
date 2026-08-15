@@ -4,8 +4,17 @@ const SCRIPT_ID = "msg91-otp-provider";
 const SCRIPT_SRC = "https://verify.msg91.com/otp-provider.js";
 const WIDGET_READY_POLL_MS = 200;
 const WIDGET_READY_TIMEOUT_MS = 8_000;
+const OTP_CALLBACK_TIMEOUT_MS = 15_000;
 
-type WidgetResponse = { reqId?: string; req_id?: string; requestId?: string; "access-token"?: string; accessToken?: string; token?: string };
+type WidgetResponse = {
+  reqId?: string;
+  req_id?: string;
+  requestId?: string;
+  "access-token"?: string;
+  accessToken?: string;
+  token?: string;
+  [key: string]: unknown;
+};
 type Success = (data: WidgetResponse) => void;
 type Failure = (error: unknown) => void;
 
@@ -18,7 +27,10 @@ declare global {
   }
 }
 
-const requestIdFor = (data: WidgetResponse) => data.reqId || data.req_id || data.requestId;
+const requestIdFor = (data: WidgetResponse | undefined) => {
+  const requestId = data?.reqId || data?.req_id || data?.requestId;
+  return typeof requestId === "string" ? requestId : undefined;
+};
 let activeIdentifier = "";
 
 const waitFor = (isReady: () => boolean) => new Promise<void>((resolve, reject) => {
@@ -60,19 +72,44 @@ const initialise = async (identifier = activeIdentifier) => {
 
 export const sendMsg91Otp = async (identifier: string) => {
   await initialise(identifier);
-  return new Promise<string | undefined>((resolve, reject) => window.sendOtp!(identifier, (data) => resolve(requestIdFor(data || {})), reject));
+
+  return new Promise<string | undefined>((resolve, reject) => {
+    let settled = false;
+    const finish = (callback: () => void) => {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(safetyTimeout);
+      callback();
+    };
+    const safetyTimeout = window.setTimeout(() => {
+      finish(() => reject(new Error("Something went wrong, please try again.")));
+    }, OTP_CALLBACK_TIMEOUT_MS);
+    const fail = (error: unknown) => {
+      finish(() => reject(error instanceof Error ? error : new Error("Unable to send OTP. Please try again.")));
+    };
+
+    try {
+      window.sendOtp!(identifier, (data) => {
+        // Temporary diagnostic: retain until MSG91's production callback shape is confirmed.
+        console.log("[MSG91] sendOtp success callback data:", data);
+        finish(() => resolve(requestIdFor(data)));
+      }, fail);
+    } catch (error) {
+      fail(error);
+    }
+  });
 };
 
 export const retryMsg91Otp = async (requestId?: string) => {
   await initialise();
-  return new Promise<string | undefined>((resolve, reject) => window.retryOtp!(null, (data) => resolve(requestIdFor(data || {}) || requestId), reject, requestId));
+  return new Promise<string | undefined>((resolve, reject) => window.retryOtp!(null, (data) => resolve(requestIdFor(data) || requestId), reject, requestId));
 };
 
 export const verifyMsg91Otp = async (otp: string, requestId?: string) => {
   await initialise();
   return new Promise<string>((resolve, reject) => window.verifyOtp!(Number(otp), (data) => {
     const accessToken = data?.["access-token"] || data?.accessToken || data?.token;
-    if (!accessToken) { reject(new Error("MSG91 did not return a verification token")); return; }
+    if (typeof accessToken !== "string" || !accessToken) { reject(new Error("MSG91 did not return a verification token")); return; }
     resolve(accessToken);
   }, reject, requestId));
 };

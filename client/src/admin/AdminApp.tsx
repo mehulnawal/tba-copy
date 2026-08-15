@@ -809,7 +809,7 @@ function Orders() {
   useEffect(() => { void load(); }, [load]);
 
   const orders = Array.isArray(data.orders || data) ? data.orders || data : [];
-  const filtered = orders.filter((order: any) => `${order._id || ""} ${order.customer?.name || ""} ${order.customer?.email || ""}`.toLowerCase().includes(search.toLowerCase()));
+  const filtered = orders.filter((order: any) => `${order._id || ""} ${order.customer?.name || ""} ${order.customer?.email || ""}`.toLowerCase().includes(search.toLowerCase()));a
   const reference = (id: string) => `#${String(id).slice(-8).toUpperCase()}`;
 
   return (

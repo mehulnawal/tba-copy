@@ -27,7 +27,7 @@ const getTransporter = () => {
   return transporter;
 };
 
-const sendEmail = async ({ to, subject, html }) => {
+const sendEmail = async ({ to, subject, text, html }) => {
   const mailTransporter = getTransporter();
 
   if (!mailTransporter) {
@@ -43,6 +43,7 @@ const sendEmail = async ({ to, subject, html }) => {
     from: `"TBA – The Brilliance Atelier" <${process.env.EMAIL_USER}>`,
     to,
     subject,
+    text,
     html,
   });
 };
