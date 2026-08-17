@@ -27,6 +27,8 @@ const call = async (path, body) => {
 const sendMsg91Otp = async (mobile) => {
   const { widgetId } = config();
   const data = await call("sendOtp", { widgetId, identifier: mobile });
+  // Temporary diagnostic: remove after the MSG91 callback shape is confirmed.
+  console.log("[MSG91] sendOtp raw response:", JSON.stringify(data, null, 2));
   const requestId = requestIdFrom(data);
   if (!requestId) throw new ApiError(502, "MSG91 did not return an OTP request ID");
   return requestId;
