@@ -15,7 +15,7 @@ export default function Footer({ onCategoryChange: _onCategoryChange }: { onCate
   const appointmentMessage = "Hello, I would like to book an appointment with The Brilliance Atelier. Please help me with the available dates and timings.";
   const appointmentWhatsAppUrl = `${SOCIAL_LINKS.whatsapp}?text=${encodeURIComponent(appointmentMessage)}`;
   const exploreLinks = [
-    { label: "Gold Jewellery", to: "/gold-jewellery" },
+    { label: "Diamond Jewellery", to: "/gold-jewellery" },
     { label: "Silver Jewellery", to: "/silver-jewellery" },
     { label: "Polki Jewellery", to: silverTypePath("Polki") },
     { label: "Moissanite Jewellery", to: silverTypePath("Moissanite") },

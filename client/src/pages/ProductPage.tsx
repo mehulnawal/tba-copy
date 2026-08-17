@@ -65,7 +65,7 @@ export default function ProductPage({ metal = "gold", b2b = false }: { metal?: "
 
     const { data: products = [], isLoading: loading } = useQuery({
         queryKey: ["products", metal, query],
-        queryFn: () => { const b2bParams = new URLSearchParams({ metal }); ["minPrice", "maxPrice", "karat"].forEach((key) => { const value = params.get(key); if (value) b2bParams.set(key, value); }); return apiRequest<Product[]>(b2b ? `/b2b/products?${b2bParams.toString()}` : `/products/${metal}?${query}`); },
+        queryFn: () => { const b2bParams = new URLSearchParams({ metal });["minPrice", "maxPrice", "karat"].forEach((key) => { const value = params.get(key); if (value) b2bParams.set(key, value); }); return apiRequest<Product[]>(b2b ? `/b2b/products?${b2bParams.toString()}` : `/products/${metal}?${query}`); },
         staleTime: 2 * 60 * 1000,
         gcTime: 15 * 60 * 1000,
     });
@@ -161,7 +161,7 @@ export default function ProductPage({ metal = "gold", b2b = false }: { metal?: "
             />}<main className="flex-grow mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 py-8 pb-24 lg:pb-8">
                 <div className="catalog-title-bar border-b pb-5 sm:flex sm:items-center sm:justify-between">
                     <div>
-                        <h1 className="text-3xl font-primary font-semibold tracking-tight text-gray-900">{metal === "gold" ? "Gold Jewellery" : "Silver Jewellery"}</h1>
+                        <h1 className="text-3xl font-primary font-semibold tracking-tight text-gray-900">{metal === "gold" ? "Diamond Jewellery" : "Silver Jewellery"}</h1>
                     </div>
                     <div className="mt-3 sm:mt-0 sm:ml-4">
                         <input
@@ -463,7 +463,7 @@ export function ProductCard({ product, categoryLabel, defaultKarat, onWishlistTo
                 <span className="text-xs sm:text-[10px] tracking-wider text-gray-400 uppercase font-semibold">{categoryLabel}</span>
 
                 <Link to={`${b2b ? "/b2b/product/" : "/product/"}${product.slug || product.SKU}`} className="block">
-                    <h3 className="product-title text-lg leading-snug text-gray-900 hover:text-amber-700 line-clamp-2 min-h-[48px] transition sm:text-xl">
+                    <h3 className="product-title normal-case text-lg leading-snug text-gray-900 hover:text-amber-700 line-clamp-2 min-h-[48px] transition sm:text-xl" style={{ textTransform: "none" }}>
                         {formatCatalogProductTitle(product.title)}
                     </h3>
                 </Link>

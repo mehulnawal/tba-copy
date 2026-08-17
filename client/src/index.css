@@ -1190,6 +1190,11 @@ body.modal-open {
   color: var(--color-teal);
   font-family: var(--font-primary);
 }
+.catalog-product-card h3.product-title {
+  font-family: var(--font-secondary) !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+}
 .catalog-page .text-amber-700 {
   color: var(--color-teal) !important;
 }
