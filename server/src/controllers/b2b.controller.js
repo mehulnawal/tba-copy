@@ -9,7 +9,7 @@ const ApiResponse = require("../utils/ApiResponse");
 const asyncHandler = require("../utils/asyncHandler");
 const { toProductResponse } = require("../services/catalog.service");
 const { B2B_COOKIE, b2bSecret } = require("../middlewares/b2b.middleware");
-const { verifyMsg91AccessToken } = require("../utils/msg91");
+const { verifyOtpSession } = require("../utils/otpSession");
 
 const populated = query => query.populate("mainCategory", "name").populate("subCategory", "name").populate("certificates", "name logoUrl");
 const cookieOptions = { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", maxAge: 7 * 24 * 60 * 60 * 1000 };
@@ -18,11 +18,8 @@ const signAccess = access => jwt.sign({ version: access.sessionVersion, scope: "
 
 const access = asyncHandler(async (req, res) => {
   const password = String(req.body?.password || "");
-  const mobile = String(req.body?.mobile || "");
-  const accessToken = String(req.body?.accessToken || "");
   if (!password) throw new ApiError(400, "B2B access password is required");
-  if (!/^\d{10}$/.test(mobile)) throw new ApiError(400, "A valid 10-digit Indian mobile number is required");
-  await verifyMsg91AccessToken(accessToken);
+  const mobile = await verifyOtpSession(req.body?.mobile, req.body?.otp, String(req.body?.requestId || ""));
   const current = await B2BAccess.findOne({ key: "current" }).select("+passwordHash");
   if (!current?.isActive || !current.passwordHash || !(await bcrypt.compare(password, current.passwordHash))) throw new ApiError(401, "Invalid or revoked B2B access password");
   await B2BAccess.updateOne({ _id: current._id }, { $set: { lastAccessMobile: mobile } });
