@@ -45,7 +45,10 @@ const retryMsg91Otp = async (requestId) => {
 
 const verifyMsg91Otp = async (otp, requestId) => {
   const { widgetId } = config();
+  // Temporary diagnostic: remove after MSG91's verify response shape is confirmed.
+  console.log("[MSG91] verifyOtp request ID:", requestId);
   const data = await call("verifyOtp", { widgetId, otp, reqId: requestId });
+  console.log("[MSG91] verifyOtp raw response:", JSON.stringify(data, null, 2));
   const accessToken = accessTokenFrom(data);
   if (!accessToken) throw new ApiError(401, "Invalid or expired OTP");
   return accessToken;
