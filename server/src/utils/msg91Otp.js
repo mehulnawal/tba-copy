@@ -2,7 +2,6 @@ const axios = require("axios");
 const ApiError = require("./ApiError");
 
 const API_BASE = "https://api.msg91.com/api/v5/widget";
-const accessTokenFrom = (data) => data?.["access-token"] || data?.accessToken || data?.token || data?.data?.["access-token"] || data?.data?.accessToken;
 
 const config = () => {
   if (!process.env.MSG91_AUTH_KEY || !process.env.MSG91_WIDGET_ID)
@@ -49,8 +48,10 @@ const verifyMsg91Otp = async (otp, requestId) => {
   console.log("[MSG91] verifyOtp request ID:", requestId);
   const data = await call("verifyOtp", { widgetId, otp, reqId: requestId });
   console.log("[MSG91] verifyOtp raw response:", JSON.stringify(data, null, 2));
-  const accessToken = accessTokenFrom(data);
-  if (!accessToken) throw new ApiError(401, "Invalid or expired OTP");
+  if (data?.type !== "success")
+    throw new ApiError(401, data?.message || "Invalid or expired OTP");
+  const accessToken = typeof data?.message === "string" ? data.message.trim() : "";
+  if (!accessToken) throw new ApiError(502, "MSG91 did not return a verification token");
   return accessToken;
 };
 
