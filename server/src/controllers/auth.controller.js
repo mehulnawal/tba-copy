@@ -18,6 +18,32 @@ const { verifyGoogleAccessToken } = require("../utils/oauthUtils");
 const { verifyFacebookToken } = require("../utils/facebookOAuthUtils");
 const { ROLES } = require("../constants/roles");
 const { verifyMsg91AccessToken } = require("../utils/msg91");
+const { sendMsg91Otp, retryMsg91Otp, verifyMsg91Otp } = require("../utils/msg91Otp");
+
+const OTP_RESEND_DELAY_MS = 20 * 1000;
+const OTP_EXPIRY_MS = 15 * 60 * 1000;
+const OTP_RESEND_LIMIT = 2;
+const otpAttempts = new Map();
+const indianMobile = (value) => String(value || "").replace(/\D/g, "").replace(/^91(?=\d{10}$)/, "");
+const otpAttemptFor = (requestId, mobile) => {
+  const attempt = otpAttempts.get(requestId);
+  if (!attempt || attempt.mobile !== mobile || attempt.expiresAt <= Date.now()) {
+    if (attempt?.expiresAt <= Date.now()) otpAttempts.delete(requestId);
+    throw new ApiError(400, "OTP request is invalid or has expired");
+  }
+  return attempt;
+};
+const rememberOtpAttempt = (requestId, mobile, resends = 0) => {
+  const attempt = {
+    mobile,
+    resends,
+    expiresAt: Date.now() + OTP_EXPIRY_MS,
+    resendAvailableAt: Date.now() + OTP_RESEND_DELAY_MS,
+  };
+  otpAttempts.set(requestId, attempt);
+  return attempt;
+};
+
 
 const setAuthCookies = (res, userId) => {
   const accessToken = generateAccessToken(userId);
@@ -106,11 +132,38 @@ const login = asyncHandler(async (req, res) => {
     );
 });
 
-const otpLogin = asyncHandler(async (req, res) => {
-  const mobile = String(req.body?.mobile || "").replace(/\D/g, "").replace(/^91(?=\d{10}$)/, "");
-  const accessToken = String(req.body?.accessToken || "");
+const startOtp = asyncHandler(async (req, res) => {
+  const mobile = indianMobile(req.body?.mobile);
   if (!/^\d{10}$/.test(mobile)) throw new ApiError(400, "A valid 10-digit Indian mobile number is required");
+  const requestId = await sendMsg91Otp(`91${mobile}`);
+  const attempt = rememberOtpAttempt(requestId, mobile);
+  res.json(new ApiResponse(200, { requestId, resendAvailableAt: attempt.resendAvailableAt }, "OTP sent"));
+});
+
+const resendOtp = asyncHandler(async (req, res) => {
+  const mobile = indianMobile(req.body?.mobile);
+  const requestId = String(req.body?.requestId || "");
+  if (!/^\d{10}$/.test(mobile) || !requestId) throw new ApiError(400, "A valid OTP request is required");
+  const attempt = otpAttemptFor(requestId, mobile);
+  if (attempt.resends >= OTP_RESEND_LIMIT) throw new ApiError(429, "OTP resend limit reached");
+  const retryAfter = attempt.resendAvailableAt - Date.now();
+  if (retryAfter > 0) throw new ApiError(429, `Please wait ${Math.ceil(retryAfter / 1000)} seconds before resending OTP`);
+  const nextRequestId = await retryMsg91Otp(requestId);
+  otpAttempts.delete(requestId);
+  const nextAttempt = rememberOtpAttempt(nextRequestId, mobile, attempt.resends + 1);
+  res.json(new ApiResponse(200, { requestId: nextRequestId, resendCount: nextAttempt.resends, resendAvailableAt: nextAttempt.resendAvailableAt }, "OTP resent"));
+});
+
+const otpLogin = asyncHandler(async (req, res) => {
+  const mobile = indianMobile(req.body?.mobile);
+  const otp = String(req.body?.otp || "");
+  const requestId = String(req.body?.requestId || "");
+  if (!/^\d{10}$/.test(mobile)) throw new ApiError(400, "A valid 10-digit Indian mobile number is required");
+  if (!/^\d{6}$/.test(otp) || !requestId) throw new ApiError(400, "Enter the six-digit OTP");
+  otpAttemptFor(requestId, mobile);
+  const accessToken = await verifyMsg91Otp(otp, requestId);
   await verifyMsg91AccessToken(accessToken);
+  otpAttempts.delete(requestId);
   const phoneVariants = [mobile, `91${mobile}`, `+91${mobile}`];
   let user = await User.findOne({ phone: { $in: phoneVariants } });
   if (!user) user = await User.create({ name: "TBA Customer", email: `otp-${mobile}@tba.local`, password: crypto.randomBytes(32).toString("hex"), phone: `91${mobile}`, role: ROLES.USER });
@@ -387,6 +440,8 @@ const facebookLogin = asyncHandler(async (req, res) => {
 module.exports = {
   register,
   login,
+  startOtp,
+  resendOtp,
   otpLogin,
   logout,
   refreshToken,

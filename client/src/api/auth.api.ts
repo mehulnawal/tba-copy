@@ -34,10 +34,22 @@ export const authApi = {
     }),
 
 
-  otpLogin: (mobile: string, accessToken: string) =>
+  startOtp: (mobile: string) =>
+    apiRequest<{ requestId: string; resendAvailableAt: number }>("/auth/otp/start", {
+      method: "POST",
+      body: JSON.stringify({ mobile }),
+    }),
+
+  resendOtp: (mobile: string, requestId: string) =>
+    apiRequest<{ requestId: string; resendCount: number; resendAvailableAt: number }>("/auth/otp/resend", {
+      method: "POST",
+      body: JSON.stringify({ mobile, requestId }),
+    }),
+
+  otpLogin: (mobile: string, otp: string, requestId: string) =>
     apiRequest<AuthUser>("/auth/otp", {
       method: "POST",
-      body: JSON.stringify({ mobile, accessToken }),
+      body: JSON.stringify({ mobile, otp, requestId }),
     }),
 
   logout: () => apiRequest<null>("/auth/logout", { method: "POST" }),

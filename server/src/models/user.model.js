@@ -2,6 +2,12 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 
+const normalizeIndianPhone = (value) => {
+  if (value === null || value === undefined || value === "") return null;
+  const mobile = String(value).replace(/\D/g, "").replace(/^91(?=\d{10}$)/, "");
+  return /^\d{10}$/.test(mobile) ? `91${mobile}` : String(value).trim();
+};
+
 const addressSchema = new mongoose.Schema(
   {
     fullName: { type: String, required: true, trim: true },
@@ -44,6 +50,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       trim: true,
       default: null,
+      set: normalizeIndianPhone,
     },
 
     role: {
@@ -106,6 +113,8 @@ userSchema.methods.getResetPasswordToken = function () {
 
   return resetToken;
 };
+
+userSchema.index({ phone: 1 }, { unique: true, partialFilterExpression: { phone: { $type: "string" } } });
 
 const User = mongoose.model("User", userSchema);
 

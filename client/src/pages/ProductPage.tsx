@@ -268,7 +268,7 @@ export default function ProductPage({ metal = "gold", b2b = false }: { metal?: "
                                 </div>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 xl:gap-x-8">
+                            <div className="grid grid-cols-2 gap-x-3 gap-y-7 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-10 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 xl:gap-x-8">
                                 {filteredProducts.map((product) => (
                                     <ProductCard
                                         key={product.id}

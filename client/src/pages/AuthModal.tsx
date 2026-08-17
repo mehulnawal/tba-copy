@@ -6,7 +6,6 @@ import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { authApi } from "../api/auth.api";
 import { ApiRequestError } from "../api/client";
-import { retryMsg91Otp, sendMsg91Otp, verifyMsg91Otp } from "../utils/msg91Otp";
 import logo from "../assets/logo/logo.png";
 
 interface LuxuryAuthModalProps {
@@ -17,7 +16,7 @@ interface LuxuryAuthModalProps {
 
 type AuthMode = "login" | "register" | "forgot";
 const OTP_LENGTH = 6;
-const RESEND_DELAY_SECONDS = 25;
+const RESEND_DELAY_SECONDS = 20;
 
 export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalProps) {
   const navigate = useNavigate();
@@ -38,6 +37,7 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
   const [otpSent, setOtpSent] = useState(false);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [resendSeconds, setResendSeconds] = useState(0);
+  const [resendAvailableAt, setResendAvailableAt] = useState<number | null>(null);
   const otpRefs = useRef<Array<HTMLInputElement | null>>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false); // Visibility state for password
@@ -47,10 +47,12 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
     setShowPassword(false);
   }, [authMode]);
   useEffect(() => {
-    if (resendSeconds <= 0) return;
-    const timer = window.setTimeout(() => setResendSeconds((seconds) => seconds - 1), 1_000);
-    return () => window.clearTimeout(timer);
-  }, [resendSeconds]);
+    if (!resendAvailableAt) { setResendSeconds(0); return; }
+    const syncResendTimer = () => setResendSeconds(Math.max(0, Math.ceil((resendAvailableAt - Date.now()) / 1_000)));
+    syncResendTimer();
+    const timer = window.setInterval(syncResendTimer, 250);
+    return () => window.clearInterval(timer);
+  }, [resendAvailableAt]);
 
   useEffect(() => {
     const loadScript = (id: string, src: string) => {
@@ -85,9 +87,10 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
     if (!/^\d{10}$/.test(mobile)) { showToast("Enter a valid 10-digit Indian mobile number.", "error"); return; }
     setIsSendingOtp(true);
     try {
-      setOtpRequestId(await sendMsg91Otp(`91${mobile}`));
+      const response = await authApi.startOtp(mobile);
+      setOtpRequestId(response.requestId);
       setOtp("");
-      setResendSeconds(RESEND_DELAY_SECONDS);
+      setResendAvailableAt(response.resendAvailableAt);
       setOtpSent(true);
       showToast("OTP sent to your mobile number.", "success");
     } catch (error) {
@@ -96,11 +99,15 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
   };
   const resendCustomerOtp = async () => {
     if (resendSeconds > 0) return;
+    const mobile = phone.replace(/\D/g, "").replace(/^91(?=\d{10}$)/, "");
+    if (!/^\d{10}$/.test(mobile)) { showToast("Enter a valid 10-digit Indian mobile number.", "error"); return; }
     setIsSendingOtp(true);
     try {
-      setOtpRequestId(await retryMsg91Otp(otpRequestId));
+      if (!otpRequestId) throw new Error("Start a new OTP request first.");
+      const response = await authApi.resendOtp(mobile, otpRequestId);
+      setOtpRequestId(response.requestId);
       setOtp("");
-      setResendSeconds(RESEND_DELAY_SECONDS);
+      setResendAvailableAt(response.resendAvailableAt);
       showToast("A new OTP has been sent.", "success");
       otpRefs.current[0]?.focus();
     } catch (error) {
@@ -132,8 +139,8 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
           const mobile = phone.replace(/\D/g, "").replace(/^91(?=\d{10}$)/, "");
           if (!/^\d{10}$/.test(mobile)) throw new Error("Enter a valid 10-digit Indian mobile number.");
           if (!/^\d{6}$/.test(otp)) throw new Error("Enter the six-digit OTP.");
-          const accessToken = await verifyMsg91Otp(otp, otpRequestId);
-          setUser(await authApi.otpLogin(mobile, accessToken));
+          if (!otpRequestId) throw new Error("Start a new OTP request first.");
+          setUser(await authApi.otpLogin(mobile, otp, otpRequestId));
           showToast("Signed in with OTP", "success");
         } else {
           await login(email, password);
@@ -174,7 +181,7 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
             setUser(await authApi.googleLogin(tokenResponse.access_token));
             showToast("Signed in with Google", "success");
             onClose();
-      if (onAuthenticated) onAuthenticated(); else navigate(returnTo, { replace: true });
+            if (onAuthenticated) onAuthenticated(); else navigate(returnTo, { replace: true });
           } catch (error) {
             showToast("Google login failed", "error");
           } finally {
@@ -208,7 +215,7 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
           setUser(await authApi.facebookLogin(accessToken));
           showToast("Signed in with Facebook", "success");
           onClose();
-      if (onAuthenticated) onAuthenticated(); else navigate(returnTo, { replace: true });
+          if (onAuthenticated) onAuthenticated(); else navigate(returnTo, { replace: true });
         } catch (error) {
           showToast(error instanceof ApiRequestError ? error.message : "Facebook sign-in failed. Please try again.", "error");
         } finally { setIsSubmitting(false); }
@@ -370,8 +377,8 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
 
           {authMode === "login" && loginMethod === "otp" && (
             <>
-              <div className="space-y-1.5"><label className="font-secondary text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] font-medium block">Mobile Number</label><div className="relative"><Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-muted)]" /><input type="tel" required disabled={otpSent} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+91 98765 43210" className="w-full bg-[var(--color-bg-secondary)] border border-[var(--color-border)] py-2.5 pl-10 pr-4 font-secondary text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)]/50 focus:outline-none focus:border-[var(--color-teal)] transition-colors disabled:cursor-not-allowed disabled:opacity-60" /></div>{!otpSent && <button type="button" onClick={() => void sendCustomerOtp()} disabled={isSendingOtp} className="mx-auto mt-3 flex w-full items-center justify-center bg-[var(--color-teal)] px-6 py-3 font-secondary text-sm font-semibold uppercase tracking-widest text-[var(--color-cream)] transition hover:opacity-90 disabled:opacity-60">{isSendingOtp ? "Sending..." : "Send OTP"}</button>}</div>
-              {otpSent && <div className="space-y-1.5"><label className="font-secondary text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] font-medium block">OTP</label><div className="grid w-full grid-cols-6 gap-1.5 sm:gap-2">{Array.from({ length: OTP_LENGTH }, (_, index) => <input key={index} ref={(element) => { otpRefs.current[index] = element; }} value={otp[index] || ""} onChange={(event) => updateOtp(index, event.target.value)} onKeyDown={(event) => { if (event.key === "Backspace" && !otp[index] && index > 0) otpRefs.current[index - 1]?.focus(); }} className="h-12 w-full min-w-0 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-center font-secondary text-lg font-semibold text-[var(--color-text)] focus:outline-none focus:border-[var(--color-teal)] transition-colors" inputMode="numeric" autoComplete={index === 0 ? "one-time-code" : "off"} maxLength={1} aria-label={`OTP digit ${index + 1}`} />)}</div><button type="button" onClick={() => void resendCustomerOtp()} disabled={isSendingOtp || resendSeconds > 0} className="font-secondary text-[11px] text-[var(--color-teal)] hover:underline disabled:opacity-60">{isSendingOtp ? "Sending..." : resendSeconds > 0 ? `Resend OTP in 0:${String(resendSeconds).padStart(2, "0")}` : "Resend OTP"}</button></div>}
+              <div className="space-y-1.5"><label className="font-secondary text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] font-medium block">Mobile Number</label><div className="relative"><Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-muted)]" /><input type="tel" required disabled={otpSent} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+91 98765 43210" className="w-full bg-[var(--color-bg-secondary)] border border-[var(--color-border)] py-2.5 pl-10 pr-4 font-secondary text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)]/50 focus:outline-none focus:border-[var(--color-teal)] transition-colors disabled:cursor-not-allowed disabled:opacity-60" /></div>{!otpSent && <button type="button" onClick={() => void sendCustomerOtp()} disabled={isSendingOtp} className="mx-auto mt-3 flex w-full items-center justify-center bg-[var(--color-teal)] px-6 py-3 font-secondary text-sm font-semibold uppercase tracking-widest text-[var(--color-cream)] transition hover:opacity-90 disabled:opacity-60">{isSendingOtp ? "Sending..." : "Get OTP"}</button>}</div>
+              {otpSent && <div className="space-y-1.5"><label className="font-secondary text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] font-medium block">OTP</label><div className="grid w-full grid-cols-6 gap-1.5 sm:gap-2">{Array.from({ length: OTP_LENGTH }, (_, index) => <input key={index} ref={(element) => { otpRefs.current[index] = element; }} value={otp[index] || ""} onChange={(event) => updateOtp(index, event.target.value)} onKeyDown={(event) => { if (event.key === "Backspace" && !otp[index] && index > 0) otpRefs.current[index - 1]?.focus(); }} className="h-12 w-full min-w-0 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-center font-secondary text-lg font-semibold text-[var(--color-text)] focus:outline-none focus:border-[var(--color-teal)] transition-colors" inputMode="numeric" autoComplete={index === 0 ? "one-time-code" : "off"} maxLength={1} aria-label={`OTP digit ${index + 1}`} />)}</div><button type="button" onClick={() => void resendCustomerOtp()} disabled={isSendingOtp || resendSeconds > 0} className="font-secondary text-[11px] text-[var(--color-teal)] hover:underline disabled:pointer-events-none disabled:opacity-60">{isSendingOtp ? "Sending..." : resendSeconds > 0 ? `Resend OTP in 0:${String(resendSeconds).padStart(2, "0")}` : "Resend OTP"}</button></div>}
             </>
           )}
           {authMode === "login" && loginMethod === "email" && (

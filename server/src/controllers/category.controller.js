@@ -21,6 +21,17 @@ const rootFor = async (metal) =>
   Category.findOne({ metal, categoryKind: "metal-root" });
 const deriveHierarchy = async ({ name, parent, categoryId }) => {
   if (!parent) {
+    // A root's metal is its stable internal identity. Its display name may be
+    // changed by an admin without affecting products or pricing.
+    if (categoryId) {
+      const existing = await Category.findById(categoryId);
+      if (existing?.categoryKind === "metal-root")
+        return {
+          metal: existing.metal,
+          categoryKind: "metal-root",
+          parent: null,
+        };
+    }
     if (!["Gold", "Silver"].includes(name))
       throw new ApiError(
         400,
@@ -117,11 +128,8 @@ const update = asyncHandler(async (req, res) => {
     parent,
     categoryId: existing._id,
   });
-  if (
-    existing.categoryKind === "metal-root" &&
-    (hierarchy.categoryKind !== "metal-root" || name !== existing.name)
-  )
-    throw new ApiError(400, "Gold and Silver roots cannot be renamed or moved");
+  if (existing.categoryKind === "metal-root" && hierarchy.categoryKind !== "metal-root")
+    throw new ApiError(400, "Root categories cannot be moved");
   const category = await Category.findByIdAndUpdate(
     existing._id,
     { ...req.body, name, ...hierarchy, ...(Object.prototype.hasOwnProperty.call(req.body, "shortCode") ? { shortCode: String(req.body.shortCode || "").trim().toUpperCase() } : {}) },
@@ -151,7 +159,7 @@ const remove = asyncHandler(async (req, res) => {
 
 const initializeCategoryStructure = async () => {
   const gold = await Category.findOneAndUpdate(
-    { name: "Gold", categoryKind: "metal-root" },
+    { metal: "gold", categoryKind: "metal-root" },
     {
       $setOnInsert: {
         name: "Gold",
@@ -164,7 +172,7 @@ const initializeCategoryStructure = async () => {
     { upsert: true, new: true },
   );
   const silver = await Category.findOneAndUpdate(
-    { name: "Silver", categoryKind: "metal-root" },
+    { metal: "silver", categoryKind: "metal-root" },
     {
       $setOnInsert: {
         name: "Silver",
