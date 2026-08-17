@@ -502,7 +502,7 @@ export default function Navbar({
               <div className="flex flex-col min-h-full p-6 sm:p-8 text-[var(--color-cream)]">
                 <div className="flex justify-between items-center mb-8 border-b border-white/10 pb-4">
                   <span className="font-primary text-xl font-semibold tracking-wider text-white">
-                    Menu
+                    Category 
                   </span>
                   <button
                     onClick={() => setIsMobileMenuOpen(false)}
