@@ -2,7 +2,6 @@ const axios = require("axios");
 const ApiError = require("./ApiError");
 
 const API_BASE = "https://api.msg91.com/api/v5/widget";
-const requestIdFrom = (data) => data?.reqId || data?.req_id || data?.requestId || data?.data?.reqId || data?.data?.requestId;
 const accessTokenFrom = (data) => data?.["access-token"] || data?.accessToken || data?.token || data?.data?.["access-token"] || data?.data?.accessToken;
 
 const config = () => {
@@ -24,20 +23,24 @@ const call = async (path, body) => {
   }
 };
 
+const requestIdForSuccessfulResponse = (data) => {
+  if (data?.type !== "success")
+    throw new ApiError(502, data?.message || "MSG91 OTP request failed");
+  const requestId = typeof data?.message === "string" ? data.message.trim() : "";
+  if (!requestId) throw new ApiError(502, "MSG91 did not return an OTP request ID");
+  return requestId;
+};
+
 const sendMsg91Otp = async (mobile) => {
   const { widgetId } = config();
   const data = await call("sendOtp", { widgetId, identifier: mobile });
-  // Temporary diagnostic: remove after the MSG91 callback shape is confirmed.
-  console.log("[MSG91] sendOtp raw response:", JSON.stringify(data, null, 2));
-  const requestId = requestIdFrom(data);
-  if (!requestId) throw new ApiError(502, "MSG91 did not return an OTP request ID");
-  return requestId;
+  return requestIdForSuccessfulResponse(data);
 };
 
 const retryMsg91Otp = async (requestId) => {
   const { widgetId } = config();
   const data = await call("retryOtp", { widgetId, reqId: requestId, retryChannel: "SMS" });
-  return requestIdFrom(data) || requestId;
+  return requestIdForSuccessfulResponse(data);
 };
 
 const verifyMsg91Otp = async (otp, requestId) => {
