@@ -8,6 +8,7 @@ export interface DiamondClarity { _id: string; name: string; isActive: boolean; 
 export interface CertificateOption { _id: string; name: string; logoUrl?: string; isActive: boolean; }
 export interface PricingConfig { _id: string; key: string; metal: "gold" | "silver"; categoryType: string; makingRatePerGram: number; weightBasis: "net" | "gross"; moissaniteRatePerCarat?: number; polkiValuePerUnit?: number; silverB2BMakingChargeRate?: number; certificateApplies: boolean; usesLabGrownFixedDiamondRates: boolean; b2bExcludeCharges?: boolean; isActive: boolean; }
 export interface B2BAccessStatus { active: boolean; lastChanged: string | null; lastAccessMobile?: string | null; }
+export interface B2BAccessLog { id: string; mobile: string; accessedAt: string; }
 export interface AdminUser {
   id: string;
   name: string;
@@ -119,6 +120,7 @@ export const adminApi = {
   pricingConfigs: () => apiRequest<PricingConfig[]>("/admin/pricing-configs"),
   updatePricingConfig: (key: string, changes: Partial<Pick<PricingConfig, "makingRatePerGram" | "moissaniteRatePerCarat" | "polkiValuePerUnit" | "silverB2BMakingChargeRate">>) => apiRequest<PricingConfig>("/admin/pricing-configs/" + encodeURIComponent(key), { method: "PATCH", body: JSON.stringify(changes) }),
   b2bAccessStatus: () => apiRequest<B2BAccessStatus>("/admin/b2b-access"),
+  b2bAccessLogs: () => apiRequest<B2BAccessLog[]>("/admin/b2b-access/logs"),
   setB2BPassword: (password: string) => apiRequest<B2BAccessStatus>("/admin/b2b-access", { method: "PUT", body: JSON.stringify({ password }) }),
   revokeB2BPassword: () => apiRequest<B2BAccessStatus>("/admin/b2b-access", { method: "DELETE" }),
   diamondCategories: () => apiRequest<DiamondCategory[]>("/admin/diamond-categories"),

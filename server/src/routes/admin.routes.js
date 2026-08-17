@@ -60,7 +60,7 @@ const {
 const { list: listDiamondCategories, get: getDiamondCategory, create: createDiamondCategory, listSizes: listDiamondCategorySizes, update: updateDiamondCategory, remove: removeDiamondCategory } = require("../controllers/diamondCategory.controller");
 const { list: listDiamondClarities, save: saveDiamondClarity } = require("../controllers/diamondClarity.controller");
 const { list: listCertificates, save: saveCertificate, remove: removeCertificate } = require("../controllers/certificate.controller");
-const { status: getB2BStatus, setPassword: setB2BPassword, revoke: revokeB2BPassword } = require("../controllers/b2b.controller");
+const { status: getB2BStatus, listAccessLogs: listB2BAccessLogs, setPassword: setB2BPassword, revoke: revokeB2BPassword } = require("../controllers/b2b.controller");
 const { adminListProducts, adminGetProduct, listPricingConfigs, updatePricingConfig, createProduct, updateProduct, deleteProduct, previewPrice, uploadImageHandler } = require("../controllers/product.controller");
 
 const router = express.Router();
@@ -95,6 +95,7 @@ router.patch("/coupons/:couponId", updateCoupon);
 router.delete("/coupons/:couponId", deleteCoupon);
 
 router.get("/b2b-access", getB2BStatus);
+router.get("/b2b-access/logs", listB2BAccessLogs);
 router.put("/b2b-access", setB2BPassword);
 router.delete("/b2b-access", revokeB2BPassword);
 

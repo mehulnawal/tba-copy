@@ -3,6 +3,7 @@ const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const Product = require("../models/product.model");
 const B2BAccess = require("../models/b2bAccess.model");
+const B2BAccessLog = require("../models/b2bAccessLog.model");
 const Category = require("../models/category.model");
 const ApiError = require("../utils/ApiError");
 const ApiResponse = require("../utils/ApiResponse");
@@ -22,7 +23,10 @@ const access = asyncHandler(async (req, res) => {
   const mobile = await verifyOtpSession(req.body?.mobile, req.body?.otp, String(req.body?.requestId || ""));
   const current = await B2BAccess.findOne({ key: "current" }).select("+passwordHash");
   if (!current?.isActive || !current.passwordHash || !(await bcrypt.compare(password, current.passwordHash))) throw new ApiError(401, "Invalid or revoked B2B access password");
-  await B2BAccess.updateOne({ _id: current._id }, { $set: { lastAccessMobile: mobile } });
+  await Promise.all([
+    B2BAccess.updateOne({ _id: current._id }, { $set: { lastAccessMobile: mobile } }),
+    B2BAccessLog.create({ mobile }),
+  ]);
   res.cookie(B2B_COOKIE, signAccess(current), cookieOptions);
   res.json(new ApiResponse(200, { active: true }, "B2B access granted"));
 });const logout = asyncHandler(async (req, res) => { res.cookie(B2B_COOKIE, "", { ...cookieOptions, maxAge: 0 }); res.json(new ApiResponse(200, null, "B2B session cleared")); });
@@ -69,6 +73,10 @@ const getProduct = asyncHandler(async (req, res) => {
   res.json(new ApiResponse(200, await toProductResponse(product, "B2B"), "B2B product fetched"));
 });
 const status = asyncHandler(async (req, res) => { const current = await B2BAccess.findOne({ key: "current" }).lean(); res.json(new ApiResponse(200, statusPayload(current), "B2B access status fetched")); });
+const listAccessLogs = asyncHandler(async (_req, res) => {
+  const logs = await B2BAccessLog.find().sort({ createdAt: -1 }).lean();
+  res.json(new ApiResponse(200, logs.map(log => ({ id: String(log._id), mobile: log.mobile, accessedAt: log.createdAt })), "B2B access logs fetched"));
+});
 const setPassword = asyncHandler(async (req, res) => {
   const password = String(req.body?.password || "").trim();
   if (password.length < 8) throw new ApiError(400, "B2B password must be at least 8 characters");
@@ -80,4 +88,4 @@ const revoke = asyncHandler(async (req, res) => {
   const current = await B2BAccess.findOneAndUpdate({ key: "current" }, { key: "current", isActive: false, passwordHash: null, sessionVersion: crypto.randomUUID(), changedBy: req.admin._id }, { new: true, upsert: true, setDefaultsOnInsert: true });
   res.json(new ApiResponse(200, statusPayload(current), "B2B access revoked; all B2B sessions are invalidated"));
 });
-module.exports = { access, logout, validatePassword, listProducts, getProduct, status, setPassword, revoke };
+module.exports = { access, logout, validatePassword, listProducts, getProduct, status, listAccessLogs, setPassword, revoke };
