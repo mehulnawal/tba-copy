@@ -41,7 +41,7 @@ export default function Footer({ onCategoryChange: _onCategoryChange }: { onCate
           </p>
 
           <p className="font-secondary  text-xs leading-relaxed max-w-[280px]">
-            Exquisite handcrafted jewelry marrying rich Indian heritage with modern design aesthetics. Curated for the sophisticated connoisseur.
+            Exquisite handcrafted jewellery marrying rich Indian heritage with modern design aesthetics. Curated for the sophisticated connoisseur.
           </p>
 
           {/* Social icons row */}

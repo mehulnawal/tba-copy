@@ -181,9 +181,9 @@ export default function ProductDetails() {
     const productPath = `/product/${product.slug || slug}`;
     const productSchema = {
         "@context": "https://schema.org", "@type": "Product", name: product.title,
-        description: productDescription || `TBA Jewelry ${product.title}`, sku: product.SKU,
+        description: productDescription || `TBA jewellery ${product.title}`, sku: product.SKU,
         image: (product.images || []).map((item) => item.url),
-        brand: { "@type": "Brand", name: "TBA Jewelry" },
+        brand: { "@type": "Brand", name: "TBA jewellery" },
         category: [categoryName(product.mainCategory), categoryName(product.subCategory)].filter(Boolean).join(" > "),
         material: isGold ? "Gold" : "Silver",
         offers: { "@type": "Offer", priceCurrency: "INR", price: Number(activePriceObj.finalPrice || 0).toFixed(2), availability: "https://schema.org/InStock", url: `${siteUrl}${productPath}`, itemCondition: "https://schema.org/NewCondition" },
@@ -265,7 +265,7 @@ export default function ProductDetails() {
 
     return (
         <>
-            <Seo title={`${product.title} | TBA Jewelry`} description={productDescription || `Explore ${product.title} at TBA Jewelry, with product specifications and complete price details.`} image={product.images[0]?.url} type="product" structuredData={[productSchema, breadcrumbSchema]} />
+            <Seo title={`${product.title} | TBA jewellery`} description={productDescription || `Explore ${product.title} at TBA jewellery, with product specifications and complete price details.`} image={product.images[0]?.url} type="product" structuredData={[productSchema, breadcrumbSchema]} />
             <div className="min-h-screen bg-[#FAF9F6] text-stone-900 antialiased font-secondary pb-0">
                 <Navbar onSearchChange={() => { }} activeCategory="All" onCategoryChange={() => { }} />
 

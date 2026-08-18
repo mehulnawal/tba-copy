@@ -457,7 +457,7 @@ export default function Navbar({
               <Search size={13} className="text-[var(--color-text-muted)] shrink-0" />
               <input
                 type="text"
-                placeholder="Search jewelry..."
+                placeholder="Search jewellery..."
                 value={searchQuery}
                 onChange={handleInputChange}
                 className="w-full bg-transparent border-none outline-none text-xs text-[var(--color-text)] font-secondary placeholder:text-[var(--color-text-muted)]"
@@ -502,7 +502,7 @@ export default function Navbar({
               <div className="flex flex-col min-h-full p-6 sm:p-8 text-[var(--color-cream)]">
                 <div className="flex justify-between items-center mb-8 border-b border-white/10 pb-4">
                   <span className="font-primary text-xl font-semibold tracking-wider text-white">
-                    Category 
+                    Category
                   </span>
                   <button
                     onClick={() => setIsMobileMenuOpen(false)}

@@ -51,30 +51,30 @@ const Deferred = ({ children }: { children: React.ReactNode }) => <React.Suspens
 function RouteSeo() {
   const { pathname } = useLocation();
   const pages: Array<{ match: (path: string) => boolean; title: string; description: string; keywords?: string[]; noIndex?: boolean }> = [
-    { match: (path) => path === "/", title: "The Brilliance Atelier | Gold, Silver & Lab Grown Diamond Jewellery", description: "Shop fine gold, silver and lab grown diamond jewellery at The Brilliance Atelier. Explore elegant rings, earrings, necklaces and custom jewellery designs.", keywords: ["The Brilliance Atelier", "TBA Jewelry", "gold jewellery", "silver jewellery", "lab grown diamond jewellery", "diamond jewellery", "fine jewellery", "gold rings", "diamond rings", "gold necklaces", "gold earrings", "custom jewellery", "jewellery online India"] },
-    { match: (path) => path === "/products", title: "Gold Jewellery Collection | TBA Jewelry", description: "Browse TBA's curated gold jewellery collection, including rings, earrings, necklaces and bracelets." },
+    { match: (path) => path === "/", title: "The Brilliance Atelier | Gold, Silver & Lab Grown Diamond Jewellery", description: "Shop fine gold, silver and lab grown diamond jewellery at The Brilliance Atelier. Explore elegant rings, earrings, necklaces and custom jewellery designs.", keywords: ["The Brilliance Atelier", "TBA jewellery", "gold jewellery", "silver jewellery", "lab grown diamond jewellery", "diamond jewellery", "fine jewellery", "gold rings", "diamond rings", "gold necklaces", "gold earrings", "custom jewellery", "jewellery online India"] },
+    { match: (path) => path === "/products", title: "Gold Jewellery Collection | TBA jewellery", description: "Browse TBA's curated gold jewellery collection, including rings, earrings, necklaces and bracelets." },
     { match: (path) => path === "/gold-jewellery", title: "Gold Jewellery Online | Rings, Earrings & Necklaces | TBA", description: "Explore gold jewellery online at The Brilliance Atelier, including gold rings, earrings, necklaces and bracelets in elegant modern designs.", keywords: ["gold jewellery", "gold jewellery online", "gold rings", "gold earrings", "gold necklaces", "gold bracelets", "gold pendant", "18kt gold jewellery", "14kt gold jewellery", "diamond gold jewellery", "gold jewellery India"] },
     { match: (path) => path === "/silver-jewellery", title: "Silver Jewellery Online | Rings, Earrings & Necklaces | TBA", description: "Shop silver jewellery online at The Brilliance Atelier. Discover silver rings, earrings, necklaces, Moissanite and Polki jewellery collections.", keywords: ["silver jewellery", "silver jewellery online", "silver rings", "silver earrings", "silver necklaces", "silver bracelets", "moissanite jewellery", "polki jewellery", "sterling silver jewellery", "silver jewellery India"] },
-    { match: (path) => path.startsWith("/product/"), title: "Jewellery Details | TBA Jewelry", description: "View jewellery specifications, available options and the complete price breakup at TBA Jewelry." },
-    { match: (path) => path === "/wishlist", title: "Wishlist | TBA Jewelry", description: "Review your saved TBA Jewelry pieces and return to them whenever you are ready." },
-    { match: (path) => path === "/cart", title: "Shopping Cart | TBA Jewelry", description: "Review your selected TBA Jewelry items before checkout." },
-    { match: (path) => path === "/checkout", title: "Checkout | TBA Jewelry", description: "Complete your TBA Jewelry purchase securely." },
-    { match: (path) => path === "/account", title: "My Account | TBA Jewelry", description: "Manage your TBA Jewelry account details and saved addresses." },
-    { match: (path) => path === "/orders", title: "My Orders | TBA Jewelry", description: "View your TBA Jewelry purchases and order details." },
-    { match: (path) => path === "/orderConfirmation", title: "Order Confirmation | TBA Jewelry", description: "Review the details of your completed TBA Jewelry order." },
-    { match: (path) => path === "/auth", title: "Sign In | TBA Jewelry", description: "Sign in to your TBA Jewelry account to manage your shopping experience." },
-    { match: (path) => path === "/reset-password", title: "Reset Password | TBA Jewelry", description: "Securely reset the password for your TBA Jewelry account." },
-    { match: (path) => path === "/b2b/access", title: "B2B Access | TBA Jewelry", description: "Access the private TBA Jewelry trade catalogue." },
-    { match: (path) => path === "/b2b/catalog", title: "B2B Jewellery Catalogue | TBA Jewelry", description: "Browse TBA Jewelry's private business catalogue." },
-    { match: (path) => path.startsWith("/b2b/product/"), title: "B2B Product Details | TBA Jewelry", description: "Review product specifications and B2B pricing information in the TBA trade catalogue." },
-    { match: (path) => path.startsWith("/admin/login"), title: "Admin Sign In | TBA Jewelry", description: "Sign in to the TBA Jewelry administration panel." },
+    { match: (path) => path.startsWith("/product/"), title: "Jewellery Details | TBA jewellery", description: "View jewellery specifications, available options and the complete price breakup at TBA jewellery." },
+    { match: (path) => path === "/wishlist", title: "Wishlist | TBA jewellery", description: "Review your saved TBA jewellery pieces and return to them whenever you are ready." },
+    { match: (path) => path === "/cart", title: "Shopping Cart | TBA jewellery", description: "Review your selected TBA jewellery items before checkout." },
+    { match: (path) => path === "/checkout", title: "Checkout | TBA jewellery", description: "Complete your TBA jewellery purchase securely." },
+    { match: (path) => path === "/account", title: "My Account | TBA jewellery", description: "Manage your TBA jewellery account details and saved addresses." },
+    { match: (path) => path === "/orders", title: "My Orders | TBA jewellery", description: "View your TBA jewellery purchases and order details." },
+    { match: (path) => path === "/orderConfirmation", title: "Order Confirmation | TBA jewellery", description: "Review the details of your completed TBA jewellery order." },
+    { match: (path) => path === "/auth", title: "Sign In | TBA jewellery", description: "Sign in to your TBA jewellery account to manage your shopping experience." },
+    { match: (path) => path === "/reset-password", title: "Reset Password | TBA jewellery", description: "Securely reset the password for your TBA jewellery account." },
+    { match: (path) => path === "/b2b/access", title: "B2B Access | TBA jewellery", description: "Access the private TBA jewellery trade catalogue." },
+    { match: (path) => path === "/b2b/catalog", title: "B2B Jewellery Catalogue | TBA jewellery", description: "Browse TBA jewellery's private business catalogue." },
+    { match: (path) => path.startsWith("/b2b/product/"), title: "B2B Product Details | TBA jewellery", description: "Review product specifications and B2B pricing information in the TBA trade catalogue." },
+    { match: (path) => path.startsWith("/admin/login"), title: "Admin Sign In | TBA jewellery", description: "Sign in to the TBA jewellery administration panel." },
     { match: (path) => path.startsWith("/admin/orders"), title: "Customer Orders | TBA Admin", description: "Review customer order records in the TBA administration panel." },
-    { match: (path) => path.startsWith("/admin/products"), title: "Products | TBA Admin", description: "Manage TBA Jewelry product details, media and pricing." },
-    { match: (path) => path.startsWith("/admin/categories"), title: "Categories | TBA Admin", description: "Manage TBA Jewelry catalogue categories." },
-    { match: (path) => path.startsWith("/admin/metal-rates"), title: "Metal Rates | TBA Admin", description: "Manage current TBA Jewelry metal rates." },
-    { match: (path) => path.startsWith("/admin"), title: "Administration | TBA Jewelry", description: "Manage TBA Jewelry catalogue and store operations." },
+    { match: (path) => path.startsWith("/admin/products"), title: "Products | TBA Admin", description: "Manage TBA jewellery product details, media and pricing." },
+    { match: (path) => path.startsWith("/admin/categories"), title: "Categories | TBA Admin", description: "Manage TBA jewellery catalogue categories." },
+    { match: (path) => path.startsWith("/admin/metal-rates"), title: "Metal Rates | TBA Admin", description: "Manage current TBA jewellery metal rates." },
+    { match: (path) => path.startsWith("/admin"), title: "Administration | TBA jewellery", description: "Manage TBA jewellery catalogue and store operations." },
   ];
-  const page: { title: string; description: string; keywords?: string[]; noIndex?: boolean } = pages.find(({ match }) => match(pathname)) || { title: "Page Not Found | TBA Jewelry", description: "The requested TBA Jewelry page could not be found." };
+  const page: { title: string; description: string; keywords?: string[]; noIndex?: boolean } = pages.find(({ match }) => match(pathname)) || { title: "Page Not Found | TBA jewellery", description: "The requested TBA jewellery page could not be found." };
   const noIndex = ["/admin", "/b2b", "/wishlist", "/cart", "/checkout", "/account", "/orders", "/orderConfirmation", "/auth", "/reset-password"].some((path) => pathname === path || pathname.startsWith(`${path}/`));
   return <Seo {...page} noIndex={noIndex || page.noIndex} />;
 }

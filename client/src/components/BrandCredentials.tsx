@@ -87,7 +87,7 @@ export default function BrandPromise() {
                                 Bespoke Customization
                             </h3>
                             <p className="font-secondary text-sm text-[var(--color-text-secondary)] leading-relaxed">
-                                Bring your unique vision to life. From minor design tweaks to personalized layouts, our team provides highly custom tailoring to craft jewelry exactly as per your desire.
+                                Bring your unique vision to life. From minor design tweaks to personalized layouts, our team provides highly custom tailoring to craft jewellery exactly as per your desire.
                             </p>
                         </div>
 
@@ -98,7 +98,7 @@ export default function BrandPromise() {
                                 Master Craftsmanship
                             </h3>
                             <p className="font-secondary text-sm text-[var(--color-text-secondary)] leading-relaxed">
-                                Engineered and finished by direct generational artisans pulling centuries of traditional jewelry expertise into every detail.
+                                Engineered and finished by direct generational artisans pulling centuries of traditional jewellery expertise into every detail.
                             </p>
                         </div>
                     </div>

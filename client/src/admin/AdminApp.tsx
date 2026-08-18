@@ -174,7 +174,7 @@ function Layout({ admin, onLogout }: { admin: AdminUser; onLogout: () => void })
   return (
     <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)] flex flex-col md:flex-row font-secondary">
       <header className="md:hidden flex items-center justify-between p-4 border-b border-[var(--color-border)] bg-[var(--color-bg-secondary)]">
-        <span className="font-primary font-bold text-[var(--color-teal)] tracking-wider">HAUTE JEWELRY</span>
+        <span className="font-primary font-bold text-[var(--color-teal)] tracking-wider">HAUTE jewellery</span>
         <button onClick={() => setMobileOpen(!mobileOpen)} className="p-2 text-[var(--color-teal)] font-bold">
           {mobileOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
         </button>

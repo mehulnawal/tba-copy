@@ -150,7 +150,7 @@ export default function Loader() {
             ref={brandSubtitleRef}
             className="font-secondary text-[8px] md:text-[9px] tracking-[0.45em] uppercase text-[var(--color-text-muted)] pl-[0.45em]"
           >
-            Fine Handcrafted Jewelry
+            Fine Handcrafted jewellery
           </div>
         </div>
       </div>

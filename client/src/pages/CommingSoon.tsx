@@ -5,7 +5,7 @@ import { ArrowRight } from 'lucide-react';
 const BRAND_NAME = "TBA";
 const BRAND_SUBTEXT = "THE BRILLIANCE ATELIER";
 const HERO_TITLE = "Coming Soon";
-const HERO_SUBTEXT = "Crafting a timeless jewelry experience designed for elegance, luxury, and modern sophistication.";
+const HERO_SUBTEXT = "Crafting a timeless jewellery experience designed for elegance, luxury, and modern sophistication.";
 const FOOTER_TEXT = "All Rights Reserved.";
 
 export default function ComingSoonPage() {
