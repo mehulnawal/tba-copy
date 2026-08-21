@@ -15,7 +15,7 @@ const { verifyOtpSession } = require("../utils/otpSession");
 const populated = query => query.populate("mainCategory", "name").populate("subCategory", "name").populate("certificates", "name logoUrl");
 const cookieOptions = { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", maxAge: 7 * 24 * 60 * 60 * 1000 };
 const statusPayload = access => ({ active: Boolean(access?.isActive), lastChanged: access?.updatedAt || null, lastAccessMobile: access?.lastAccessMobile || null });
-const signAccess = access => jwt.sign({ version: access.sessionVersion, scope: "b2b" }, b2bSecret(), { expiresIn: process.env.JWT_B2B_ACCESS_EXPIRY || "7d" });
+const signAccess = (access, mobile) => jwt.sign({ version: access.sessionVersion, scope: "b2b", mobile }, b2bSecret(), { expiresIn: process.env.JWT_B2B_ACCESS_EXPIRY || "7d" });
 
 const access = asyncHandler(async (req, res) => {
   const password = String(req.body?.password || "");
@@ -27,7 +27,7 @@ const access = asyncHandler(async (req, res) => {
     B2BAccess.updateOne({ _id: current._id }, { $set: { lastAccessMobile: mobile } }),
     B2BAccessLog.create({ mobile }),
   ]);
-  res.cookie(B2B_COOKIE, signAccess(current), cookieOptions);
+  res.cookie(B2B_COOKIE, signAccess(current, mobile), cookieOptions);
   res.json(new ApiResponse(200, { active: true }, "B2B access granted"));
 });const logout = asyncHandler(async (req, res) => { res.cookie(B2B_COOKIE, "", { ...cookieOptions, maxAge: 0 }); res.json(new ApiResponse(200, null, "B2B session cleared")); });
 const validatePassword = asyncHandler(async (req, res) => {

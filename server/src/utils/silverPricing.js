@@ -56,7 +56,8 @@ const calculateSilverPrice = ({ product, buyer = "B2C", rates, settings }) => {
   const silverValue = grossWeight * silverRate;
   const makingValue = grossWeight * makingRatePerGram;
   const moissaniteValue = totalMoissaniteWeight * moissaniteRatePerCarat;
-  const totalCost = silverValue + makingValue + moissaniteValue;
+  const diamondValue = (Array.isArray(product?.diamonds) ? product.diamonds : []).reduce((sum, entry, index) => sum + requiredNumber(entry?.caratWeight, `Diamond ${index + 1} carat weight`) * requiredNumber(String(buyer).toUpperCase() === "B2B" ? (entry.ratePerCtB2B ?? entry.ratePerCt) : (entry.ratePerCtB2C ?? entry.ratePerCt), `Diamond ${index + 1} ${buyer} rate per ct`), 0);
+  const totalCost = silverValue + makingValue + moissaniteValue + diamondValue;
   const gst = totalCost * GST_RATE;
   return {
     metal: "silver",
@@ -71,7 +72,8 @@ const calculateSilverPrice = ({ product, buyer = "B2C", rates, settings }) => {
     totalMoissaniteWeight,
     moissaniteRatePerCarat,
     moissaniteValue,
-    stoneValue: moissaniteValue,
+    diamondValue,
+    stoneValue: moissaniteValue + diamondValue,
     totalCost,
     gst,
     finalPrice: totalCost + gst,

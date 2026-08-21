@@ -22,6 +22,15 @@ interface CartItem {
     image: string;
     quantity: number;
     price: number;
+    basePrice?: number;
+    lineTotal?: number;
+    lineSubtotal: number;
+    originalPieceValue: number;
+    discountedPieceValue: number;
+    hasCategoryCoupon: boolean;
+    categoryCouponApplied?: boolean;
+    categoryCouponDiscount?: number;
+    categoryCouponLabel?: string;
     size: string;
 }
 
@@ -65,7 +74,14 @@ export default function CartPage() {
 
     const cart: CartItem[] = useMemo(
         () =>
-            (cartData?.items || []).map((item) => ({
+            (cartData?.items || []).map((item) => {
+                const lineSubtotal = item.lineTotal ?? item.price * item.quantity;
+                const hasCategoryCoupon = Boolean(item.categoryCouponApplied && item.categoryCouponDiscount);
+                return {
+                    lineSubtotal,
+                    originalPieceValue: item.basePrice ?? item.price,
+                    discountedPieceValue: lineSubtotal / item.quantity,
+                    hasCategoryCoupon,
                 id: item._id,
                 slug: item.slug,
                 name: item.name,
@@ -73,8 +89,14 @@ export default function CartPage() {
                 image: item.image,
                 quantity: item.quantity,
                 price: item.price,
+                basePrice: item.basePrice,
+                lineTotal: item.lineTotal,
+                categoryCouponApplied: item.categoryCouponApplied,
+                categoryCouponDiscount: item.categoryCouponDiscount,
+                categoryCouponLabel: item.categoryCouponLabel,
                 size: item.size || "",
-            })),
+                };
+            }),
         [cartData],
     );
 
@@ -103,8 +125,8 @@ export default function CartPage() {
 
     // Structural Math & Value Aggregation
     const totalItemsCount = cart.reduce((acc, item) => acc + item.quantity, 0);
-    const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-    const resolvedShippingFee = shippingFee || (subtotal > 25000 || subtotal === 0 ? 0 : 150);
+    const subtotal = cart.reduce((acc, item) => acc + item.lineSubtotal, 0);
+    const resolvedShippingFee = shippingFee || (subtotal === 0 ? 0 : 150);
     const estimatedTotal = subtotal - appliedDiscount + resolvedShippingFee;
 
     // Updated updateQuantity: Quantity 1 hone par remove chalega
@@ -298,8 +320,11 @@ export default function CartPage() {
                                                                 Size: {item.size || "Not selected"}
                                                             </div>
                                                             <div className="font-display text-xs text-[var(--color-text-muted)] pt-0.5">
-                                                                Piece Value: {formatINR(item.price)}
+                                                                Piece Value: {item.hasCategoryCoupon ? <><span className="line-through">{formatINR(item.originalPieceValue)}</span><span className="ml-2 font-medium text-[var(--color-text)]">{formatINR(item.discountedPieceValue)}</span></> : formatINR(item.discountedPieceValue)}
                                                             </div>
+                                                            {item.hasCategoryCoupon && item.categoryCouponLabel && (
+                                                                <div className="font-secondary text-[10px] tracking-wide text-[var(--color-teal)] pt-0.5">Category Coupon: {item.categoryCouponLabel.replace(/[^0-9A-Z% .]+/g, String.fromCharCode(0x20B9))}</div>
+                                                            )}
 
                                                             {/* Mobile Inline Controls Container */}
                                                             <div className="flex sm:hidden items-center gap-4 pt-3">
@@ -378,7 +403,7 @@ export default function CartPage() {
 
                                                     {/* Line Matrix Total Value Presentation */}
                                                     <div className="hidden sm:col-span-3 sm:block text-right font-display text-sm tracking-wide text-[var(--color-text)] font-medium">
-                                                        {formatINR(item.price * item.quantity)}
+                                                        {formatINR(item.lineSubtotal)}
                                                     </div>
                                                 </motion.div>
                                             ))}

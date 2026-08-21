@@ -4,9 +4,12 @@ const ApiError = require("../utils/ApiError");
 const ApiResponse = require("../utils/ApiResponse");
 const asyncHandler = require("../utils/asyncHandler");
 const { toProductResponse, slugify } = require("../services/catalog.service");
-const { calculatePrice } = require("../utils/priceCalculator");
+const { calculatePrice, resolveSettings } = require("../utils/priceCalculator");
+const { calculateCouponDiscount } = require("../utils/checkoutUtils");
+const { resolveActiveCategoryCouponForPricingKey } = require("./categoryCoupon.controller");
 const { uploadToCloudinary } = require("../utils/cloudinaryUpload");
 const CategoryPricingConfig = require("../models/categoryPricingConfig.model");
+const { normalizeImages, validateVariantConfiguration } = require("../utils/productVariants");
 const populated = query => query.populate("mainCategory", "name").populate("subCategory", "name").populate("certificates", "name logoUrl");
 const sharedDiamondWeightGrams = diamonds => (Array.isArray(diamonds) ? diamonds : []).reduce((total, diamond) => total + Number(diamond?.caratWeight || 0), 0) / 5;
 const normalizeGoldWeights = (body, metal = body?.metal) => {
@@ -57,6 +60,24 @@ const listGoldProducts = listForMetal("gold");
 const listSilverProducts = listForMetal("silver");
 const listProducts = asyncHandler(async (req, res) => { throw new ApiError(410, "Use /products/gold or /products/silver; mixed-metal catalog listings are not available"); });
 const getProduct = asyncHandler(async (req, res) => { const product = await populated(Product.findOne({ $or: [{ slug: req.params.identifier }, { SKU: req.params.identifier }], isActive: true })); if (!product) throw new ApiError(404, "Product not found"); res.json(new ApiResponse(200, await toProductResponse(product), "Product fetched")); });
+const getCategoryCouponForProduct = asyncHandler(async (req, res) => {
+  const product = await populated(Product.findOne({ $or: [{ slug: req.params.identifier }, { SKU: req.params.identifier }], isActive: true }));
+  if (!product) throw new ApiError(404, "Product not found");
+  const karat = product.metal === "gold" ? String(req.query.karat || "14kt").toLowerCase() : undefined;
+  if (karat && !["14kt", "18kt"].includes(karat)) throw new ApiError(400, "karat must be 14kt or 18kt");
+  const [settings, price] = await Promise.all([resolveSettings(product), calculatePrice(product, karat, "B2C")]);
+  const coupon = await resolveActiveCategoryCouponForPricingKey(settings.key);
+  if (!coupon) return res.status(200).json(new ApiResponse(200, { coupon: null }, "No category coupon available"));
+  try {
+    const subtotal = Math.max(0, Number(price.totalCost) || 0);
+    const discount = calculateCouponDiscount(coupon, subtotal);
+    return res.status(200).json(new ApiResponse(200, { coupon: { discountType: coupon.discountType, discountValue: coupon.discountValue, discount } }, "Category coupon available"));
+  } catch (error) {
+    if (error instanceof ApiError) return res.status(200).json(new ApiResponse(200, { coupon: null }, "No eligible category coupon"));
+    throw error;
+  }
+});
+const normalizeAndValidateVariants = async (body) => { const mainCategory = await Category.findById(body.mainCategory).select("name").lean(); const product = { ...body, mainCategory }; const error = validateVariantConfiguration(product); if (error) throw new ApiError(400, error); return { ...body, images: normalizeImages(body.images) }; };
 const validateCategories = async body => {
   const main = await Category.findById(body.mainCategory);
   const sub = await Category.findById(body.subCategory);
@@ -116,11 +137,12 @@ const nextProductSku = async (metal, subCategory, excludedProductId) => {
 const createProduct = asyncHandler(async (req, res) => {
   const body = normalizeGoldWeights(req.body);
   await validateCategories(body);
+  const variantBody = await normalizeAndValidateVariants(body);
   const SKU = body.SKU && !String(body.SKU).startsWith("TBA-") ? body.SKU : await nextProductSku(body.metal, body.subCategory);
-  const product = await Product.create({ ...body, SKU, slug: slugify(body.title) });
+  const product = await Product.create({ ...variantBody, SKU, slug: slugify(variantBody.title) });
   res.status(201).json(new ApiResponse(201, await toProductResponse(await populated(Product.findById(product._id))), "Product created"));
 });
-const updateProduct = asyncHandler(async (req, res) => { const current = await Product.findById(req.params.productId); if (!current) throw new ApiError(404, "Product not found"); const update = normalizeGoldWeights({ ...req.body, grossWeight: req.body.grossWeight === undefined ? current.grossWeight : req.body.grossWeight, diamonds: req.body.diamonds === undefined ? current.diamonds : req.body.diamonds }, req.body.metal || current.metal); if (update.title) update.slug = slugify(update.title); if (update.mainCategory || update.subCategory || update.metal) { const nextProduct = { ...current.toObject(), ...update }; await validateCategories(nextProduct); const expectedPrefix = await productSkuPrefix(nextProduct.metal, nextProduct.subCategory); if (String(current.SKU || "").startsWith("TBA-") && !String(current.SKU).startsWith(expectedPrefix)) update.SKU = await nextProductSku(nextProduct.metal, nextProduct.subCategory, current._id); } const product = await Product.findByIdAndUpdate(current._id, update, { new: true, runValidators: true }); res.json(new ApiResponse(200, await toProductResponse(await populated(Product.findById(product._id))), "Product updated")); });
+const updateProduct = asyncHandler(async (req, res) => { const current = await Product.findById(req.params.productId); if (!current) throw new ApiError(404, "Product not found"); const update = normalizeGoldWeights({ ...req.body, grossWeight: req.body.grossWeight === undefined ? current.grossWeight : req.body.grossWeight, diamonds: req.body.diamonds === undefined ? current.diamonds : req.body.diamonds }, req.body.metal || current.metal); const variantUpdate = await normalizeAndValidateVariants({ ...current.toObject(), ...update }); update.images = variantUpdate.images; update.colors = variantUpdate.colors; if (update.title) update.slug = slugify(update.title); if (update.mainCategory || update.subCategory || update.metal) { const nextProduct = { ...current.toObject(), ...update }; await validateCategories(nextProduct); const expectedPrefix = await productSkuPrefix(nextProduct.metal, nextProduct.subCategory); if (String(current.SKU || "").startsWith("TBA-") && !String(current.SKU).startsWith(expectedPrefix)) update.SKU = await nextProductSku(nextProduct.metal, nextProduct.subCategory, current._id); } const product = await Product.findByIdAndUpdate(current._id, update, { new: true, runValidators: true }); res.json(new ApiResponse(200, await toProductResponse(await populated(Product.findById(product._id))), "Product updated")); });
 const deleteProduct = asyncHandler(async (req, res) => { const product = await Product.findByIdAndDelete(req.params.productId); if (!product) throw new ApiError(404, "Product not found"); res.json(new ApiResponse(200, null, "Product deleted")); });
 const previewPrice = asyncHandler(async (req, res) => {
   const previewProduct = normalizeGoldWeights(req.body);
@@ -132,4 +154,4 @@ const previewPrice = asyncHandler(async (req, res) => {
   res.json(new ApiResponse(200, prices, "Price preview"));
 });
 const uploadImageHandler = asyncHandler(async (req, res) => { const url = await uploadToCloudinary(req.file, "tba-products", { quality: "auto", fetch_format: "auto", width: 1600, crop: "limit" }); res.status(201).json(new ApiResponse(201, { url }, "Image uploaded")); });
-module.exports = { listProducts, listGoldProducts, listSilverProducts, getProduct, adminListProducts, adminGetProduct, listPricingConfigs, updatePricingConfig, createProduct, updateProduct, deleteProduct, previewPrice, uploadImageHandler };
+module.exports = { listProducts, listGoldProducts, listSilverProducts, getProduct, getCategoryCouponForProduct, adminListProducts, adminGetProduct, listPricingConfigs, updatePricingConfig, createProduct, updateProduct, deleteProduct, previewPrice, uploadImageHandler };

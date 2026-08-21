@@ -8,6 +8,11 @@ export interface CartItem {
   category: string;
   image: string;
   price: number;
+  basePrice?: number;
+  lineTotal?: number;
+  categoryCouponApplied?: boolean;
+  categoryCouponDiscount?: number;
+  categoryCouponLabel?: string;
   quantity: number;
   karat: "14kt" | "18kt";
   color?: string;
@@ -18,6 +23,7 @@ export interface Cart {
   _id: string;
   items: CartItem[];
   appliedCoupon: string | null;
+  referenceId?: string | null;
 }
 
 export interface CartProductPayload {
@@ -31,6 +37,7 @@ export interface CartProductPayload {
   color?: string;
   size?: string;
   quantity?: number;
+  categoryCouponApplied?: boolean;
 }
 
 export const cartApi = {
@@ -51,5 +58,6 @@ export const cartApi = {
   removeFromCart: (itemId: string) =>
     apiRequest<Cart>(`/cart/${itemId}`, { method: "DELETE" }),
 
+  setCategoryCoupon: (payload: Pick<CartProductPayload, "productId" | "karat" | "color" | "size"> & { applied: boolean }) => apiRequest<Cart>("/cart/category-coupon", { method: "PATCH", body: JSON.stringify(payload) }),
   clearCart: () => apiRequest<Cart>("/cart", { method: "DELETE" }),
 };

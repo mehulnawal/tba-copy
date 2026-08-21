@@ -4,10 +4,12 @@ const Order = require("../models/order.model");
 const Cart = require("../models/cart.model");
 const Product = require("../models/product.model");
 const Coupon = require("../models/coupon.model");
+const Partner = require("../models/partner.model");
 const ApiError = require("../utils/ApiError");
 const ApiResponse = require("../utils/ApiResponse");
 const asyncHandler = require("../utils/asyncHandler");
-const { calculatePrice } = require("../utils/priceCalculator");
+const { repriceCartItem, lineTotal } = require("../utils/cartPricing");
+const { validateSelectedColor, validateSelectedSize, imageForColor } = require("../utils/productVariants");
 const { calculateCartSummary } = require("../utils/checkoutUtils");
 const { getAppliedCodes, resolveCoupons, setAppliedCodes, isWelcomeCoupon } = require("../utils/checkoutCoupons");
 
@@ -17,35 +19,50 @@ const client = () => {
 };
 
 const confirm = async (order, paymentId) => {
-  if (order.orderStatus === "confirmed") return order;
-  order.orderStatus = "confirmed";
-  order.paymentStatus = "paid";
-  order.razorpayPaymentId = paymentId;
-  const coupons = order.coupons?.length ? order.coupons : (order.coupon?.code ? [order.coupon] : []);
-  for (const coupon of coupons) {
-    if (coupon.code && !isWelcomeCoupon(coupon.code)) await Coupon.updateOne({ code: coupon.code }, { $inc: { usedCount: 1 } });
+  if (order.orderStatus !== "confirmed") {
+    order.orderStatus = "confirmed";
+    order.paymentStatus = "paid";
+    order.razorpayPaymentId = paymentId;
+    const coupons = order.coupons?.length ? order.coupons : (order.coupon?.code ? [order.coupon] : []);
+    for (const coupon of coupons) {
+      if (coupon.code && !isWelcomeCoupon(coupon.code)) await Coupon.updateOne({ code: coupon.code }, { $inc: { usedCount: 1 } });
+    }
+    await order.save();
+    await Cart.updateOne({ user: order.customer }, { $set: { items: [], appliedCoupon: null, appliedCoupons: [], referenceId: null } });
   }
-  await order.save();
-  await Cart.updateOne({ user: order.customer }, { $set: { items: [], appliedCoupon: null, appliedCoupons: [] } });
+  if (order.partner && !order.partnerPointsCredited) {
+    const earned = Math.trunc((Number(order.amount || 0) / 100) * 100) / 100;
+    const credited = await Order.findOneAndUpdate(
+      { _id: order._id, partnerPointsCredited: false },
+      { $set: { partnerPointsCredited: true } },
+      { new: true }
+    );
+    if (credited) await Partner.updateOne({ _id: order.partner }, [{ $set: { points: { $trunc: [{ $add: ["$points", earned] }, 2] } } }], { updatePipeline: true });
+  }
   return order;
 };
-
 const place = asyncHandler(async (req, res) => {
   const cart = await Cart.findOne({ user: req.user._id });
   if (!cart?.items.length) throw new ApiError(400, "Cart is empty");
 
   const items = [];
   for (const entry of cart.items) {
-    const product = await Product.findOne({ SKU: entry.productId });
+    const product = await Product.findOne({ SKU: entry.productId }).populate("mainCategory", "name").populate("subCategory", "name");
     if (!product) throw new ApiError(400, "A cart product is no longer available");
-    const price = await calculatePrice(product, entry.karat);
-    items.push({ productSku: entry.productId, title: product.title, image: entry.image, karat: entry.karat, color: entry.color, size: entry.size, quantity: entry.quantity, priceSnapshot: price });
+    const colorError = validateSelectedColor(product, String(entry.color));
+    if (colorError) throw new ApiError(400, colorError);
+    const sizeError = validateSelectedSize(product, entry.size);
+    if (sizeError) throw new ApiError(400, sizeError);
+    await repriceCartItem(entry, product);
+    items.push({ productSku: entry.productId, title: product.title, image: entry.image || imageForColor(product, String(entry.color))?.url || "", karat: entry.karat, color: entry.color, size: entry.size, quantity: entry.quantity, priceSnapshot: { totalCost: lineTotal(entry), gst: 0, finalPrice: lineTotal(entry) } });
   }
 
-  const pricedItems = items.map((item) => ({ productId: item.productSku, category: cart.items.find((cartItem) => cartItem.productId === item.productSku)?.category, price: item.priceSnapshot.finalPrice, quantity: item.quantity }));
-  const subtotal = pricedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const pricedItems = items.map((item) => ({ productId: item.productSku, category: cart.items.find((cartItem) => cartItem.productId === item.productSku)?.category, price: item.priceSnapshot.totalCost, lineTotal: item.priceSnapshot.totalCost, quantity: 1 }));
+  const subtotal = pricedItems.reduce((sum, item) => sum + item.lineTotal, 0);
   const { entries, totalDiscount } = await resolveCoupons({ codes: getAppliedCodes(cart), user: req.user, subtotal });
-  const summary = calculateCartSummary(pricedItems, totalDiscount);
+  const partner = cart.referenceId ? await Partner.findOne({ referenceId: cart.referenceId }) : null;
+  const referenceDiscount = partner ? 500 : 0;
+  const summary = calculateCartSummary(pricedItems, totalDiscount, referenceDiscount);
   const storedCoupons = entries.map((coupon) => ({ code: coupon.code, discount: coupon.discount }));
 
   let order = await Order.findOne({ customer: req.user._id, orderStatus: "pending", paymentStatus: "pending" });
@@ -54,8 +71,9 @@ const place = asyncHandler(async (req, res) => {
     order.amount = summary.total;
     order.coupon = storedCoupons[0];
     order.coupons = storedCoupons;
+    order.partner = partner?._id || null; order.referenceId = partner?.referenceId || null; order.referenceDiscount = referenceDiscount;
   } else {
-    order = new Order({ customer: req.user._id, items, amount: summary.total, coupon: storedCoupons[0], coupons: storedCoupons });
+    order = new Order({ customer: req.user._id, items, amount: summary.total, coupon: storedCoupons[0], coupons: storedCoupons, partner: partner?._id || null, referenceId: partner?.referenceId || null, referenceDiscount });
   }
 
   const razorpayOrder = await client().orders.create({ amount: Math.round(summary.total * 100), currency: "INR", receipt: String(order._id) });

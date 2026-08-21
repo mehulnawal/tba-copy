@@ -3,6 +3,8 @@ import { useParams, Link } from "react-router-dom";
 import { AuthModal } from "./AuthModal";
 import { useAuth } from "../context/AuthContext";
 import { apiRequest } from "../api/client";
+import { cartApi } from "../api/cart.api";
+import { useQueryClient } from "@tanstack/react-query";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { useToast } from "../context/ToastContext";
@@ -13,11 +15,14 @@ import { getDefaultProductDescription } from "../constants/productDescriptions";
 import type { Product } from "../types";
 import { formatINR, formatMeasurement } from "../utils/currency";
 import { detailImage, publicAssetUrl, responsiveImage } from "../utils/image";
+import { colorForSlot, normalizeVariantImages, selectedVariantColors } from "../utils/productVariants";
 import PriceBreakup from "../components/PriceBreakup";
 import { Seo } from "../components/Seo";
 import { ProductSkeleton } from "../components/LoadingSkeleton";
 import { ProductCard } from "./ProductPage";
 import { ChevronDown, ChevronLeft, ChevronRight, Heart, Share2 } from "lucide-react";
+
+type CategoryCoupon = { discountType: "percentage" | "flat"; discountValue: number; discount: number; };
 
 type Review = {
     _id: string;
@@ -62,6 +67,7 @@ export default function ProductDetails() {
     const { showToast } = useToast();
     const { isAuthenticated } = useAuth();
     const addToCartMutation = useAddToCart();
+    const queryClient = useQueryClient();
     const { data: wishlist = [] } = useWishlist(isAuthenticated);
     const addToWishlistMutation = useAddToWishlist();
     const removeFromWishlistMutation = useRemoveFromWishlist();
@@ -84,6 +90,8 @@ export default function ProductDetails() {
     const [isPriceBreakupOpen, setIsPriceBreakupOpen] = useState(true);
     const [zoomMousePos, setZoomMousePos] = useState({ x: 0, y: 0 });
     const [isHoveringMainImage, setIsHoveringMainImage] = useState(false);
+    const [categoryCoupon, setCategoryCoupon] = useState<CategoryCoupon | null>(null);
+    const [appliedCouponSkus, setAppliedCouponSkus] = useState<Record<string, true>>({});
 
     useEffect(() => {
         setSimilarProducts([]);
@@ -91,8 +99,12 @@ export default function ProductDetails() {
         apiRequest<Product>(`/products/${slug}`)
             .then((p) => {
                 setProduct(p);
-                const defaultColors = p.metal === "silver" ? (p.colors || ["White"]).filter((item) => !item.toLowerCase().includes("rose")) : (p.colors && p.colors.length > 0 ? p.colors : ["Yellow", "Rose", "White"]);
-                setColor(defaultColors[0]);
+                const defaultColors = selectedVariantColors(p);
+                const variantImages = normalizeVariantImages(p.images);
+                const defaultImage = variantImages.find((image) => defaultColors.includes(colorForSlot(p, image.slot || 0))) || variantImages[0];
+                const defaultColor = defaultImage ? colorForSlot(p, defaultImage.slot || 0) : defaultColors[0];
+                setColor(defaultColors.includes(defaultColor) ? defaultColor : defaultColors[0]);
+                setActiveMediaIndex(defaultImage ? variantImages.findIndex((image) => image.slot === defaultImage.slot) : 0);
                 setSize("");
 
                 apiRequest<Review[]>(`/reviews/${p.SKU}`).then(setReviews).catch(() => { });
@@ -110,6 +122,25 @@ export default function ProductDetails() {
             .catch(() => setProduct(null));
     }, [slug]);
 
+    useEffect(() => {
+        let cancelled = false;
+        setCategoryCoupon(null);
+        if (!product?.SKU) return () => { cancelled = true; };
+        const params = product.metal === "gold" ? `?karat=${encodeURIComponent(karat)}` : "";
+        apiRequest<{ coupon: CategoryCoupon | null }>(`/products/${encodeURIComponent(product.SKU)}/category-coupon${params}`)
+            .then(({ coupon }) => {
+                if (cancelled) return;
+                setCategoryCoupon(coupon);
+                if (!coupon) setAppliedCouponSkus(current => {
+                    if (!current[product.SKU]) return current;
+                    const next = { ...current };
+                    delete next[product.SKU];
+                    return next;
+                });
+            })
+            .catch(() => { if (!cancelled) setCategoryCoupon(null); });
+        return () => { cancelled = true; };
+    }, [product?.SKU, product?.metal, karat]);
     if (!product) {
         return (
             <>
@@ -128,6 +159,14 @@ export default function ProductDetails() {
 
     const productPrices = Array.isArray(product.prices) ? product.prices : [];
     const activePriceObj = productPrices.find((price) => price.karat === karat) || productPrices[0] || { totalCost: 0, gst: 0, finalPrice: 0, grossWeight: 0 };
+    const roundMoney = (value: number) => Math.round((value + Number.EPSILON) * 100) / 100;
+    const originalSubtotal = Math.max(0, roundMoney(Number(activePriceObj.totalCost) || 0));
+    const couponApplied = Boolean(categoryCoupon && appliedCouponSkus[product.SKU]);
+    const couponDiscount = couponApplied ? Math.min(originalSubtotal, Math.max(0, roundMoney(Number(categoryCoupon?.discount) || 0))) : 0;
+    const subtotalAfterCoupon = roundMoney(Math.max(0, originalSubtotal - couponDiscount));
+    const discountedGst = roundMoney(subtotalAfterCoupon * 0.03);
+    const displayedPrice = couponApplied ? { ...activePriceObj, totalCost: subtotalAfterCoupon, gst: discountedGst, finalPrice: roundMoney(subtotalAfterCoupon + discountedGst) } : activePriceObj;
+    const couponLabel = categoryCoupon ? (categoryCoupon.discountType === "percentage" ? `${categoryCoupon.discountValue}% OFF` : `${formatINR(categoryCoupon.discountValue)} OFF`) : "";
     const grossWeight = activePriceObj.grossWeight ?? weightFor(product.grossWeight, karat);
     const netWeight = activePriceObj.netWeight ?? weightFor(product.netWeight, karat);
 
@@ -173,10 +212,10 @@ export default function ProductDetails() {
     const isRing = [categoryName(product.mainCategory), categoryName(product.subCategory)].some((name) => /\brings?\b/i.test(name));
     const isBracelet = !isRing && [categoryName(product.mainCategory), categoryName(product.subCategory)].some((name) => /\bbracelets?\b/i.test(name));
     const isBangle = !isRing && [categoryName(product.mainCategory), categoryName(product.subCategory)].some((name) => /\bbangles?\b/i.test(name));
-    const mediaList = [...(product.images || []).filter((image) => Boolean(image?.url)).map((image) => ({ type: "image" as const, url: image.url })), ...(product.videoLink ? [{ type: "video" as const, url: product.videoLink }] : [])];
+    const mediaList = [...normalizeVariantImages(product.images).map((image) => ({ type: "image" as const, url: image.url, slot: image.slot })), ...(product.videoLink ? [{ type: "video" as const, url: product.videoLink }] : [])];
     const productImage = mediaList[activeMediaIndex]?.url;
 
-    const availableColors = (product.colors && product.colors.length > 0 ? product.colors : ["Yellow", "Rose", "White"]).filter((finish) => isGold || !finish.toLowerCase().includes("rose"));
+    const availableColors = selectedVariantColors(product);
     const siteUrl = (import.meta.env.VITE_SITE_URL || "https://thebrillianceatelier.com").replace(/\/+$/, "");
     const productPath = `/product/${product.slug || slug}`;
     const productSchema = {
@@ -215,7 +254,7 @@ export default function ProductDetails() {
 
     const isWishlisted = wishlist.some((item) => item.productId === product.SKU);
     const addProductToCart = async () => {
-        try { await addToCartMutation.mutateAsync({ productId: product.SKU, karat, color, size, quantity: 1 }); showToast("Item added to cart!", "success"); }
+        try { await addToCartMutation.mutateAsync({ productId: product.SKU, karat, color, size, quantity: 1, categoryCouponApplied: couponApplied }); showToast("Item added to cart!", "success"); }
         catch (err: unknown) { showToast(err instanceof Error ? err.message : "Failed to add to cart.", "error"); }
     };
     const toggleWishlist = async () => {
@@ -223,6 +262,13 @@ export default function ProductDetails() {
             if (isWishlisted) { await removeFromWishlistMutation.mutateAsync(product.SKU); showToast("Removed from wishlist.", "success"); }
             else { await addToWishlistMutation.mutateAsync({ productId: product.SKU, karat }); showToast("Product saved to wishlist.", "success"); }
         } catch (err: unknown) { showToast(err instanceof Error ? err.message : "Could not update wishlist.", "error"); }
+    };
+    const toggleCategoryCoupon = async () => {
+        const applied = !couponApplied;
+        setAppliedCouponSkus(current => applied ? { ...current, [product.SKU]: true } : (() => { const next = { ...current }; delete next[product.SKU]; return next; })());
+        if (!isAuthenticated) return;
+        try { await cartApi.setCategoryCoupon({ productId: product.SKU, karat, color, size, applied }); await queryClient.invalidateQueries({ queryKey: ["cart"] }); }
+        catch (error) { showToast(error instanceof Error ? error.message : "Unable to update coupon in cart.", "error"); }
     };
     const handleAddToCart = async () => {
         if ((isRing || isBracelet || isBangle) && !size) { showToast(`Select a ${isBangle ? "bangle" : isBracelet ? "bracelet" : "ring"} size before adding this product.`, "error"); return; }
@@ -354,13 +400,17 @@ export default function ProductDetails() {
                             {/* Price Row */}
                             <div className="order-2 flex items-baseline justify-between border-y border-stone-200/80 py-3 lg:order-2">
                                 <div>
-                                    <span className="text-3xl font-secondary text-stone-900">
-                                        {formatINR(activePriceObj.finalPrice)}
+                                    {couponApplied && <span className="mr-2 text-lg text-stone-400 line-through">{formatINR(activePriceObj.finalPrice)}</span>}<span className="text-3xl font-secondary text-stone-900">
+                                        {formatINR(displayedPrice.finalPrice)}
                                     </span>
                                     <span className="text-[11px] text-stone-500 block">Inclusive of all taxes</span><span className="text-[11px] text-stone-500 block">*This is an estimated price, actual price may differ as per actual weights.</span>
                                 </div>
                                 <div className="flex gap-6"><button type="button" onClick={() => navigator.share ? void navigator.share({ title: product.title, url: window.location.href }) : void navigator.clipboard.writeText(window.location.href).then(() => showToast("Product link copied.", "success"))} className="inline-flex items-center gap-3 py-3 text-sm text-stone-700 cursor-pointer"><Share2 size={22} />Share</button><button type="button" onClick={handleWishlistClick} className="inline-flex items-center gap-1.5 py-3 text-sm text-stone-700"><Heart size={22} fill={isWishlisted ? "#dc2626" : "none"} className={isWishlisted ? "text-red-600" : ""} />Add to Wishlist</button></div>
                             </div>
+                            {categoryCoupon && <div className="order-3 flex items-center justify-between gap-3 border-b border-stone-200/80 pb-3 lg:order-3">
+                                <div className="text-xs text-stone-600"><span className="font-semibold text-stone-800">Category offer: {couponLabel}</span><span className="block text-[11px] text-stone-500">Applied to this product before GST.</span></div>
+                                <button type="button" onClick={() => void toggleCategoryCoupon()} className="shrink-0 border border-[var(--color-teal)] px-3 py-2 text-xs font-semibold text-[var(--color-teal)] transition hover:bg-[var(--color-teal)] hover:text-white">{couponApplied ? "Remove Coupon" : "Apply Coupon"}</button>
+                            </div>}
                             {/* Specs */}
                             <div className="order-4 rounded-lg border border-stone-200/80 bg-stone-50 p-4 space-y-3 lg:order-3">
                                 <h4 className="text-[11px] font-bold [-webkit-text-stroke:0.2px_currentColor] uppercase tracking-widest text-stone-700">
@@ -396,7 +446,7 @@ export default function ProductDetails() {
                                 </div>
                             </div>}
 
-                            <PriceBreakup product={product} price={activePriceObj} className="order-7 lg:order-7" />
+                            <PriceBreakup product={product} price={displayedPrice} coupon={couponApplied ? { label: couponLabel, discount: couponDiscount, subtotalAfterCoupon } : undefined} className="order-7 lg:order-7" />
 
                             <div className="order-8 lg:hidden"><MobileAccordion title="Description"><p className="whitespace-pre-line text-base leading-relaxed text-stone-600">{productDescriptionContent}</p></MobileAccordion></div>
                             {(product.certificates || []).length > 0 && <div className="order-9 lg:hidden"><MobileAccordion title="Certificates of Authenticity">
@@ -414,7 +464,7 @@ export default function ProductDetails() {
                                     {availableColors.map((c) => (
                                         <button
                                             key={c}
-                                            onClick={() => setColor(c)}
+                                            onClick={() => { setColor(c); const mediaIndex = mediaList.findIndex((media) => media.type === "image" && colorForSlot(product, media.slot || 0) === c); if (mediaIndex >= 0) setActiveMediaIndex(mediaIndex); }}
                                             className={`flex items-center space-x-2 px-3.5 py-2 rounded-full border transition ${color === c ? "border-[var(--color-teal)] bg-[var(--color-cream)] ring-1 ring-[var(--color-teal)]" : "border-stone-200 bg-white"
                                                 }`}
                                         >

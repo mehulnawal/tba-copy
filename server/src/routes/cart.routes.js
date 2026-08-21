@@ -3,6 +3,7 @@ const {
   getCart,
   addToCart,
   updateCartItem,
+  setCategoryCoupon,
   removeFromCart,
   clearCart,
 } = require("../controllers/cart.controller");
@@ -14,6 +15,7 @@ router.use(authenticate);
 
 router.get("/", getCart);
 router.post("/", addToCart);
+router.patch("/category-coupon", setCategoryCoupon);
 router.patch("/:itemId", updateCartItem);
 router.delete("/:itemId", removeFromCart);
 router.delete("/", clearCart);

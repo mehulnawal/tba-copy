@@ -1,11 +1,13 @@
 const express = require("express");
 const { access, logout, validatePassword, listProducts, getProduct, status } = require("../controllers/b2b.controller");
+const { mine: myPartner } = require("../controllers/partner.controller");
 const { requireB2BAccess } = require("../middlewares/b2b.middleware");
 const router = express.Router();
 router.post("/validate-password", validatePassword);
 router.post("/access", access);
 router.post("/logout", logout);
 router.get("/status", requireB2BAccess, status);
+router.get("/partner", requireB2BAccess, myPartner);
 router.get("/products", requireB2BAccess, listProducts);
 router.get("/products/:identifier", requireB2BAccess, getProduct);
 module.exports = router;

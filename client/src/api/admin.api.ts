@@ -32,6 +32,9 @@ export interface Coupon {
   usedCount: number;
   activeStatus: boolean;
 }
+export type CategoryCouponCategory = "gold" | "polki" | "moissanite";
+export interface CategoryCoupon extends Coupon { category: CategoryCouponCategory; }
+export interface Partner { _id: string; referenceId: string; firstName: string; lastName: string; mobile: string; dateOfBirth: string; city: string; address?: string; points: string; }
 export interface AdminReview {
   _id: string;
   rating: number;
@@ -116,6 +119,16 @@ export const adminApi = {
     }),
   deleteCoupon: (id: string) =>
     apiRequest<null>(`/admin/coupons/${id}`, { method: "DELETE" }),
+  categoryCoupons: () => apiRequest<CategoryCoupon[]>("/admin/category-coupons"),
+  createCategoryCoupon: (category: CategoryCouponCategory, p: Omit<Coupon, "_id" | "usedCount">) => apiRequest<CategoryCoupon>(`/admin/category-coupons/${category}`, { method: "POST", body: JSON.stringify(p) }),
+  updateCategoryCoupon: (category: CategoryCouponCategory, p: Partial<Coupon>) => apiRequest<CategoryCoupon>(`/admin/category-coupons/${category}`, { method: "PATCH", body: JSON.stringify(p) }),
+  deleteCategoryCoupon: (category: CategoryCouponCategory) => apiRequest<null>(`/admin/category-coupons/${category}`, { method: "DELETE" }),
+  partners: () => apiRequest<Partner[]>("/admin/partners"),
+  createPartner: (p: Omit<Partner, "_id" | "referenceId" | "points">) => apiRequest<Partner>("/admin/partners", { method: "POST", body: JSON.stringify(p) }),
+  updatePartner: (id: string, p: Partial<Omit<Partner, "_id" | "referenceId" | "points">>) => apiRequest<Partner>(`/admin/partners/${id}`, { method: "PATCH", body: JSON.stringify(p) }),
+  updatePartnerPoints: (id: string, points: number) => apiRequest<Partner>(`/admin/partners/${id}/points`, { method: "PATCH", body: JSON.stringify({ points }) }),
+  redeemPartnerPoints: (id: string, points: number) => apiRequest<Partner>(`/admin/partners/${id}/redeem-points`, { method: "PATCH", body: JSON.stringify({ points }) }),
+  deletePartner: (id: string) => apiRequest<null>(`/admin/partners/${id}`, { method: "DELETE" }),
   adminProducts: (search = "") => apiRequest<Product[]>(`/admin/products${search ? `?search=${encodeURIComponent(search)}` : ""}`), adminGetProduct: (id: string) => apiRequest<Product>(`/admin/products/${id}`), createProduct: (p: Partial<Product>) => apiRequest<Product>("/admin/products", { method: "POST", body: JSON.stringify(p) }), updateProduct: (id: string, p: Partial<Product>) => apiRequest<Product>(`/admin/products/${id}`, { method: "PATCH", body: JSON.stringify(p) }), deleteProduct: (id: string) => apiRequest<null>(`/admin/products/${id}`, { method: "DELETE" }), previewPrice: (p: Partial<Product>) => apiRequest<PriceBreakdown[]>("/admin/products/preview-price", { method: "POST", body: JSON.stringify(p) }), uploadImage: (file: File) => { const body = new FormData(); body.append("image", file); return apiRequest<{ url: string }>("/admin/upload-image", { method: "POST", body }); },
   pricingConfigs: () => apiRequest<PricingConfig[]>("/admin/pricing-configs"),
   updatePricingConfig: (key: string, changes: Partial<Pick<PricingConfig, "makingRatePerGram" | "moissaniteRatePerCarat" | "polkiValuePerUnit" | "silverB2BMakingChargeRate">>) => apiRequest<PricingConfig>("/admin/pricing-configs/" + encodeURIComponent(key), { method: "PATCH", body: JSON.stringify(changes) }),

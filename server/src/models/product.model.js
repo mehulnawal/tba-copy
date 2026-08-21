@@ -21,7 +21,7 @@ const moissaniteEntrySchema = new mongoose.Schema({
   caratWeight: { type: Number, required: true, min: 0 },
   colorClarity: { type: String, default: "" }, // Optional/inactive pending client confirmation.
 }, { _id: false });
-const imageSchema = new mongoose.Schema({ url: { type: String, required: true }, source: { type: String, enum: ["link", "upload"], required: true } }, { _id: false });
+const imageSchema = new mongoose.Schema({ url: { type: String, required: true }, source: { type: String, enum: ["link", "upload"], required: true }, slot: { type: Number, min: 1, max: 6 } }, { _id: false });
 const diamondPriceOverrideSchema = new mongoose.Schema({
   b2bPrice: { type: Number, required: true },
   b2cPrice: { type: Number, required: true },

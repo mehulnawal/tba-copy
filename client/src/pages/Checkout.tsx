@@ -9,7 +9,10 @@ import Footer from "../components/Footer";
 type Summary = {
     subtotal: number;
     discount: number;
+    referenceDiscount?: number;
     shippingFee: number;
+    taxableSubtotal: number;
+    gst: number;
     total: number;
 };
 
@@ -19,6 +22,7 @@ type CartItem = {
     image: string;
     quantity: number;
     price: number;
+    lineTotal?: number;
     karat?: string;
     size?: string;
 };
@@ -48,6 +52,9 @@ export default function Checkout() {
     const [couponSuccess, setCouponSuccess] = useState("");
     const [couponError, setCouponError] = useState("");
     const [manualCouponCode, setManualCouponCode] = useState("");
+    const [referenceId, setReferenceId] = useState("");
+    const [appliedReferenceId, setAppliedReferenceId] = useState("");
+    const [referenceMessage, setReferenceMessage] = useState("");
     const [appliedCoupons, setAppliedCoupons] = useState<AppliedCoupon[]>([]);
 
     const [applyingCode, setApplyingCode] = useState<string | null>(null);
@@ -76,6 +83,7 @@ export default function Checkout() {
             const d: any = await checkoutApi.getOrderSummary();
             setItems(d.items as CartItem[]);
             setSummary(d.summary);
+            setAppliedReferenceId(d.cart?.referenceId || "");
             const activeCoupons = d.coupons || (d.coupon ? [d.coupon] : []);
             setAppliedCoupons(activeCoupons.map((coupon: any) => ({
                 code: coupon.code || coupon,
@@ -125,6 +133,8 @@ export default function Checkout() {
         }
     };
 
+    const applyReferenceId = async () => { try { const result = await checkoutApi.applyReferenceId(referenceId); setSummary(result.summary); setAppliedReferenceId(referenceId); setReferenceMessage("Reference ID applied successfully - ₹500 discount added."); } catch { setReferenceMessage("Invalid Reference ID"); } };
+    const removeReferenceId = async () => { const result = await checkoutApi.removeReferenceId(); setSummary(result.summary); setAppliedReferenceId(""); setReferenceId(""); setReferenceMessage(""); };
     // Remove Coupon Handler
     const handleRemoveCoupon = async (code: string) => {
         setCouponError("");
@@ -151,7 +161,30 @@ export default function Checkout() {
             const R = (window as any).Razorpay;
             if (!R) throw new Error("Razorpay checkout is not loaded. Please try again.");
             new R({ key: d.keyId, order_id: d.razorpayOrder.id, amount: d.razorpayOrder.amount, currency: d.razorpayOrder.currency,
-                handler: async (response: unknown) => { try { await apiRequest("/orders/verify", { method: "POST", body: JSON.stringify(response) }); queryClient.setQueryData(["cart"], (current: any) => current ? { ...current, items: [] } : current); queryClient.invalidateQueries({ queryKey: ["cart"] }); nav(`/orderConfirmation?orderId=${d.order._id}`); } catch (error) { setError(error instanceof Error ? error.message : "Payment verification failed."); } finally { setIsPaying(false); } },
+                handler: async (response: unknown) => {
+                    try {
+                        await apiRequest("/orders/verify", { method: "POST", body: JSON.stringify(response) });
+                        queryClient.setQueryData(["cart"], (current: any) => current ? { ...current, items: [] } : current);
+                        queryClient.invalidateQueries({ queryKey: ["cart"] });
+                        nav(`/orderConfirmation?orderId=${d.order._id}`);
+                    } catch (error) {
+                        try {
+                            const order = await apiRequest<{ orderStatus: string; paymentStatus: string }>(`/orders/${d.order._id}`);
+                            if (order.orderStatus === "confirmed" && order.paymentStatus === "paid") {
+                                queryClient.setQueryData(["cart"], (current: any) => current ? { ...current, items: [] } : current);
+                                queryClient.invalidateQueries({ queryKey: ["cart"] });
+                                nav(`/orderConfirmation?orderId=${d.order._id}`);
+                                return;
+                            }
+                        } catch {
+                            // Preserve the original verification error when the order cannot be re-read.
+                        }
+                        queryClient.invalidateQueries({ queryKey: ["cart"] });
+                        setError(error instanceof Error ? error.message : "Payment verification failed.");
+                    } finally {
+                        setIsPaying(false);
+                    }
+                },
                 modal: { ondismiss: () => setIsPaying(false) },
             }).open();
         } catch (error: unknown) { setError(error instanceof Error ? error.message : "Unable to start payment."); setIsPaying(false); }
@@ -218,11 +251,11 @@ export default function Checkout() {
                                                 {i.name}
                                             </h3>
                                             <p className="text-xs text-gray-500 uppercase tracking-wider mt-1">
-                                                {i.karat && `${i.karat.toUpperCase()} · `}{i.size && `Size: ${i.size} · `}Qty: {i.quantity}
+                                                {i.karat && `${i.karat.toUpperCase()} - `}{i.size && `Size: ${i.size} - `}Qty: {i.quantity}
                                             </p>
                                         </div>
                                         <div className="text-right font-medium text-sm text-gray-900">
-                                            {formatCurrency(i.price * i.quantity)}
+                                            {formatCurrency(i.lineTotal ?? i.price * i.quantity)}
                                         </div>
                                     </div>
                                 ))}
@@ -236,6 +269,7 @@ export default function Checkout() {
                                 <h3 className="text-xs uppercase tracking-widest font-semibold text-gray-900 border-b border-gray-100 pb-3">
                                     Offers & Coupons
                                 </h3>
+                                <div className="space-y-2"><label className="text-[11px] font-medium uppercase tracking-wider text-gray-500 block">Reference ID (Optional)</label><div className="flex gap-2"><input value={referenceId} onChange={(e) => setReferenceId(e.target.value)} disabled={!!appliedReferenceId} className="flex-1 bg-white border border-gray-300 text-gray-900 text-xs px-3 py-2.5 rounded" /><button type="button" onClick={() => void applyReferenceId()} disabled={!referenceId || !!appliedReferenceId} className="bg-black text-white text-xs px-4 rounded disabled:opacity-50">Apply</button></div>{appliedReferenceId && <div className="text-xs text-emerald-700">{appliedReferenceId} applied <button type="button" onClick={() => void removeReferenceId()} className="ml-2 underline">Remove</button></div>}{referenceMessage && <p className={referenceMessage === "Invalid Reference ID" ? "text-xs text-red-700" : "text-xs text-emerald-700"}>{referenceMessage}</p>}</div>
                                 {/* Promo entry and independently applied coupons */}
                                 <div className="space-y-2">
                                     <label className="text-[11px] font-medium uppercase tracking-wider text-gray-500 block">Enter Promo Code</label>
@@ -297,13 +331,13 @@ export default function Checkout() {
                                                 {formatCurrency(summary.subtotal)}
                                             </span>
                                         </div>
-
-                                        <div className="flex justify-between text-emerald-700">
+                                        {summary.discount > 0 && <div className="flex justify-between text-emerald-700">
                                             <span>Discount</span>
-                                            <span className="font-medium">
-                                                -{formatCurrency(summary.discount)}
-                                            </span>
-                                        </div>
+                                            <span className="font-medium">-{formatCurrency(summary.discount)}</span>
+                                        </div>}
+                                        {summary.referenceDiscount ? <div className="flex justify-between text-emerald-700"><span>Reference ID Discount</span><span className="font-medium">-{formatCurrency(summary.referenceDiscount)}</span></div> : null}
+                                        <div className="flex justify-between"><span>Taxable Subtotal</span><span className="font-medium text-gray-900">{formatCurrency(summary.taxableSubtotal)}</span></div>
+                                        <div className="flex justify-between"><span>GST (3%)</span><span className="font-medium text-gray-900">{formatCurrency(summary.gst)}</span></div>
 
                                         <div className="flex justify-between">
                                             <span>Shipping</span>
@@ -328,7 +362,7 @@ export default function Checkout() {
                                         onClick={place} disabled={isPaying || !items.length}
                                         className="w-full mt-4 bg-black hover:bg-gray-800 text-white text-xs uppercase tracking-widest font-semibold py-3.5 px-4 rounded shadow transition-all duration-200"
                                     >
-                                        {isPaying ? "Opening payment…" : "Pay Securely"}
+                                        {isPaying ? "Opening payment..." : "Pay Securely"}
                                     </button>
                                 </div>
                             )}

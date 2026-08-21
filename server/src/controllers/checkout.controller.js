@@ -2,6 +2,7 @@ const Cart = require("../models/cart.model");
 const Coupon = require("../models/coupon.model");
 const Address = require("../models/address.model");
 const Product = require("../models/product.model");
+const Partner = require("../models/partner.model");
 const ApiError = require("../utils/ApiError");
 const ApiResponse = require("../utils/ApiResponse");
 const asyncHandler = require("../utils/asyncHandler");
@@ -21,24 +22,11 @@ const getOrCreateCart = async (userId) => {
   return cart;
 };
 
-const refreshCartPrices = async (cart) => {
-  let changed = false;
-  for (const item of cart.items) {
-    const product = await Product.findOne({ SKU: item.productId });
-    if (!product) throw new ApiError(400, `${item.name} is no longer available`);
-    const current = await require("../utils/priceCalculator").calculatePrice(product, item.karat);
-    if (Math.round(Number(item.price) * 100) !== Math.round(Number(current.finalPrice) * 100)) {
-      item.price = current.finalPrice;
-      changed = true;
-    }
-  }
-  if (changed) await cart.save();
-  return changed;
-};
-
+const { repriceCartItem, lineTotal } = require("../utils/cartPricing");
+const refreshCartPrices = async (cart) => { let changed = false; for (const item of cart.items) { const product = await Product.findOne({ SKU: item.productId }).populate("mainCategory", "name").populate("subCategory", "name"); if (!product) throw new ApiError(400, `${item.name} is no longer available`); const before = JSON.stringify([item.price, item.lineTotal, item.categoryCouponDiscount, item.categoryCouponApplied]); await repriceCartItem(item, product); if (before !== JSON.stringify([item.price, item.lineTotal, item.categoryCouponDiscount, item.categoryCouponApplied])) changed = true; } if (changed) await cart.save(); return changed; };
 const getCouponState = async (cart, user) => {
   const codes = getAppliedCodes(cart);
-  const subtotal = cart.items.reduce((total, item) => total + item.price * item.quantity, 0);
+  const subtotal = cart.items.reduce((total, item) => total + lineTotal(item), 0);
   const validCodes = [];
   const entries = [];
   let totalDiscount = 0;
@@ -61,11 +49,14 @@ const getCouponState = async (cart, user) => {
   return { entries, totalDiscount };
 };
 
+const referenceDiscountFor = async (cart) => cart.referenceId && await Partner.exists({ referenceId: cart.referenceId }) ? 500 : 0;
+const applyReferenceId = asyncHandler(async (req,res) => { const referenceId = String(req.body?.referenceId || ""); const cart = await getOrCreateCart(req.user._id); const partner = await Partner.findOne({ referenceId }); if (!partner) throw new ApiError(400, "Invalid Reference ID"); cart.referenceId = referenceId; await cart.save(); const { entries, totalDiscount } = await getCouponState(cart, req.user); res.json(new ApiResponse(200, { cart, summary: calculateCartSummary(cart.items, totalDiscount, 500), referenceId }, "Reference ID applied successfully \u2014 \u20B9500 discount added.")); });
+const removeReferenceId = asyncHandler(async (req,res) => { const cart = await getOrCreateCart(req.user._id); cart.referenceId = null; await cart.save(); const { entries, totalDiscount } = await getCouponState(cart, req.user); res.json(new ApiResponse(200, { cart, summary: calculateCartSummary(cart.items, totalDiscount), referenceId: null }, "Reference ID removed")); });
 const getCartSummary = asyncHandler(async (req, res) => {
   const cart = await getOrCreateCart(req.user._id);
   const priceChanged = await refreshCartPrices(cart);
   const { entries: coupons, totalDiscount } = await getCouponState(cart, req.user);
-  const summary = calculateCartSummary(cart.items, totalDiscount);
+  const summary = calculateCartSummary(cart.items, totalDiscount, await referenceDiscountFor(cart));
 
   res.status(200).json(new ApiResponse(200, { cart, summary, coupons, coupon: coupons[0] || null, priceChanged }, priceChanged ? "Prices updated to current rates" : "Cart summary fetched successfully"));
 });
@@ -84,14 +75,14 @@ const applyCoupon = asyncHandler(async (req, res) => {
   const codes = getAppliedCodes(cart);
   if (codes.includes(code)) throw new ApiError(400, "This coupon has already been applied");
 
-  const subtotal = cart.items.reduce((total, item) => total + item.price * item.quantity, 0);
+  const subtotal = cart.items.reduce((total, item) => total + lineTotal(item), 0);
   const { entries: existing, totalDiscount: existingDiscount } = await resolveCoupons({ codes, user: req.user, subtotal });
   const { entries: added, totalDiscount: addedDiscount } = await resolveCoupons({ codes: [code], user: req.user, subtotal: Math.max(subtotal - existingDiscount, 0) });
   const coupons = [...existing, ...added];
   setAppliedCodes(cart, [...codes, code]);
   await cart.save();
 
-  res.status(200).json(new ApiResponse(200, { cart, summary: calculateCartSummary(cart.items, existingDiscount + addedDiscount), coupons, coupon: coupons[0] || null }, "Coupon applied successfully"));
+  res.status(200).json(new ApiResponse(200, { cart, summary: calculateCartSummary(cart.items, existingDiscount + addedDiscount, await referenceDiscountFor(cart)), coupons, coupon: coupons[0] || null }, "Coupon applied successfully"));
 });
 
 const removeCoupon = asyncHandler(async (req, res) => {
@@ -101,7 +92,7 @@ const removeCoupon = asyncHandler(async (req, res) => {
   setAppliedCodes(cart, remaining);
   await cart.save();
   const { entries: coupons, totalDiscount } = await getCouponState(cart, req.user);
-  res.status(200).json(new ApiResponse(200, { cart, summary: calculateCartSummary(cart.items, totalDiscount), coupons, coupon: coupons[0] || null }, "Coupon removed successfully"));
+  res.status(200).json(new ApiResponse(200, { cart, summary: calculateCartSummary(cart.items, totalDiscount, await referenceDiscountFor(cart)), coupons, coupon: coupons[0] || null }, "Coupon removed successfully"));
 });
 
 const getAvailableCoupons = asyncHandler(async (req, res) => {
@@ -124,7 +115,7 @@ const getOrderSummary = asyncHandler(async (req, res) => {
 
   const priceChanged = await refreshCartPrices(cart);
   const { entries: coupons, totalDiscount } = await getCouponState(cart, req.user);
-  res.status(200).json(new ApiResponse(200, { items: cart.items, address, coupons, coupon: coupons[0] || null, summary: calculateCartSummary(cart.items, totalDiscount), priceChanged }, priceChanged ? "Prices updated to current rates; please review your cart" : "Order summary fetched successfully"));
+  res.status(200).json(new ApiResponse(200, { cart, items: cart.items, address, coupons, coupon: coupons[0] || null, summary: calculateCartSummary(cart.items, totalDiscount, await referenceDiscountFor(cart)), priceChanged }, priceChanged ? "Prices updated to current rates; please review your cart" : "Order summary fetched successfully"));
 });
 
-module.exports = { getCartSummary, applyCoupon, removeCoupon, getAvailableCoupons, getOrderSummary };
+module.exports = { getCartSummary, applyCoupon, removeCoupon, applyReferenceId, removeReferenceId, getAvailableCoupons, getOrderSummary };

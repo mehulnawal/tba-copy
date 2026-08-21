@@ -28,6 +28,8 @@ const {
   deleteCoupon,
   listCoupons,
 } = require("../controllers/coupon.controller");
+const { listCategoryCoupons, createCategoryCoupon, updateCategoryCoupon, deleteCategoryCoupon } = require("../controllers/categoryCoupon.controller");
+const { list: listPartners, create: createPartner, update: updatePartner, setPoints, redeemPoints, remove: removePartner } = require("../controllers/partner.controller");
 const {
   listUsers,
   blockUser,
@@ -93,6 +95,17 @@ router.get("/coupons", listCoupons);
 router.post("/coupons", createCoupon);
 router.patch("/coupons/:couponId", updateCoupon);
 router.delete("/coupons/:couponId", deleteCoupon);
+router.get("/category-coupons", listCategoryCoupons);
+router.post("/category-coupons/:category", createCategoryCoupon);
+router.patch("/category-coupons/:category", updateCategoryCoupon);
+router.delete("/category-coupons/:category", deleteCategoryCoupon);
+
+router.get("/partners", listPartners);
+router.post("/partners", createPartner);
+router.patch("/partners/:partnerId/redeem-points", redeemPoints);
+router.patch("/partners/:partnerId", updatePartner);
+router.patch("/partners/:partnerId/points", setPoints);
+router.delete("/partners/:partnerId", removePartner);
 
 router.get("/b2b-access", getB2BStatus);
 router.get("/b2b-access/logs", listB2BAccessLogs);

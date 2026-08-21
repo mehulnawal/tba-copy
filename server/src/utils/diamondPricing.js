@@ -30,15 +30,26 @@ const hydrateLiveDiamondEntryRates = async (product) => {
   // them first so rebuilding diamond entries never loses fields such as `metal`.
   const rawProduct = product?.toObject ? product.toObject() : product;
   const diamonds = Array.isArray(rawProduct?.diamonds) ? rawProduct.diamonds : [];
-  const ids = [...new Set(diamonds.map((entry) => entry?.diamondCategoryRef).filter(Boolean).map(String))];
-  if (!ids.length) return rawProduct;
-  const categories = await DiamondCategory.find({ _id: { $in: ids } }).select("b2bPrice b2cPrice").lean();
+  const productCategoryRef = rawProduct?.metal === "gold" ? rawProduct.diamondCategoryRef : null;
+  const ids = [...new Set([...diamonds.map((entry) => entry?.diamondCategoryRef), productCategoryRef].filter(Boolean).map(String))];
+  const names = [...new Set(diamonds.map((entry) => String(entry?.category || "").trim()).filter(Boolean))];
+  if (!ids.length && !names.length) return rawProduct;
+  const categories = await DiamondCategory.find({ $or: [{ _id: { $in: ids } }, { categoryName: { $in: names } }] }).select("categoryName size b2bPrice b2cPrice").lean();
   const byId = new Map(categories.map((category) => [String(category._id), category]));
+  const productCategory = productCategoryRef ? byId.get(String(productCategoryRef)) : null;
+  const byName = new Map(categories.reduce((groups, category) => {
+    const key = String(category.categoryName || "").trim().toLowerCase();
+    groups.set(key, [...(groups.get(key) || []), category]);
+    return groups;
+  }, new Map()));
   return { ...rawProduct, diamonds: diamonds.map((entry, index) => {
-    if (!entry?.diamondCategoryRef) return entry;
-    const category = byId.get(String(entry.diamondCategoryRef));
-    if (!category) throw new Error(`Diamond ${index + 1} category not found`);
-    return { ...entry, ratePerCtB2B: validPrice(category.b2bPrice, `Diamond ${index + 1} B2B rate`), ratePerCtB2C: validPrice(category.b2cPrice, `Diamond ${index + 1} B2C rate`) };
+    const candidates = byName.get(String(entry?.category || "").trim().toLowerCase()) || [];
+    const category = entry?.diamondCategoryRef
+      ? byId.get(String(entry.diamondCategoryRef))
+      : candidates.find((item) => String(item.size || "").trim().toLowerCase() === String(entry?.subType || "").trim().toLowerCase()) || (candidates.length === 1 ? candidates[0] : productCategory);
+    if (entry?.diamondCategoryRef && !category) throw new Error(`Diamond ${index + 1} category not found`);
+    if (!category) return entry;
+    return { ...entry, diamondCategoryRef: entry.diamondCategoryRef || category._id, ratePerCtB2B: validPrice(category.b2bPrice, `Diamond ${index + 1} B2B rate`), ratePerCtB2C: validPrice(category.b2cPrice, `Diamond ${index + 1} B2C rate`) };
   }) };
 };
 

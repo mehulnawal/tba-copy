@@ -1,6 +1,6 @@
 import React, { FormEvent, useEffect, useState, useMemo, useCallback } from "react";
 import { Navigate, NavLink, Route, Routes, useNavigate } from "react-router-dom";
-import { adminApi, type AdminUser, type BannerPayload, type Coupon, type ManagedUser, type B2BAccessStatus, type PricingConfig } from "../api/admin.api";
+import { adminApi, type AdminUser, type BannerPayload, type Coupon, type CategoryCoupon, type CategoryCouponCategory, type ManagedUser, type B2BAccessStatus, type PricingConfig } from "../api/admin.api";
 import type { Banner } from "../api/banner.api";
 import type { Announcement } from "../api/announcement.api";
 import { ApiRequestError, apiRequest } from "../api/client";
@@ -8,6 +8,7 @@ import type { Category } from "../types";
 import Products from "./Products";
 import DiamondCategories from "./DiamondCategories";
 import Reviews from "./Reviews";
+import Partners from "./Partners";
 import { ClipboardList, FolderTree, Gem, Image, Lock, Megaphone, Menu, Scale, ShoppingBag, Sparkles, Star, Ticket, UsersRound, X } from "lucide-react";
 
 // --- HELPERS ---
@@ -160,6 +161,7 @@ function Layout({ admin, onLogout }: { admin: AdminUser; onLogout: () => void })
     { to: "/admin/orders", label: "Orders", icon: ShoppingBag },
     { to: "/admin/reviews", label: "Reviews", icon: Star },
     { to: "/admin/coupons", label: "Coupons", icon: Ticket },
+    { to: "/admin/partners", label: "Partner Program", icon: UsersRound },
     { to: "/admin/products", label: "Products", icon: Gem },
     { to: "/admin/diamond-categories", label: "Diamond Categories", icon: Gem },
     { to: "/admin/categories", label: "Categories", icon: FolderTree },
@@ -228,6 +230,7 @@ function Layout({ admin, onLogout }: { admin: AdminUser; onLogout: () => void })
           <Route path="banners" element={<Banners />} />
           <Route path="announcements" element={<Announcements />} />
           <Route path="coupons" element={<Coupons />} />
+          <Route path="partners" element={<Partners />} />
           <Route path="users" element={<Users />} />
           <Route path="orders" element={<Orders />} />
           <Route path="reviews" element={<Reviews />} />
@@ -565,8 +568,43 @@ function Coupons() {
           </div>
         )}
       </div>
+
+      <CategoryWiseCoupons />
     </div>
   );
+}
+
+function CategoryWiseCoupons() {
+  const categories: { key: CategoryCouponCategory; name: string }[] = [
+    { key: "gold", name: "Gold" },
+    { key: "polki", name: "Polki" },
+    { key: "moissanite", name: "Moissanite" },
+  ];
+  const [items, setItems] = useState<CategoryCoupon[]>([]);
+  const [editing, setEditing] = useState<CategoryCouponCategory | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [deleting, setDeleting] = useState<CategoryCouponCategory | null>(null);
+  const [code, setCode] = useState("");
+  const [discountType, setDiscountType] = useState<"percentage" | "flat">("percentage");
+  const [discountValue, setDiscountValue] = useState("");
+  const [minimumCartValue, setMinimumCartValue] = useState("0");
+  const [expiryDate, setExpiryDate] = useState("");
+  const [usageLimit, setUsageLimit] = useState("");
+  const [activeStatus, setActiveStatus] = useState(true);
+  const load = useCallback(async () => { setIsLoading(true); try { setItems(await adminApi.categoryCoupons()); } catch (e) { setToast({ message: errorMessage(e), type: "error" }); } finally { setIsLoading(false); } }, []);
+  useEffect(() => { void load(); }, [load]);
+  const reset = () => { setEditing(null); setCode(""); setDiscountType("percentage"); setDiscountValue(""); setMinimumCartValue("0"); setExpiryDate(""); setUsageLimit(""); setActiveStatus(true); };
+  const begin = (category: CategoryCouponCategory) => { const coupon = items.find((item) => item.category === category); setEditing(category); setCode(coupon?.code || ""); setDiscountType(coupon?.discountType || "percentage"); setDiscountValue(coupon ? String(coupon.discountValue) : ""); setMinimumCartValue(coupon ? String(coupon.minimumCartValue) : "0"); setExpiryDate(coupon?.expiryDate ? new Date(coupon.expiryDate).toISOString().slice(0, 16) : ""); setUsageLimit(coupon?.usageLimit == null ? "" : String(coupon.usageLimit)); setActiveStatus(coupon?.activeStatus ?? true); };
+  const save = async (event: FormEvent<HTMLFormElement>) => { event.preventDefault(); if (!editing) return; const value = Number(discountValue), minimum = Number(minimumCartValue), usage = usageLimit.trim() ? Number(usageLimit) : null; if (!code.trim()) return setToast({ message: "Coupon code is required.", type: "error" }); if (!Number.isFinite(value) || value <= 0 || (discountType === "percentage" && value > 100)) return setToast({ message: "Enter a valid discount value.", type: "error" }); if (!Number.isFinite(minimum) || minimum < 0) return setToast({ message: "Minimum cart value cannot be negative.", type: "error" }); if (usage !== null && (!Number.isInteger(usage) || usage < 1)) return setToast({ message: "Usage limit must be at least 1 or left blank.", type: "error" }); if (!expiryDate || Number.isNaN(new Date(expiryDate).getTime())) return setToast({ message: "A valid expiry date is required.", type: "error" }); const payload = { code: code.trim().toUpperCase(), discountType, discountValue: value, minimumCartValue: minimum, expiryDate: new Date(expiryDate).toISOString(), usageLimit: usage, activeStatus }; try { setIsSaving(true); const exists = items.some((item) => item.category === editing); if (exists) await adminApi.updateCategoryCoupon(editing, payload); else await adminApi.createCategoryCoupon(editing, payload); setToast({ message: "Category coupon saved successfully", type: "success" }); reset(); await load(); } catch (e) { setToast({ message: errorMessage(e), type: "error" }); } finally { setIsSaving(false); } };
+  const remove = async (category: CategoryCouponCategory) => { if (!confirm("Are you sure you want to remove this category coupon?")) return; try { setDeleting(category); await adminApi.deleteCategoryCoupon(category); setToast({ message: "Category coupon removed successfully", type: "success" }); if (editing === category) reset(); await load(); } catch (e) { setToast({ message: errorMessage(e), type: "error" }); } finally { setDeleting(null); } };
+  return <section className="space-y-4 pt-2">
+    {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+    <div><h2 className="text-xl font-primary text-[var(--color-charcoal)]">Category-wise Coupons</h2><p className="text-sm text-[var(--color-text-muted)] mt-1">Configure one independent coupon for each pricing category.</p></div>
+    {isLoading ? <div className="grid grid-cols-1 md:grid-cols-3 gap-4">{categories.map(({ key }) => <div key={key} className="admin-row h-48 animate-pulse bg-[var(--color-cream-light)]" />)}</div> : <div className="grid grid-cols-1 md:grid-cols-3 gap-4">{categories.map(({ key, name }) => { const coupon = items.find((item) => item.category === key); const expired = coupon && new Date(coupon.expiryDate).getTime() < Date.now(); return <div key={key} className="admin-row flex flex-col gap-3"><div className="flex items-start justify-between gap-2"><h3 className="font-semibold text-[var(--color-charcoal)]">{name}</h3><Badge variant={!coupon ? "neutral" : expired ? "danger" : coupon.activeStatus ? "success" : "neutral"}>{!coupon ? "Not configured" : expired ? "Expired" : coupon.activeStatus ? "Active" : "Inactive"}</Badge></div>{coupon ? <div className="text-xs space-y-1 text-[var(--color-text-muted)]"><p className="font-mono font-bold text-[var(--color-teal)]">{coupon.code}</p><p>{coupon.discountType === "percentage" ? `${coupon.discountValue}% OFF` : `${formatCurrency(coupon.discountValue)} OFF`}</p><p>Min Order: {formatCurrency(coupon.minimumCartValue)}</p><p>Expires: {formatDate(coupon.expiryDate)}</p></div> : <p className="text-xs italic text-[var(--color-text-muted)]">No coupon configured</p>}<div className="mt-auto flex justify-end gap-3 text-xs"><button onClick={() => begin(key)} className="cursor-pointer">{coupon ? "Edit" : "Configure"}</button>{coupon && <button disabled={deleting === key} onClick={() => remove(key)} className="text-red-700 cursor-pointer disabled:opacity-50">{deleting === key ? "Removing..." : "Remove"}</button>}</div></div>; })}</div>}
+    {editing && <form onSubmit={save} className="admin-form"><b>{items.some((item) => item.category === editing) ? `Edit ${categories.find((item) => item.key === editing)?.name} Coupon` : `Configure ${categories.find((item) => item.key === editing)?.name} Coupon`}</b><label>Coupon Code<input required value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} className="admin-input font-mono" /></label><label>Discount Type<select value={discountType} onChange={(e) => setDiscountType(e.target.value as "percentage" | "flat")} className="admin-input"><option value="percentage">Percentage (%)</option><option value="flat">Flat Amount (INR)</option></select></label><label>Discount Value<input required type="number" min="0" step="any" value={discountValue} onChange={(e) => setDiscountValue(e.target.value)} className="admin-input" /></label><label>Min Order Value (INR)<input required type="number" min="0" step="any" value={minimumCartValue} onChange={(e) => setMinimumCartValue(e.target.value)} className="admin-input" /></label><label>Expiry Date<input required type="datetime-local" value={expiryDate} onChange={(e) => setExpiryDate(e.target.value)} className="admin-input" /></label><label>Usage Limit (Optional)<input type="number" min="1" value={usageLimit} onChange={(e) => setUsageLimit(e.target.value)} placeholder="Unlimited" className="admin-input" /></label><div className="col-span-full flex items-center justify-between pt-2"><label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-[var(--color-text-muted)]"><input type="checkbox" checked={activeStatus} onChange={(e) => setActiveStatus(e.target.checked)} className="rounded border-[var(--color-border)] text-[var(--color-teal)] focus:ring-0" />Active Status</label><div className="flex gap-2"><button type="button" onClick={reset} className="px-4 py-2 border border-[var(--color-border)] text-xs rounded-[var(--radius-sm)] cursor-pointer">Cancel</button><button disabled={isSaving} className="admin-button cursor-pointer disabled:opacity-50">{isSaving ? "Saving..." : "Save Category Coupon"}</button></div></div></form>}
+  </section>;
 }
 
 // --- BANNERS ---
@@ -833,7 +871,7 @@ function Orders() {
                     {(order.items || []).map((item: any, index: number) => (
                       <div key={`${item.productSku || item.title}-${index}`} className="flex gap-3 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-white p-3">
                         {item.image ? <img src={item.image} alt={item.title || "Product"} className="h-14 w-14 shrink-0 rounded object-cover" /> : <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded bg-[var(--color-cream-light)] text-[10px] text-[var(--color-text-muted)]">No image</div>}
-                        <div className="min-w-0 flex-1"><p className="truncate font-semibold text-[var(--color-charcoal)]">{item.title || item.productSku || "Product"}</p><p className="mt-1 text-xs text-[var(--color-text-muted)]">{[item.karat, item.color, item.size ? `Size ${item.size}` : null].filter(Boolean).join(" / ") || "Product details unavailable"}</p><p className="mt-1 text-xs font-medium text-[var(--color-teal)]">Quantity: {item.quantity || 1}</p></div>
+                        <div className="min-w-0 flex-1"><p className="truncate font-semibold text-[var(--color-charcoal)]">{item.title || item.productSku || "Product"}</p><p className="mt-1 text-xs text-[var(--color-text-muted)]">Selected Color: {item.color || "Not recorded"}</p>{item.size && <p className="mt-1 text-xs text-[var(--color-text-muted)]">Selected Size: {item.size}</p>}<p className="mt-1 text-xs font-medium text-[var(--color-teal)]">Quantity: {item.quantity || 1}</p></div>
                         {item.priceSnapshot?.finalPrice != null && <p className="shrink-0 text-sm font-semibold text-[var(--color-charcoal)]">{formatCurrency(item.priceSnapshot.finalPrice * (item.quantity || 1))}</p>}
                       </div>
                     ))}

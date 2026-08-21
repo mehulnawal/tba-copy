@@ -466,6 +466,10 @@ main .section-padding {
   border-radius: 0.25rem;
   font-weight: 600;
 }
+.admin-row .admin-button {
+  background: var(--color-teal);
+  color: var(--color-white);
+}
 .admin-row button.text-red-700 {
   color: #fff;
   background: #b42318;
