@@ -9,15 +9,15 @@ type FourRow = { component: string; weight: string; rate: string; price: string 
 
 const number = (value?: number) => Number(value || 0);
 const isShown = (price: PriceBreakdown, key: "showMaking" | "showCertificate" | "showGst") => !price.display || price.display[key] !== false;
-const leftCell = "break-words px-1 py-2";
-const leftHeader = "px-1 py-2 font-bold [-webkit-text-stroke:0.2px_currentColor]";
-const valueCell = "whitespace-nowrap px-1 py-2 text-left tabular-nums";
-const valueHeader = "whitespace-nowrap px-1 py-2 text-left font-bold [-webkit-text-stroke:0.2px_currentColor]";
-const priceCell = "whitespace-nowrap py-2 pl-1 pr-0 text-right tabular-nums";
-const priceHeader = "whitespace-nowrap py-2 pl-1 pr-0 text-right font-bold [-webkit-text-stroke:0.2px_currentColor]";
+const leftCell = "break-words px-0.5 py-2 sm:px-1";
+const leftHeader = "whitespace-nowrap px-0.5 py-2 font-bold leading-[1.15] [-webkit-text-stroke:0.2px_currentColor] sm:px-1";
+const valueCell = "whitespace-nowrap px-0.5 py-2 text-left tabular-nums sm:px-1";
+const valueHeader = "whitespace-nowrap px-0.5 py-2 text-left font-bold [-webkit-text-stroke:0.2px_currentColor] sm:px-1";
+const priceCell = "whitespace-nowrap py-2 pl-0.5 pr-0 text-right tabular-nums sm:pl-1";
+const priceHeader = "whitespace-nowrap py-2 pl-0.5 pr-0 text-right font-bold [-webkit-text-stroke:0.2px_currentColor] sm:pl-1";
 
 function PriceBreakupColgroup() {
-  return <colgroup><col className="w-[18%]" /><col className="w-[22%]" /><col className="w-[21%]" /><col className="w-[19%]" /><col className="w-[20%]" /></colgroup>;
+  return <colgroup><col className="w-[22%] sm:w-[18%]" /><col className="w-[24%] sm:w-[22%]" /><col className="w-[14%] sm:w-[21%]" /><col className="w-[18%] sm:w-[19%]" /><col className="w-[22%] sm:w-[20%]" /></colgroup>;
 }
 
 function FourColumnTable({ title, weightLabel, rateLabel, rows }: { title: string; weightLabel: string; rateLabel: string; rows: FourRow[] }) {
