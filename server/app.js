@@ -21,6 +21,7 @@ const reviewRoutes = require("./src/routes/review.routes");
 const orderRoutes = require("./src/routes/order.routes");
 const categoryRoutes = require("./src/routes/category.routes");
 const b2bRoutes = require("./src/routes/b2b.routes");
+const integrationRoutes = require("./src/routes/integration.routes");
 const errorHandler = require("./src/middlewares/error.middleware");
 const { apiLimiter } = require("./src/middlewares/rateLimiter.middleware");
 const ApiError = require("./src/utils/ApiError");
@@ -76,6 +77,7 @@ app.use("/api/v1/reviews", reviewRoutes);
 app.use("/api/v1/orders", orderRoutes);
 app.use("/api/v1/categories", categoryRoutes);
 app.use("/api/v1/b2b", b2bRoutes);
+app.use("/api/v1/integrations", integrationRoutes);
 
 app.use((req, res, next) => {
   next(new ApiError(404, `Route ${req.originalUrl} not found`));

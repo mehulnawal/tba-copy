@@ -11,6 +11,7 @@ const { uploadToCloudinary } = require("../utils/cloudinaryUpload");
 const CategoryPricingConfig = require("../models/categoryPricingConfig.model");
 const { normalizeImages, validateVariantConfiguration } = require("../utils/productVariants");
 const populated = query => query.populate("mainCategory", "name").populate("subCategory", "name").populate("certificates", "name logoUrl");
+const adminPopulated = query => populated(query.select("+cadFolderUrl"));
 const sharedDiamondWeightGrams = diamonds => (Array.isArray(diamonds) ? diamonds : []).reduce((total, diamond) => total + Number(diamond?.caratWeight || 0), 0) / 5;
 const normalizeGoldWeights = (body, metal = body?.metal) => {
   if (metal !== "gold" || !body?.grossWeight || typeof body.grossWeight !== "object" || Array.isArray(body.grossWeight)) return body;
@@ -89,7 +90,7 @@ const validateCategories = async body => {
 const adminListProducts = asyncHandler(async (req, res) => {
   const filter = {};
   if (req.query.search) filter.$or = [{ title: new RegExp(req.query.search, "i") }, { SKU: new RegExp(req.query.search, "i") }];
-  const documents = await populated(Product.find(filter).sort({ createdAt: -1 }));
+  const documents = await adminPopulated(Product.find(filter).sort({ createdAt: -1 }));
   const products = await Promise.all(documents.map(async (product) => {
     try { return await toProductResponse(product); }
     catch (error) {
@@ -119,7 +120,7 @@ const updatePricingConfig = asyncHandler(async (req, res) => {
   if (!config) throw new ApiError(404, "Charge settings not found");
   res.json(new ApiResponse(200, config, "Charge settings updated"));
 });
-const adminGetProduct = asyncHandler(async (req, res) => { const product = await populated(Product.findById(req.params.productId)); if (!product) throw new ApiError(404, "Product not found"); res.json(new ApiResponse(200, await toProductResponse(product), "Product fetched")); });
+const adminGetProduct = asyncHandler(async (req, res) => { const product = await adminPopulated(Product.findById(req.params.productId)); if (!product) throw new ApiError(404, "Product not found"); res.json(new ApiResponse(200, await toProductResponse(product), "Product fetched")); });
 const productSkuPrefix = async (metal, subCategory) => {
   const category = await Category.findById(subCategory).select("name shortCode").lean();
   const metalCode = metal === "gold" ? "GLD" : "SLV";
@@ -135,14 +136,15 @@ const nextProductSku = async (metal, subCategory, excludedProductId) => {
   return `${seriesPrefix}${String(nextNumber).padStart(4, "0")}`;
 };
 const createProduct = asyncHandler(async (req, res) => {
-  const body = normalizeGoldWeights(req.body);
+  const { cadFolderUrl: _cadFolderUrl, ...requestBody } = req.body || {};
+  const body = normalizeGoldWeights(requestBody);
   await validateCategories(body);
   const variantBody = await normalizeAndValidateVariants(body);
   const SKU = body.SKU && !String(body.SKU).startsWith("TBA-") ? body.SKU : await nextProductSku(body.metal, body.subCategory);
   const product = await Product.create({ ...variantBody, SKU, slug: slugify(variantBody.title) });
-  res.status(201).json(new ApiResponse(201, await toProductResponse(await populated(Product.findById(product._id))), "Product created"));
+  res.status(201).json(new ApiResponse(201, await toProductResponse(await adminPopulated(Product.findById(product._id))), "Product created"));
 });
-const updateProduct = asyncHandler(async (req, res) => { const current = await Product.findById(req.params.productId); if (!current) throw new ApiError(404, "Product not found"); const update = normalizeGoldWeights({ ...req.body, grossWeight: req.body.grossWeight === undefined ? current.grossWeight : req.body.grossWeight, diamonds: req.body.diamonds === undefined ? current.diamonds : req.body.diamonds }, req.body.metal || current.metal); const variantUpdate = await normalizeAndValidateVariants({ ...current.toObject(), ...update }); update.images = variantUpdate.images; update.colors = variantUpdate.colors; if (update.title) update.slug = slugify(update.title); if (update.mainCategory || update.subCategory || update.metal) { const nextProduct = { ...current.toObject(), ...update }; await validateCategories(nextProduct); const expectedPrefix = await productSkuPrefix(nextProduct.metal, nextProduct.subCategory); if (String(current.SKU || "").startsWith("TBA-") && !String(current.SKU).startsWith(expectedPrefix)) update.SKU = await nextProductSku(nextProduct.metal, nextProduct.subCategory, current._id); } const product = await Product.findByIdAndUpdate(current._id, update, { new: true, runValidators: true }); res.json(new ApiResponse(200, await toProductResponse(await populated(Product.findById(product._id))), "Product updated")); });
+const updateProduct = asyncHandler(async (req, res) => { const current = await Product.findById(req.params.productId); if (!current) throw new ApiError(404, "Product not found"); const { cadFolderUrl: _cadFolderUrl, ...requestBody } = req.body || {}; const update = normalizeGoldWeights({ ...requestBody, grossWeight: requestBody.grossWeight === undefined ? current.grossWeight : requestBody.grossWeight, diamonds: requestBody.diamonds === undefined ? current.diamonds : requestBody.diamonds }, requestBody.metal || current.metal); const variantUpdate = await normalizeAndValidateVariants({ ...current.toObject(), ...update }); update.images = variantUpdate.images; update.colors = variantUpdate.colors; if (update.title) update.slug = slugify(update.title); if (update.mainCategory || update.subCategory || update.metal) { const nextProduct = { ...current.toObject(), ...update }; await validateCategories(nextProduct); const expectedPrefix = await productSkuPrefix(nextProduct.metal, nextProduct.subCategory); if (String(current.SKU || "").startsWith("TBA-") && !String(current.SKU).startsWith(expectedPrefix)) update.SKU = await nextProductSku(nextProduct.metal, nextProduct.subCategory, current._id); } const product = await Product.findByIdAndUpdate(current._id, update, { new: true, runValidators: true }); res.json(new ApiResponse(200, await toProductResponse(await adminPopulated(Product.findById(product._id))), "Product updated")); });
 const deleteProduct = asyncHandler(async (req, res) => { const product = await Product.findByIdAndDelete(req.params.productId); if (!product) throw new ApiError(404, "Product not found"); res.json(new ApiResponse(200, null, "Product deleted")); });
 const previewPrice = asyncHandler(async (req, res) => {
   const previewProduct = normalizeGoldWeights(req.body);

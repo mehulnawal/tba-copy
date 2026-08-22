@@ -29,6 +29,8 @@ const diamondPriceOverrideSchema = new mongoose.Schema({
 
 const productSchema = new mongoose.Schema({
   SKU: { type: String, required: true, unique: true, trim: true, index: true },
+  // Internal integration data. It is selected only for authenticated admin reads.
+  cadFolderUrl: { type: String, default: "", select: false },
   slug: { type: String, required: true, unique: true, index: true },
   title: { type: String, required: true, trim: true },
   description: { type: String, default: "" },
