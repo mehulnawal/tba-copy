@@ -5,7 +5,7 @@ const ApiResponse = require("../utils/ApiResponse");
 const asyncHandler = require("../utils/asyncHandler");
 
 const list = asyncHandler(async (req, res) => {
-  const rows = await DiamondCategory.find({}).sort({ createdAt: 1 }).lean();
+  const rows = await DiamondCategory.find({}).sort({ categoryName: 1 }).collation({ locale: "en", strength: 2 }).lean();
   res.json(new ApiResponse(200, rows, "Diamond categories fetched"));
 });
 

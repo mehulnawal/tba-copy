@@ -77,7 +77,7 @@ const calculateGoldPrice = ({
     : baseMakingRate -
       (normalizedBuyer === "B2B" ? B2B_MAKING_DISCOUNT_PER_GRAM : 0);
   if (makingRate < 0) throw new Error("B2B making rate cannot be negative");
-  const goldValue = goldRate * grossWeight;
+  const goldValue = goldRate * netWeight;
   const makingCharge = makingRate * netWeight;
   const diamondTotal = diamondValue(product, normalizedBuyer);
 
