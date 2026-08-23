@@ -38,6 +38,27 @@ function FourColumnTable({ title, weightLabel, rateLabel, rows }: { title: strin
   </div>;
 }
 
+const goldMobileGrid = "grid grid-cols-[minmax(0,1.7fr)_minmax(0,0.8fr)_minmax(0,0.8fr)_minmax(0,1fr)] gap-x-2";
+
+function GoldMobileFourColumnTable({ title, rows }: { title: string; rows: FourRow[] }) {
+  return <div className="sm:hidden">
+    <h3 className="mb-2 font-bold [-webkit-text-stroke:0.2px_currentColor] text-[var(--color-teal)]">{title}</h3>
+    <div className="border-t border-[var(--color-border)] text-[10px]">
+      <div className={`${goldMobileGrid} py-2 text-[var(--color-text-muted)]`}>
+        <div className="font-bold leading-[1.15] [-webkit-text-stroke:0.2px_currentColor]">Component</div>
+        <div className="whitespace-nowrap font-bold [-webkit-text-stroke:0.2px_currentColor]">Weight</div>
+        <div className="font-bold leading-tight [-webkit-text-stroke:0.2px_currentColor]"><span className="block">Rate/</span><span className="block">Gm</span></div>
+        <div className="whitespace-nowrap text-right font-bold [-webkit-text-stroke:0.2px_currentColor]">Price</div>
+      </div>
+      {rows.map(row => <div key={row.component} className={`${goldMobileGrid} border-b border-[var(--color-border)] py-2`}>
+        <div className="min-w-0 break-words leading-[1.3]">{row.component}</div>
+        <div className="whitespace-nowrap tabular-nums">{row.weight}</div>
+        <div className="whitespace-nowrap tabular-nums">{row.rate}</div>
+        <div className="whitespace-nowrap text-right tabular-nums">{row.price}</div>
+      </div>)}
+    </div>
+  </div>;
+}
 function StoneTable({ title, rows }: { title: string; rows: StoneRow[] }) {
   return <div>
     <h3 className="mb-2 font-bold [-webkit-text-stroke:0.2px_currentColor] text-[var(--color-teal)]">{title}</h3>
@@ -60,6 +81,8 @@ function StoneTable({ title, rows }: { title: string; rows: StoneRow[] }) {
 export default function PriceBreakup({ product, price, coupon, b2b = false, className = "" }: Props) {
   const [open, setOpen] = useState(true);
   const isGold = price.metal === "gold" || product.metal === "gold";
+  // Customer-facing silver breakups keep calculated amounts, but do not disclose component rates.
+  const hideSilverRates = !isGold;
   const categoryName = (value: Product["mainCategory"] | Product["subCategory"]) => (typeof value === "string" ? value : value?.name || "").toLowerCase();
   const isPolki = !isGold && [product.mainCategory, product.subCategory].some(value => categoryName(value) === "polki");
   const hasMoissanite = !isGold && !isPolki && ((product.moissaniteEntries || []).length > 0 || product.moissaniteCaratWeight !== undefined);
@@ -71,17 +94,17 @@ export default function PriceBreakup({ product, price, coupon, b2b = false, clas
   const metalLabel = isGold ? `${price.karat?.toUpperCase() || "Gold"} Gold` : "Fine Silver";
   const diamondEntries: StoneRow[] = (product.diamonds || []).map((entry, index) => ({
     key: `diamond-${index}`, component: entry.category || "Diamond", clarity: entry.colorClarity || "\u2014", carat: number(entry.caratWeight),
-    rate: number(b2b ? (entry.ratePerCtB2B ?? entry.ratePerCt) : (entry.ratePerCtB2C ?? entry.ratePerCt)),
+    rate: hideSilverRates ? 0 : number(b2b ? (entry.ratePerCtB2B ?? entry.ratePerCt) : (entry.ratePerCtB2C ?? entry.ratePerCt)),
     value: number(entry.caratWeight) * number(b2b ? (entry.ratePerCtB2B ?? entry.ratePerCt) : (entry.ratePerCtB2C ?? entry.ratePerCt)),
   }));
   const moissaniteEntries: StoneRow[] = (product.moissaniteEntries || (product.moissaniteCaratWeight === undefined ? [] : [{ caratWeight: product.moissaniteCaratWeight }])).map((entry, index) => ({
-    key: `moissanite-${index}`, component: "Moissanite", clarity: entry.colorClarity || "\u2014", carat: number(entry.caratWeight), rate: number(price.moissaniteRatePerCarat), value: number(entry.caratWeight) * number(price.moissaniteRatePerCarat),
+    key: `moissanite-${index}`, component: "Moissanite", clarity: entry.colorClarity || "\u2014", carat: number(entry.caratWeight), rate: hideSilverRates ? 0 : number(price.moissaniteRatePerCarat), value: number(entry.caratWeight) * number(price.moissaniteRatePerCarat),
   }));
   const stoneEntries = diamondEntries.length ? diamondEntries : moissaniteEntries;
   const goldWeight = `${formatMeasurement(number(price.netWeight ?? price.grossWeight))} g`;
   const metalRows: FourRow[] = isGold
     ? [{ component: metalLabel, weight: goldWeight, rate: formatINR(number(price.goldRate)), price: formatINR(metalValue) }, ...(showMaking ? [{ component: "Design and Craftsmanship", weight: goldWeight, rate: formatINR(number(price.makingRatePerGram)), price: formatINR(makingValue) }] : [])]
-    : [{ component: "Silver", weight: `${formatMeasurement(silverWeight)} g`, rate: formatINR(number(price.silverRate)), price: formatINR(metalValue) }, ...(showMaking ? [{ component: "Design and Craftsmanship", weight: `${formatMeasurement(silverWeight)} g`, rate: formatINR(number(price.makingRatePerGram)), price: formatINR(makingValue) }] : [])];
+    : [{ component: "Silver", weight: `${formatMeasurement(silverWeight)} g`, rate: formatINR(0), price: formatINR(metalValue) }, ...(showMaking ? [{ component: "Design and Craftsmanship", weight: `${formatMeasurement(silverWeight)} g`, rate: formatINR(0), price: formatINR(makingValue) }] : [])];
   const stoneTitle = diamondEntries.length ? `Lab-Grown Diamonds${Number(product.totalNumberOfDiamonds || 0) > 0 ? ` (Total diamonds - ${product.totalNumberOfDiamonds})` : ""}` : "Moissanite";
 
   const summary = <div>
@@ -98,8 +121,8 @@ export default function PriceBreakup({ product, price, coupon, b2b = false, clas
   return <section className={`rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-4 ${className}`}>
     <div className="flex items-center justify-between border-b border-[var(--color-border)] pb-3"><h2 className="font-primary text-lg font-bold [-webkit-text-stroke:0.2px_currentColor] text-[var(--color-teal)]">Price Breakup</h2><button type="button" onClick={() => setOpen(value => !value)} className="text-xs font-semibold uppercase tracking-wide text-[var(--color-teal)] underline">{open ? "Hide details" : "View breakdown"}</button></div>
     {open && <div className="space-y-5 pt-4 text-sm">
-      <FourColumnTable title={metalLabel} weightLabel="Weight" rateLabel="Rate/Gm" rows={metalRows} />
-      {!isGold && hasMoissanite && <FourColumnTable title="Moissanite" weightLabel="Carat" rateLabel="Rate/Ct" rows={[{ component: "Moissanite", weight: `${formatMeasurement(number(price.totalMoissaniteWeight ?? product.moissaniteCaratWeight))} ct`, rate: formatINR(number(price.moissaniteRatePerCarat)), price: formatINR(number(price.moissaniteValue)) }]} />}
+      {isGold ? <><GoldMobileFourColumnTable title={metalLabel} rows={metalRows} /><div className="hidden sm:block"><FourColumnTable title={metalLabel} weightLabel="Weight" rateLabel="Rate/Gm" rows={metalRows} /></div></> : <FourColumnTable title={metalLabel} weightLabel="Weight" rateLabel="Rate/Gm" rows={metalRows} />}
+      {!isGold && hasMoissanite && <FourColumnTable title="Moissanite" weightLabel="Carat" rateLabel="Rate/Ct" rows={[{ component: "Moissanite", weight: `${formatMeasurement(number(price.totalMoissaniteWeight ?? product.moissaniteCaratWeight))} ct`, rate: formatINR(0), price: formatINR(number(price.moissaniteValue)) }]} />}
       {((isGold && stoneEntries.length > 0) || (!isGold && hasMoissanite && diamondEntries.length > 0)) && <StoneTable title={stoneTitle} rows={stoneEntries} />}
       {summary}
     </div>}
