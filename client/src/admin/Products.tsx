@@ -23,8 +23,8 @@ const CadSection = ({ sku, cadFolderUrl, onRefresh, refreshing, showError }: Cad
   const savedSku = String(sku || "").trim();
   const openUploadForm = () => {
     if (!savedSku) return;
-    const tab = window.open(`${CAD_FORM_BASE_URL}${encodeURIComponent(savedSku)}`, "_blank", "noopener,noreferrer");
-    if (!tab) showError("Unable to open the CAD upload form. Please allow pop-ups and try again.");
+    const tab = window.open(`${CAD_FORM_BASE_URL}${encodeURIComponent(savedSku)}`, "_blank");
+    if (!tab) { showError("Unable to open the CAD upload form. Please allow pop-ups and try again."); return; } tab.opener = null;
   };
   return <section className="admin-section"><div className="admin-section-heading"><span>CAD</span><div><h2>CAD images</h2><p>CAD files are uploaded securely through the connected Google Form.</p></div></div>{cadFolderUrl ? <a className="admin-primary inline-flex w-fit" href={cadFolderUrl} target="_blank" rel="noopener noreferrer">Open CAD Folder</a> : <div className="flex flex-wrap items-center gap-3"><button type="button" className="admin-secondary" disabled={!savedSku} onClick={openUploadForm}>Upload CAD Images</button>{!savedSku && <small className="text-[var(--color-text-muted)]">Save the product first to generate its SKU.</small>}{savedSku && <button type="button" className="admin-text-button" disabled={refreshing} onClick={onRefresh}>{refreshing ? "Refreshing..." : "Refresh CAD status"}</button>}</div>}</section>;
 };
