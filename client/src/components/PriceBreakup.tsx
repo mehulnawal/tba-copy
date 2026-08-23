@@ -40,14 +40,14 @@ function FourColumnTable({ title, weightLabel, rateLabel, rows }: { title: strin
 
 const goldMobileGrid = "grid grid-cols-[minmax(0,1.7fr)_minmax(0,0.8fr)_minmax(0,0.8fr)_minmax(0,1fr)] gap-x-2";
 
-function GoldMobileFourColumnTable({ title, rows }: { title: string; rows: FourRow[] }) {
+function GoldMobileFourColumnTable({ title, rows, weightLabel, rateLabel }: { title: string; rows: FourRow[]; weightLabel: string; rateLabel: string }) {
   return <div className="sm:hidden">
     <h3 className="mb-2 font-bold [-webkit-text-stroke:0.2px_currentColor] text-[var(--color-teal)]">{title}</h3>
     <div className="border-t border-[var(--color-border)] text-[10px]">
       <div className={`${goldMobileGrid} py-2 text-[var(--color-text-muted)]`}>
         <div className="font-bold leading-[1.15] [-webkit-text-stroke:0.2px_currentColor]">Component</div>
-        <div className="whitespace-nowrap font-bold [-webkit-text-stroke:0.2px_currentColor]">Weight</div>
-        <div className="font-bold leading-tight [-webkit-text-stroke:0.2px_currentColor]"><span className="block">Rate/</span><span className="block">Gm</span></div>
+        <div className="whitespace-nowrap font-bold [-webkit-text-stroke:0.2px_currentColor]">{weightLabel}</div>
+        <div className="font-bold leading-tight [-webkit-text-stroke:0.2px_currentColor]"><span className="block">Rate/</span><span className="block">{rateLabel.slice(5)}</span></div>
         <div className="whitespace-nowrap text-right font-bold [-webkit-text-stroke:0.2px_currentColor]">Price</div>
       </div>
       {rows.map(row => <div key={row.component} className={`${goldMobileGrid} border-b border-[var(--color-border)] py-2`}>
@@ -121,8 +121,13 @@ export default function PriceBreakup({ product, price, coupon, b2b = false, clas
   return <section className={`rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-4 ${className}`}>
     <div className="flex items-center justify-between border-b border-[var(--color-border)] pb-3"><h2 className="font-primary text-lg font-bold [-webkit-text-stroke:0.2px_currentColor] text-[var(--color-teal)]">Price Breakup</h2><button type="button" onClick={() => setOpen(value => !value)} className="text-xs font-semibold uppercase tracking-wide text-[var(--color-teal)] underline">{open ? "Hide details" : "View breakdown"}</button></div>
     {open && <div className="space-y-5 pt-4 text-sm">
-      {isGold ? <><GoldMobileFourColumnTable title={metalLabel} rows={metalRows} /><div className="hidden sm:block"><FourColumnTable title={metalLabel} weightLabel="Weight" rateLabel="Rate/Gm" rows={metalRows} /></div></> : <FourColumnTable title={metalLabel} weightLabel="Weight" rateLabel="Rate/Gm" rows={metalRows} />}
-      {!isGold && hasMoissanite && <FourColumnTable title="Moissanite" weightLabel="Carat" rateLabel="Rate/Ct" rows={[{ component: "Moissanite", weight: `${formatMeasurement(number(price.totalMoissaniteWeight ?? product.moissaniteCaratWeight))} ct`, rate: formatINR(0), price: formatINR(number(price.moissaniteValue)) }]} />}
+      <GoldMobileFourColumnTable title={metalLabel} rows={metalRows} weightLabel="Weight" rateLabel="Rate/Gm" />
+      <div className="hidden sm:block"><FourColumnTable title={metalLabel} weightLabel="Weight" rateLabel="Rate/Gm" rows={metalRows} /></div>
+
+      {!isGold && hasMoissanite && <>
+        <GoldMobileFourColumnTable title="Moissanite" rows={[{ component: "Moissanite", weight: `${formatMeasurement(number(price.totalMoissaniteWeight ?? product.moissaniteCaratWeight))} ct`, rate: formatINR(0), price: formatINR(number(price.moissaniteValue)) }]} weightLabel="Carat" rateLabel="Rate/Ct" />
+        <div className="hidden sm:block"><FourColumnTable title="Moissanite" weightLabel="Carat" rateLabel="Rate/Ct" rows={[{ component: "Moissanite", weight: `${formatMeasurement(number(price.totalMoissaniteWeight ?? product.moissaniteCaratWeight))} ct`, rate: formatINR(0), price: formatINR(number(price.moissaniteValue)) }]} /></div>
+      </>}
       {((isGold && stoneEntries.length > 0) || (!isGold && hasMoissanite && diamondEntries.length > 0)) && <StoneTable title={stoneTitle} rows={stoneEntries} />}
       {summary}
     </div>}

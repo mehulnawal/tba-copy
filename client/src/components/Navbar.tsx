@@ -91,6 +91,9 @@ export default function Navbar({
     const childrenOf = (parentId: string): NavCategory[] => categories.filter((category) => (typeof category.parent === "string" ? category.parent : category.parent?._id) === parentId && category.isActive).sort((a, b) => a.displayOrder - b.displayOrder).map((category) => ({ id: category._id, name: category.name, children: childrenOf(category._id) }));
     return categories.filter((category) => !category.parent && category.categoryKind === "metal-root" && category.isActive).map((main) => ({ title: main.name, metal: main.metal, hasDropdown: true, categoryId: main._id, path: undefined, categories: childrenOf(main._id) }));
   }, [categories]);
+  const expandAllMobileCategories = () => {
+    setMobileExpanded(Object.fromEntries(navStructure.filter((item) => item.hasDropdown).map((item) => [item.title, true])));
+  };
   const { data: metalRates, isLoading: isMetalLoading, isError: isMetalError } = useMetalRates();
 
 
@@ -298,7 +301,7 @@ export default function Navbar({
             {/* Left Column: Mobile Hamburger & Logo (Padded & Balanced) */}
             <div className="flex items-center gap-4 justify-start">
               <button
-                onClick={() => { setMobileExpanded({ Gold: true, Silver: true }); setIsMobileMenuOpen(true); }}
+                onClick={() => { expandAllMobileCategories(); setIsMobileMenuOpen(true); }}
                 className="lg:hidden text-[var(--color-text)] hover:text-[var(--color-teal)] transition-colors duration-200 p-1 cursor-pointer"
                 aria-label="Open navigation menu"
               >
