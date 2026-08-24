@@ -34,28 +34,18 @@ const isShown = (
   price: PriceBreakdown,
   key: "showMaking" | "showCertificate" | "showGst",
 ) => !price.display || price.display[key] !== false;
-const leftCell = "break-words px-0.5 py-2 sm:px-1";
-const leftHeader =
-  "whitespace-nowrap px-0.5 py-2 font-bold leading-[1.15] [-webkit-text-stroke:0.2px_currentColor] sm:px-1";
-const valueCell =
-  "whitespace-nowrap px-0.5 py-2 text-left tabular-nums sm:px-1";
-const valueHeader =
-  "whitespace-nowrap px-0.5 py-2 text-left font-bold [-webkit-text-stroke:0.2px_currentColor] sm:px-1";
-const priceCell =
-  "whitespace-nowrap py-2 pl-0.5 pr-0 text-right tabular-nums sm:pl-1";
-const priceHeader =
-  "whitespace-nowrap py-2 pl-0.5 pr-0 text-right font-bold [-webkit-text-stroke:0.2px_currentColor] sm:pl-1";
 
-function PriceBreakupColgroup() {
-  return (
-    <colgroup>
-      <col className="w-[22%] sm:w-[18%]" />
-      <col className="w-[24%] sm:w-[22%]" />
-      <col className="w-[14%] sm:w-[21%]" />
-      <col className="w-[18%] sm:w-[19%]" />
-      <col className="w-[22%] sm:w-[20%]" />
-    </colgroup>
-  );
+const headerCell =
+  "py-2 text-[10px] sm:text-xs font-bold leading-[1.15] text-[var(--color-text-muted)] [-webkit-text-stroke:0.2px_currentColor]";
+const bodyCell = "py-2 text-[10px] sm:text-xs";
+const wrapCell = `${bodyCell} break-words`;
+const numCell = `${bodyCell} whitespace-nowrap tabular-nums`;
+const numHeader = `${headerCell} whitespace-nowrap`;
+
+const fourColGrid = "grid grid-cols-[minmax(0,1fr)_auto_auto_auto] items-baseline gap-x-3 sm:gap-x-6";
+
+function RowDivider() {
+  return <div className="col-span-full border-b border-[var(--color-border)]" />;
 }
 
 function FourColumnTable({
@@ -74,150 +64,95 @@ function FourColumnTable({
       <h3 className="mb-2 font-bold [-webkit-text-stroke:0.2px_currentColor] text-[var(--color-teal)]">
         {title}
       </h3>
-      <div className="overflow-x-auto">
-        <table className="w-full table-fixed text-left text-[10px] sm:text-xs">
-          <PriceBreakupColgroup />
-          <thead className="border-t border-[var(--color-border)] text-[var(--color-text-muted)]">
-            <tr>
-              <th className={leftHeader} colSpan={2}>
-                Component
-              </th>
-              <th className={valueHeader}>{weightLabel}</th>
-              <th className={valueHeader}>
-                {rateLabel.startsWith("Rate/") ? (
-                  <span className="block leading-tight">
-                    <span className="block">Rate/</span>
-                    <span className="block">{rateLabel.slice(5)}</span>
-                  </span>
-                ) : (
-                  rateLabel
-                )}
-              </th>
-              <th className={priceHeader}>Price</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr
-                key={row.component}
-                className="border-b border-[var(--color-border)]"
-              >
-                <td className={leftCell} colSpan={2}>
-                  {row.component}
-                </td>
-                <td className={valueCell}>{row.weight}</td>
-                <td className={valueCell}>{row.rate}</td>
-                <td className={priceCell}>{row.price}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
-
-const goldMobileGrid =
-  "grid grid-cols-[minmax(0,1.7fr)_minmax(0,0.8fr)_minmax(0,0.8fr)_minmax(0,1fr)] gap-x-2";
-
-function GoldMobileFourColumnTable({
-  title,
-  rows,
-  weightLabel,
-  rateLabel,
-}: {
-  title: string;
-  rows: FourRow[];
-  weightLabel: string;
-  rateLabel: string;
-}) {
-  return (
-    <div className="sm:hidden">
-      <h3 className="mb-2 font-bold [-webkit-text-stroke:0.2px_currentColor] text-[var(--color-teal)]">
-        {title}
-      </h3>
-      <div className="border-t border-[var(--color-border)] text-[10px]">
-        <div
-          className={`${goldMobileGrid} py-2 text-[var(--color-text-muted)]`}
-        >
-          <div className="font-bold leading-[1.15] [-webkit-text-stroke:0.2px_currentColor]">
-            Component
-          </div>
-          <div className="whitespace-nowrap font-bold [-webkit-text-stroke:0.2px_currentColor]">
-            {weightLabel}
-          </div>
-          <div className="font-bold leading-tight [-webkit-text-stroke:0.2px_currentColor]">
-            <span className="block">Rate/</span>
-            <span className="block">{rateLabel.slice(5)}</span>
-          </div>
-          <div className="whitespace-nowrap text-right font-bold [-webkit-text-stroke:0.2px_currentColor]">
-            Price
-          </div>
+      <div className={`${fourColGrid} border-t border-[var(--color-border)]`}>
+        <div className={headerCell}>Component</div>
+        <div className={numHeader}>{weightLabel}</div>
+        <div className={`${numHeader} text-left sm:text-right`}>
+          {rateLabel.startsWith("Rate/") ? (
+            <>
+              <span className="block">Rate/</span>
+              <span className="block">{rateLabel.slice(5)}</span>
+            </>
+          ) : (
+            rateLabel
+          )}
         </div>
+        <div className={`${numHeader} text-right`}>Price</div>
+        <RowDivider />
         {rows.map((row) => (
-          <div
-            key={row.component}
-            className={`${goldMobileGrid} border-b border-[var(--color-border)] py-2`}
-          >
-            <div className="min-w-0 break-words leading-[1.3]">
-              {row.component}
-            </div>
-            <div className="whitespace-nowrap tabular-nums">{row.weight}</div>
-            <div className="whitespace-nowrap tabular-nums">{row.rate}</div>
-            <div className="whitespace-nowrap text-right tabular-nums">
-              {row.price}
-            </div>
-          </div>
+          <FourColumnRow key={row.component} row={row} />
         ))}
       </div>
     </div>
   );
 }
-function StoneTable({ title, rows }: { title: string; rows: StoneRow[] }) {
+
+function FourColumnRow({ row }: { row: FourRow }) {
+  return (
+    <>
+      <div className={wrapCell}>{row.component}</div>
+      <div className={numCell}>{row.weight}</div>
+      <div className={`${numCell} text-left sm:text-right`}>{row.rate}</div>
+      <div className={`${numCell} text-right`}>{row.price}</div>
+      <RowDivider />
+    </>
+  );
+}
+
+const stoneGrid =
+  "grid grid-cols-[minmax(0,1fr)_auto_auto_auto_auto] items-baseline gap-x-3 sm:gap-x-6";
+
+function StoneTable({
+  title,
+  rows,
+  formatAmount = formatINR,
+}: {
+  title: string;
+  rows: StoneRow[];
+  formatAmount?: (value: number) => string;
+}) {
   return (
     <div>
       <h3 className="mb-2 font-bold [-webkit-text-stroke:0.2px_currentColor] text-[var(--color-teal)]">
         {title}
       </h3>
-      <div className="overflow-x-auto">
-        <table className="w-full table-fixed text-left text-[10px] sm:text-xs">
-          <PriceBreakupColgroup />
-          <thead className="border-t border-[var(--color-border)] text-[var(--color-text-muted)]">
-            <tr>
-              <th className={leftHeader}>Component</th>
-              <th className={leftHeader}>
-                <span className="block leading-tight">
-                  <span className="block">Colour/</span>
-                  <span className="block">Clarity</span>
-                </span>
-              </th>
-              <th className={valueHeader}>Ct</th>
-              <th className={valueHeader}>
-                <span className="block leading-tight">
-                  <span className="block">Rate/</span>
-                  <span className="block">Ct</span>
-                </span>
-              </th>
-              <th className={priceHeader}>Price</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr
-                key={row.key}
-                className="border-b border-[var(--color-border)]"
-              >
-                <td className={leftCell}>{row.component}</td>
-                <td className={leftCell}>{row.clarity}</td>
-                <td className={valueCell}>{formatMeasurement(row.carat)}</td>
-                <td className={valueCell}>{formatINR(row.rate)}</td>
-                <td className={priceCell}>{formatINR(row.value)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className={`${stoneGrid} border-t border-[var(--color-border)]`}>
+        <div className={headerCell}>Component</div>
+        <div className={headerCell}>
+          <span className="block">Colour/</span>
+          <span className="block">Clarity</span>
+        </div>
+        <div className={numHeader}>Ct</div>
+        <div className={`${numHeader} text-left sm:text-right`}>
+          <span className="block">Rate/</span>
+          <span className="block">Ct</span>
+        </div>
+        <div className={`${numHeader} text-right`}>Price</div>
+        <RowDivider />
+        {rows.map((row) => (
+          <StoneRowCells key={row.key} row={row} formatAmount={formatAmount} />
+        ))}
       </div>
     </div>
+  );
+}
+
+function StoneRowCells({
+  row,
+  formatAmount,
+}: {
+  row: StoneRow;
+  formatAmount: (value: number) => string;
+}) {
+  return (
+    <>
+      <div className={wrapCell}>{row.component}</div>
+      <div className={wrapCell}>{row.clarity}</div>
+      <div className={numCell}>{formatMeasurement(row.carat)}</div>
+      <div className={`${numCell} text-left sm:text-right`}>{formatAmount(row.rate)}</div>
+      <div className={`${numCell} text-right`}>{formatAmount(row.value)}</div>
+      <RowDivider />
+    </>
   );
 }
 
@@ -230,6 +165,8 @@ export default function PriceBreakup({
 }: Props) {
   const [open, setOpen] = useState(true);
   const isGold = price.metal === "gold" || product.metal === "gold";
+  const formatBreakupINR = (value: number) =>
+    !isGold && value === 0 ? "—" : formatINR(value);
   // Customer-facing silver breakups keep calculated amounts, but do not disclose component rates.
   const hideSilverRates = !isGold;
   const categoryName = (
@@ -249,7 +186,7 @@ export default function PriceBreakup({
   const showGst = isShown(price, "showGst");
   const silverWeight = number(
     price.grossWeight ??
-      (typeof product.grossWeight === "number" ? product.grossWeight : 0),
+    (typeof product.grossWeight === "number" ? product.grossWeight : 0),
   );
   const makingValue = number(price.makingCharge ?? price.makingValue);
   const metalValue = number(
@@ -267,10 +204,10 @@ export default function PriceBreakup({
       rate: hideSilverRates
         ? 0
         : number(
-            b2b
-              ? (entry.ratePerCtB2B ?? entry.ratePerCt)
-              : (entry.ratePerCtB2C ?? entry.ratePerCt),
-          ),
+          b2b
+            ? (entry.ratePerCtB2B ?? entry.ratePerCt)
+            : (entry.ratePerCtB2C ?? entry.ratePerCt),
+        ),
       value:
         number(entry.caratWeight) *
         number(
@@ -299,110 +236,95 @@ export default function PriceBreakup({
   const goldWeight = `${formatMeasurement(number(price.netWeight ?? price.grossWeight))} g`;
   const metalRows: FourRow[] = isGold
     ? [
-        {
-          component: metalLabel,
-          weight: goldWeight,
-          rate: formatINR(number(price.goldRate)),
-          price: formatINR(metalValue),
-        },
-        ...(showMaking
-          ? [
-              {
-                component: "Design and Craftsmanship",
-                weight: goldWeight,
-                rate: formatINR(number(price.makingRatePerGram)),
-                price: formatINR(makingValue),
-              },
-            ]
-          : []),
-      ]
+      {
+        component: metalLabel,
+        weight: goldWeight,
+        rate: formatINR(number(price.goldRate)),
+        price: formatBreakupINR(metalValue),
+      },
+      ...(showMaking
+        ? [
+          {
+            component: "Design and Craftsmanship",
+            weight: goldWeight,
+            rate: formatINR(number(price.makingRatePerGram)),
+            price: formatBreakupINR(makingValue),
+          },
+        ]
+        : []),
+    ]
     : [
-        {
-          component: "Silver",
-          weight: `${formatMeasurement(silverWeight)} g`,
-          rate: formatINR(0),
-          price: formatINR(metalValue),
-        },
-        ...(showMaking
-          ? [
-              {
-                component: "Design and Craftsmanship",
-                weight: `${formatMeasurement(silverWeight)} g`,
-                rate: formatINR(0),
-                price: formatINR(makingValue),
-              },
-            ]
-          : []),
-      ];
+      {
+        component: "Silver",
+        weight: `${formatMeasurement(silverWeight)} g`,
+        rate: formatBreakupINR(0),
+        price: formatBreakupINR(metalValue),
+      },
+      ...(showMaking
+        ? [
+          {
+            component: "Design and Craftsmanship",
+            weight: `${formatMeasurement(silverWeight)} g`,
+            rate: formatBreakupINR(0),
+            price: formatBreakupINR(makingValue),
+          },
+        ]
+        : []),
+    ];
   const stoneTitle = diamondEntries.length
     ? `Lab-Grown Diamonds${Number(product.totalNumberOfDiamonds || 0) > 0 ? ` (Total diamonds - ${product.totalNumberOfDiamonds})` : ""}`
     : "Moissanite";
 
   const summary = (
     <div>
-      <table className="w-full table-fixed text-left text-xs">
-        <colgroup>
-          <col className="w-2/3" />
-          <col className="w-1/3" />
-        </colgroup>
-        <tbody>
-          <tr className="border-b border-[var(--color-border)]">
-            <td className="py-2">
+      <div>
+        <div className="flex items-center justify-between border-b border-[var(--color-border)] py-2">
+          <h3 className="font-bold [-webkit-text-stroke:0.2px_currentColor] text-[14px] text-[var(--color-teal)]">
+            {coupon ? "Original Subtotal" : "Subtotal"}
+          </h3>
+          <span className="whitespace-nowrap tabular-nums">
+            {formatBreakupINR(
+              number(
+                coupon
+                  ? coupon.subtotalAfterCoupon + coupon.discount
+                  : price.totalCost,
+              ),
+            )}
+          </span>
+        </div>
+        {coupon && (
+          <>
+            <div className="flex items-center justify-between border-b border-[var(--color-border)] py-2">
+              <span>Coupon Applied - {coupon.label}</span>
+              <span className="whitespace-nowrap tabular-nums text-[var(--color-teal)]">
+                -{formatBreakupINR(number(coupon.discount))}
+              </span>
+            </div>
+            <div className="flex items-center justify-between border-b border-[var(--color-border)] py-2">
               <h3 className="font-bold [-webkit-text-stroke:0.2px_currentColor] text-[14px] text-[var(--color-teal)]">
-                {coupon ? "Original Subtotal" : "Subtotal"}
+                Subtotal After Coupon
               </h3>
-            </td>
-            <td className={priceCell}>
-              {formatINR(
-                number(
-                  coupon
-                    ? coupon.subtotalAfterCoupon + coupon.discount
-                    : price.totalCost,
-                ),
-              )}
-            </td>
-          </tr>
-          {coupon && (
-            <>
-              <tr className="border-b border-[var(--color-border)]">
-                <td className="py-2">Coupon Applied - {coupon.label}</td>
-                <td className={`${priceCell} text-[var(--color-teal)]`}>
-                  -{formatINR(number(coupon.discount))}
-                </td>
-              </tr>
-              <tr className="border-b border-[var(--color-border)]">
-                <td className="py-2">
-                  <h3 className="font-bold [-webkit-text-stroke:0.2px_currentColor] text-[14px] text-[var(--color-teal)]">
-                    Subtotal After Coupon
-                  </h3>
-                </td>
-                <td className={priceCell}>
-                  {formatINR(number(coupon.subtotalAfterCoupon))}
-                </td>
-              </tr>
-            </>
-          )}
-          {showGst && (
-            <tr className="border-b border-[var(--color-border)]">
-              <td className="py-2">
-                <h3 className="font-bold [-webkit-text-stroke:0.2px_currentColor] text-[14px] text-[var(--color-teal)]">
-                  GST (3%)
-                </h3>
-              </td>
-              <td className={priceCell}>{formatINR(number(price.gst))}</td>
-            </tr>
-          )}
-          <tr className="border-b-2 border-[var(--color-teal)] bg-[var(--color-cream)] font-bold [-webkit-text-stroke:0.2px_currentColor] text-[var(--color-teal)]">
-            <td className="py-3 px-1">Total Amount</td>
-            <td className="whitespace-nowrap py-3 pl-1 pr-0 text-right tabular-nums">
-              {formatINR(number(price.finalPrice))}
-            </td>
-          </tr>
-        </tbody>
-      </table>
+              <span className="whitespace-nowrap tabular-nums">
+                {formatBreakupINR(number(coupon.subtotalAfterCoupon))}
+              </span>
+            </div>
+          </>
+        )}
+        {showGst && (
+          <div className="flex items-center justify-between border-b border-[var(--color-border)] py-2">
+            <h3 className="font-bold [-webkit-text-stroke:0.2px_currentColor] text-[14px] text-[var(--color-teal)]">
+              GST (3%)
+            </h3>
+            <span className="whitespace-nowrap tabular-nums">{formatBreakupINR(number(price.gst))}</span>
+          </div>
+        )}
+        <div className="flex items-center justify-between border-b-2 border-[var(--color-teal)] bg-[var(--color-cream)] px-1 py-3 font-bold [-webkit-text-stroke:0.2px_currentColor] text-[var(--color-teal)]">
+          <span>Total Amount</span>
+          <span className="whitespace-nowrap tabular-nums">{formatBreakupINR(number(price.finalPrice))}</span>
+        </div>
+      </div>
       <p className="mt-2 text-xs text-[var(--color-text-muted)]">
-        *This is an estimated price, actual price may differ as per actual
-        weights.
+        *This is an estimated price, actual price may differ as per actual weights.
       </p>
       {b2b && price.b2bPricingStatus === "pending" && (
         <p className="mt-2 text-xs text-[var(--color-text-muted)]">
@@ -430,57 +352,36 @@ export default function PriceBreakup({
       </div>
       {open && (
         <div className="space-y-5 pt-4 text-sm">
-          <GoldMobileFourColumnTable
+          <FourColumnTable
             title={metalLabel}
-            rows={metalRows}
             weightLabel="Weight"
             rateLabel="Rate/Gm"
+            rows={metalRows}
           />
-          <div className="hidden sm:block">
-            <FourColumnTable
-              title={metalLabel}
-              weightLabel="Weight"
-              rateLabel="Rate/Gm"
-              rows={metalRows}
-            />
-          </div>
 
           {!isGold && hasMoissanite && (
-            <>
-              <GoldMobileFourColumnTable
-                title="Moissanite"
-                rows={[
-                  {
-                    component: "Moissanite",
-                    weight: `${formatMeasurement(number(price.totalMoissaniteWeight ?? product.moissaniteCaratWeight))} ct`,
-                    rate: formatINR(0),
-                    price: formatINR(number(price.moissaniteValue)),
-                  },
-                ]}
-                weightLabel="Carat"
-                rateLabel="Rate/Ct"
-              />
-              <div className="hidden sm:block">
-                <FourColumnTable
-                  title="Moissanite"
-                  weightLabel="Carat"
-                  rateLabel="Rate/Ct"
-                  rows={[
-                    {
-                      component: "Moissanite",
-                      weight: `${formatMeasurement(number(price.totalMoissaniteWeight ?? product.moissaniteCaratWeight))} ct`,
-                      rate: formatINR(0),
-                      price: formatINR(number(price.moissaniteValue)),
-                    },
-                  ]}
-                />
-              </div>
-            </>
+            <FourColumnTable
+              title="Moissanite"
+              weightLabel="Carat"
+              rateLabel="Rate/Ct"
+              rows={[
+                {
+                  component: "Moissanite",
+                  weight: `${formatMeasurement(number(price.totalMoissaniteWeight ?? product.moissaniteCaratWeight))} ct`,
+                  rate: formatBreakupINR(0),
+                  price: formatBreakupINR(number(price.moissaniteValue)),
+                },
+              ]}
+            />
           )}
           {((isGold && stoneEntries.length > 0) ||
             (!isGold && hasMoissanite && diamondEntries.length > 0)) && (
-            <StoneTable title={stoneTitle} rows={stoneEntries} />
-          )}
+              <StoneTable
+                title={stoneTitle}
+                rows={stoneEntries}
+                formatAmount={formatBreakupINR}
+              />
+            )}
           {summary}
         </div>
       )}
