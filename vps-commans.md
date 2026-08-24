@@ -25,7 +25,6 @@ npm run build
 
 pm2 restart tba-backend
 ```
-
 (agar client ka apna alag PM2 process nahi hai — pm2 list me sirf `tba-backend` dikha, koi frontend process nahi. Matlab frontend Nginx se static serve ho raha hai. Us case me `pm2 restart` ki zaroorat nahi, sirf build kaafi hai — Nginx naya build automatically serve karega)
 
 ## Backend .env Update

@@ -42,7 +42,7 @@ const wrapCell = `${bodyCell} break-words`;
 const numCell = `${bodyCell} whitespace-nowrap tabular-nums`;
 const numHeader = `${headerCell} whitespace-nowrap`;
 
-const fourColGrid = "grid grid-cols-[minmax(0,1fr)_auto_auto_auto] items-baseline gap-x-3 sm:gap-x-6";
+const fourColGrid = "grid grid-cols-[minmax(0,1fr)_auto_auto_auto] items-baseline gap-x-7 sm:gap-x-10";
 
 function RowDivider() {
   return <div className="col-span-full border-b border-[var(--color-border)]" />;
@@ -99,8 +99,7 @@ function FourColumnRow({ row }: { row: FourRow }) {
   );
 }
 
-const stoneGrid =
-  "grid grid-cols-[minmax(0,1fr)_auto_auto_auto_auto] items-baseline gap-x-3 sm:gap-x-6";
+const stoneGrid = "grid grid-cols-[minmax(0,1fr)_auto_auto_auto_auto] items-baseline gap-x-7 sm:gap-x-10";
 
 function StoneTable({
   title,
