@@ -33,15 +33,21 @@ export const authApi = {
       body: JSON.stringify(payload),
     }),
 
-
   startOtp: (mobile: string) =>
-    apiRequest<{ requestId: string; resendAvailableAt: number }>("/auth/otp/start", {
-      method: "POST",
-      body: JSON.stringify({ mobile }),
-    }),
+    apiRequest<{ requestId: string; resendAvailableAt: number }>(
+      "/auth/otp/start",
+      {
+        method: "POST",
+        body: JSON.stringify({ mobile }),
+      },
+    ),
 
   resendOtp: (mobile: string, requestId: string) =>
-    apiRequest<{ requestId: string; resendCount: number; resendAvailableAt: number }>("/auth/otp/resend", {
+    apiRequest<{
+      requestId: string;
+      resendCount: number;
+      resendAvailableAt: number;
+    }>("/auth/otp/resend", {
       method: "POST",
       body: JSON.stringify({ mobile, requestId }),
     }),

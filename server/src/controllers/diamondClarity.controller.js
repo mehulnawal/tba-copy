@@ -6,10 +6,12 @@ const asyncHandler = require("../utils/asyncHandler");
 const defaults = ["EF/VVSVS"];
 
 const list = asyncHandler(async (req, res) => {
-  if (await DiamondClarity.countDocuments() === 0) {
+  if ((await DiamondClarity.countDocuments()) === 0) {
     await DiamondClarity.insertMany(defaults.map((name) => ({ name })));
   }
-  const clarities = await DiamondClarity.find({ isActive: true }).sort({ name: 1 }).lean();
+  const clarities = await DiamondClarity.find({ isActive: true })
+    .sort({ name: 1 })
+    .lean();
   res.json(new ApiResponse(200, clarities, "Diamond clarity options fetched"));
 });
 
@@ -21,7 +23,9 @@ const save = asyncHandler(async (req, res) => {
     { $setOnInsert: { name, isActive: true } },
     { upsert: true, new: true, runValidators: true },
   );
-  res.status(201).json(new ApiResponse(201, clarity, "Diamond clarity option saved"));
+  res
+    .status(201)
+    .json(new ApiResponse(201, clarity, "Diamond clarity option saved"));
 });
 
 module.exports = { list, save };

@@ -15,7 +15,12 @@ interface AuthContextValue {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string, phone?: string) => Promise<void>;
+  register: (
+    name: string,
+    email: string,
+    password: string,
+    phone?: string,
+  ) => Promise<void>;
   logout: () => Promise<void>;
   refreshSession: () => Promise<AuthUser | null>;
   setUser: (user: AuthUser | null) => void;
@@ -47,15 +52,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     refreshSession().finally(() => setIsLoading(false));
   }, [refreshSession]);
 
-  const login = useCallback(async (email: string, password: string) => {
-    const loggedInUser = await authApi.login({ email, password });
-    clearAccountQueries();
-    setUser(loggedInUser);
-  }, [clearAccountQueries]);
+  const login = useCallback(
+    async (email: string, password: string) => {
+      const loggedInUser = await authApi.login({ email, password });
+      clearAccountQueries();
+      setUser(loggedInUser);
+    },
+    [clearAccountQueries],
+  );
 
   const register = useCallback(
     async (name: string, email: string, password: string, phone?: string) => {
-      const registeredUser = await authApi.register({ name, email, password, phone });
+      const registeredUser = await authApi.register({
+        name,
+        email,
+        password,
+        phone,
+      });
       clearAccountQueries();
       setUser(registeredUser);
     },

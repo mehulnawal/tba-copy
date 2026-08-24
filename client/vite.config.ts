@@ -16,9 +16,15 @@ export default defineConfig(() => {
         output: {
           manualChunks(id) {
             if (!id.includes("node_modules")) return;
-            if (id.includes("react") || id.includes("react-router")) return "react-vendor";
+            if (id.includes("react") || id.includes("react-router"))
+              return "react-vendor";
             if (id.includes("@tanstack")) return "query-vendor";
-            if (id.includes("framer-motion") || id.includes("motion") || id.includes("gsap")) return "animation-vendor";
+            if (
+              id.includes("framer-motion") ||
+              id.includes("motion") ||
+              id.includes("gsap")
+            )
+              return "animation-vendor";
             if (id.includes("lucide-react")) return "icon-vendor";
           },
         },

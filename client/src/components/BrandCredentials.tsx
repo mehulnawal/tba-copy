@@ -6,177 +6,179 @@ import cert2 from "../assets/whyChooseUs/sglLogo.png";
 import cert3 from "../assets/whyChooseUs/gciLogo.png";
 import cert4 from "../assets/whyChooseUs/hallmarkingLogo.png";
 
-
 export default function BrandPromise() {
-    const credentials = [
-        {
-            id: 1,
-            num: "01",
-            title: "IGI Diamond Certification (IGI)",
-            subtitle: "International Gemological Institute (IGI)",
-            desc: "Every single diamond is meticulously screened to authenticate precision grading on the global 4Cs matrix.",
-            img: cert1,
-            icon: <Award className="w-5 h-5 text-[var(--color-cream)]" />,
-            align: "md:pt-0" // Natural staggered alignment
-        },
-        {
-            id: 2,
-            num: "02",
-            title: "Hallmarking",
-            subtitle: "Hallmarking",
-            desc: "Experience trustworthy gold hallmarking services, delivering accurate testing and authentic jewellery certification.",
-            img: cert4,
-            icon: <Shield className="w-5 h-5 text-[var(--color-cream)]" />,
-            align: "md:pt-0" // Displace slightly lower
-        },
-        {
-            id: 3,
-            num: "03",
-            title: "Gemological Centers Identification (GCI)",
-            subtitle: "International Gemological Institute (IGI)",
-            desc: "Every single diamond is meticulously screened to authenticate precision grading on the global 4Cs matrix.",
-            img: cert3,
-            icon: <Award className="w-5 h-5 text-[var(--color-cream)]" />,
-            align: "md:pt-0" // Natural staggered alignment
-        },
-    ];
+  const credentials = [
+    {
+      id: 1,
+      num: "01",
+      title: "IGI Diamond Certification (IGI)",
+      subtitle: "International Gemological Institute (IGI)",
+      desc: "Every single diamond is meticulously screened to authenticate precision grading on the global 4Cs matrix.",
+      img: cert1,
+      icon: <Award className="w-5 h-5 text-[var(--color-cream)]" />,
+      align: "md:pt-0", // Natural staggered alignment
+    },
+    {
+      id: 2,
+      num: "02",
+      title: "Hallmarking",
+      subtitle: "Hallmarking",
+      desc: "Experience trustworthy gold hallmarking services, delivering accurate testing and authentic jewellery certification.",
+      img: cert4,
+      icon: <Shield className="w-5 h-5 text-[var(--color-cream)]" />,
+      align: "md:pt-0", // Displace slightly lower
+    },
+    {
+      id: 3,
+      num: "03",
+      title: "Gemological Centers Identification (GCI)",
+      subtitle: "International Gemological Institute (IGI)",
+      desc: "Every single diamond is meticulously screened to authenticate precision grading on the global 4Cs matrix.",
+      img: cert3,
+      icon: <Award className="w-5 h-5 text-[var(--color-cream)]" />,
+      align: "md:pt-0", // Natural staggered alignment
+    },
+  ];
 
-    return (
-        <>
-            {/* Part 1: Why Choose Us */}
-            <section className="bg-[var(--color-bg-secondary)]" id="brand-promise-section">
-                <div className="section-padding container">
-                    <div className="flex flex-col items-center mb-5 text-center">
-                        <span className="section-label">Our Promise</span>
-                        <h2 className="font-primary text-3xl md:text-4xl text-[var(--color-text)] tracking-wide font-light">
-                            Why Choose TBA
-                        </h2>
-                        <div className="w-12 h-[1px] bg-[var(--color-cream)] mt-4" />
-                    </div>
+  return (
+    <>
+      {/* Part 1: Why Choose Us */}
+      <section
+        className="bg-[var(--color-bg-secondary)]"
+        id="brand-promise-section"
+      >
+        <div className="section-padding container">
+          <div className="flex flex-col items-center mb-5 text-center">
+            <span className="section-label">Our Promise</span>
+            <h2 className="font-primary text-3xl md:text-4xl text-[var(--color-text)] tracking-wide font-light">
+              Why Choose TBA
+            </h2>
+            <div className="w-12 h-[1px] bg-[var(--color-cream)] mt-4" />
+          </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+            {/* Card 1 */}
+            <div className="bg-[var(--color-white)] rounded-lg p-8 border border-[var(--color-border-subtle)] shadow-xs flex flex-col gap-4 reveal-section">
+              <Handshake
+                size={36}
+                className="text-[var(--color-teal)] shrink-0"
+              />
+              <h3 className="font-primary text-xl font-bold text-[var(--color-teal)]">
+                Direct-to-Consumer Pricing
+              </h3>
+              <p className="font-secondary text-sm text-[var(--color-text-secondary)] leading-relaxed">
+                No middlemen, no showroom markups. You pay for the diamond and
+                the craftsmanship - not layers of distributor margin.
+              </p>
+            </div>
 
-                        {/* Card 1 */}
-                        <div className="bg-[var(--color-white)] rounded-lg p-8 border border-[var(--color-border-subtle)] shadow-xs flex flex-col gap-4 reveal-section">
-                            <Handshake size={36} className="text-[var(--color-teal)] shrink-0" />
-                            <h3 className="font-primary text-xl font-bold text-[var(--color-teal)]">
-                                Direct-to-Consumer Pricing
-                            </h3>
-                            <p className="font-secondary text-sm text-[var(--color-text-secondary)] leading-relaxed">
-                                No middlemen, no showroom markups. You pay for the diamond and the craftsmanship - not layers of distributor margin.
-                            </p>
-                        </div>
+            {/* Card 1 */}
+            <div className="bg-[var(--color-white)] rounded-lg p-8 border border-[var(--color-border-subtle)] shadow-xs flex flex-col gap-4 reveal-section">
+              <Gem size={36} className="text-[var(--color-teal)] shrink-0" />
+              <h3 className="font-primary text-xl font-bold text-[var(--color-teal)]">
+                Highest Clarity & EF/VVS-VS Ideal cut diamonds
+              </h3>
+              <p className="font-secondary text-sm text-[var(--color-text-secondary)] leading-relaxed">
+                The top tier for brilliance and fire. No compromises on the
+                stone, because a beautiful setting can't fix a dull diamond.
+              </p>
+            </div>
 
-                        {/* Card 1 */}
-                        <div className="bg-[var(--color-white)] rounded-lg p-8 border border-[var(--color-border-subtle)] shadow-xs flex flex-col gap-4 reveal-section">
-                            <Gem size={36} className="text-[var(--color-teal)] shrink-0" />
-                            <h3 className="font-primary text-xl font-bold text-[var(--color-teal)]">
-                                Highest Clarity &
-                                EF/VVS-VS Ideal cut diamonds
-                            </h3>
-                            <p className="font-secondary text-sm text-[var(--color-text-secondary)] leading-relaxed">
-                                The top tier for brilliance and fire. No compromises on the stone, because a beautiful setting can't fix a dull diamond.
-                            </p>
-                        </div>
+            {/* Card 2 */}
+            <div className="bg-[var(--color-white)] rounded-lg p-8 border border-[var(--color-border-subtle)] shadow-xs flex flex-col gap-4 reveal-section">
+              <Award size={36} className="text-[var(--color-teal)] shrink-0" />
+              <h3 className="font-primary text-xl font-bold text-[var(--color-teal)]">
+                Bespoke Customization
+              </h3>
+              <p className="font-secondary text-sm text-[var(--color-text-secondary)] leading-relaxed">
+                Bring your unique vision to life. From minor design tweaks to
+                personalized layouts, our team provides highly custom tailoring
+                to craft jewellery exactly as per your desire.
+              </p>
+            </div>
 
+            {/* Card 3 */}
+            <div className="bg-[var(--color-white)] rounded-lg p-8 border border-[var(--color-border-subtle)] shadow-xs flex flex-col gap-4 reveal-section">
+              <Hammer size={36} className="text-[var(--color-teal)] shrink-0" />
+              <h3 className="font-primary text-xl font-bold text-[var(--color-teal)]">
+                Master Craftsmanship
+              </h3>
+              <p className="font-secondary text-sm text-[var(--color-text-secondary)] leading-relaxed">
+                Engineered and finished by direct generational artisans pulling
+                centuries of traditional jewellery expertise into every detail.
+              </p>
+            </div>
+          </div>
+        </div>
 
-                        {/* Card 2 */}
-                        <div className="bg-[var(--color-white)] rounded-lg p-8 border border-[var(--color-border-subtle)] shadow-xs flex flex-col gap-4 reveal-section">
-                            <Award size={36} className="text-[var(--color-teal)] shrink-0" />
-                            <h3 className="font-primary text-xl font-bold text-[var(--color-teal)]">
-                                Bespoke Customization
-                            </h3>
-                            <p className="font-secondary text-sm text-[var(--color-text-secondary)] leading-relaxed">
-                                Bring your unique vision to life. From minor design tweaks to personalized layouts, our team provides highly custom tailoring to craft jewellery exactly as per your desire.
-                            </p>
-                        </div>
+        {/* Part 2: NEW ASYMMETRIC LUXURY HORIZON (ALWAYS OPEN & DISPLAYED) */}
+        <div className="w-full bg-[var(--color-teal)] py-16 md:py-24 text-white border-t border-white/10 relative overflow-hidden">
+          {/* Subtle architectural background grid lines for premium vibe */}
+          <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]" />
 
-                        {/* Card 3 */}
-                        <div className="bg-[var(--color-white)] rounded-lg p-8 border border-[var(--color-border-subtle)] shadow-xs flex flex-col gap-4 reveal-section">
-                            <Hammer size={36} className="text-[var(--color-teal)] shrink-0" />
-                            <h3 className="font-primary text-xl font-bold text-[var(--color-teal)]">
-                                Master Craftsmanship
-                            </h3>
-                            <p className="font-secondary text-sm text-[var(--color-text-secondary)] leading-relaxed">
-                                Engineered and finished by direct generational artisans pulling centuries of traditional jewellery expertise into every detail.
-                            </p>
-                        </div>
-                    </div>
-                </div>
+          <div className="container max-w-5xl mx-auto px-4 relative z-10">
+            {/* Section Header */}
+            <div className="text-center mb-7 md:mb-5">
+              <span className="text-[var(--color-cream)] font-secondary text-[10px] md:text-xs tracking-[0.35em] uppercase block mb-3">
+                Guaranteed Authenticity
+              </span>
+              <h3 className="font-primary text-3xl md:text-4xl font-light tracking-wide max-w-3xl mx-auto leading-snug !text-[var(--color-cream)]">
+                Verifiable Quality Credentials From Autonomous Labs
+              </h3>
+              <div className="w-16 h-[1px] bg-[var(--color-cream)] mx-auto mt-6 opacity-60" />
+            </div>
 
-                {/* Part 2: NEW ASYMMETRIC LUXURY HORIZON (ALWAYS OPEN & DISPLAYED) */}
-                <div className="w-full bg-[var(--color-teal)] py-16 md:py-24 text-white border-t border-white/10 relative overflow-hidden">
+            {/* Premium Multi-Column Static Layout */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8 relative">
+              <div className="hidden md:block absolute top-[26px] left-[10%] right-[10%] h-[1px] bg-white/10 z-0" />
 
-                    {/* Subtle architectural background grid lines for premium vibe */}
-                    <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]" />
+              {credentials.map((item) => (
+                <div
+                  key={item.id}
+                  className={`flex flex-col items-center md:items-start text-center md:text-left z-10 group ${item.align}`}
+                >
+                  {/* Top Numeric Node */}
+                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[var(--color-teal)] border border-white/20 mb-6 transition-all duration-300 group-hover:border-[var(--color-cream)] group-hover:shadow-[0_0_15px_rgba(245,245,220,0.15)]">
+                    <span className="font-mono text-xs tracking-widest text-[var(--color-cream)] font-medium">
+                      {item.num}
+                    </span>
+                  </div>
 
-                    <div className="container max-w-5xl mx-auto px-4 relative z-10">
+                  {/* Text Header */}
+                  <div className="flex items-center gap-2 mb-2 justify-center md:justify-start ">
+                    {item.icon}
+                    <h4 className="font-secondary text-sm font-semibold tracking-wider uppercase !text-[var(--color-cream)]">
+                      {item.title}
+                    </h4>
+                  </div>
 
-                        {/* Section Header */}
-                        <div className="text-center mb-7 md:mb-5">
-                            <span className="text-[var(--color-cream)] font-secondary text-[10px] md:text-xs tracking-[0.35em] uppercase block mb-3">
-                                Guaranteed Authenticity
-                            </span>
-                            <h3 className="font-primary text-3xl md:text-4xl font-light tracking-wide max-w-3xl mx-auto leading-snug !text-[var(--color-cream)]">
-                                Verifiable Quality Credentials From Autonomous Labs
-                            </h3>
-                            <div className="w-16 h-[1px] bg-[var(--color-cream)] mx-auto mt-6 opacity-60" />
-                        </div>
-
-                        {/* Premium Multi-Column Static Layout */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8 relative">
-
-                            <div className="hidden md:block absolute top-[26px] left-[10%] right-[10%] h-[1px] bg-white/10 z-0" />
-
-                            {credentials.map((item) => (
-                                <div
-                                    key={item.id}
-                                    className={`flex flex-col items-center md:items-start text-center md:text-left z-10 group ${item.align}`}
-                                >
-                                    {/* Top Numeric Node */}
-                                    <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[var(--color-teal)] border border-white/20 mb-6 transition-all duration-300 group-hover:border-[var(--color-cream)] group-hover:shadow-[0_0_15px_rgba(245,245,220,0.15)]">
-                                        <span className="font-mono text-xs tracking-widest text-[var(--color-cream)] font-medium">
-                                            {item.num}
-                                        </span>
-                                    </div>
-
-                                    {/* Text Header */}
-                                    <div className="flex items-center gap-2 mb-2 justify-center md:justify-start ">
-                                        {item.icon}
-                                        <h4 className="font-secondary text-sm font-semibold tracking-wider uppercase !text-[var(--color-cream)]">
-                                            {item.title}
-                                        </h4>
-                                    </div>
-
-                                    {/* Subtitle */}
-                                    {/* <span className="font-primary italic text-[var(--color-cream)] text-sm opacity-90 block mb-3">
+                  {/* Subtitle */}
+                  {/* <span className="font-primary italic text-[var(--color-cream)] text-sm opacity-90 block mb-3">
                                         {item.subtitle}
                                     </span> */}
 
-                                    {/* Paragraph Description */}
-                                    <p className="font-secondary text-xs text-white/70 leading-relaxed font-light mb-6 max-w-xs">
-                                        {item.desc}
-                                    </p>
+                  {/* Paragraph Description */}
+                  <p className="font-secondary text-xs text-white/70 leading-relaxed font-light mb-6 max-w-xs">
+                    {item.desc}
+                  </p>
 
-                                    {/* Image Card Canvas (Clean Display) */}
-                                    <div className="w-full max-w-[240px] aspect-[2.2/1] bg-white/5 backdrop-blur-xs border border-white/10 rounded-lg p-4 flex items-center justify-center transition-all duration-300 group-hover:bg-white/10 group-hover:border-white/20 shadow-xs relative overflow-hidden">
-                                        {/* Shimmer light effect on layout hover */}
-                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
+                  {/* Image Card Canvas (Clean Display) */}
+                  <div className="w-full max-w-[240px] aspect-[2.2/1] bg-white/5 backdrop-blur-xs border border-white/10 rounded-lg p-4 flex items-center justify-center transition-all duration-300 group-hover:bg-white/10 group-hover:border-white/20 shadow-xs relative overflow-hidden">
+                    {/* Shimmer light effect on layout hover */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
 
-                                        <img
-                                            src={item.img}
-                                            alt={item.title}
-                                            className="max-h-[55px] md:max-h-[60px] w-auto object-contain filter brightness-100 contrast-100 select-none transition-transform duration-500 group-hover:scale-102"
-                                        />
-                                    </div>
-                                </div>
-                            ))}
-
-                        </div>
-
-                    </div>
+                    <img
+                      src={item.img}
+                      alt={item.title}
+                      className="max-h-[55px] md:max-h-[60px] w-auto object-contain filter brightness-100 contrast-100 select-none transition-transform duration-500 group-hover:scale-102"
+                    />
+                  </div>
                 </div>
-            </section>
-        </>
-    );
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+    </>
+  );
 }

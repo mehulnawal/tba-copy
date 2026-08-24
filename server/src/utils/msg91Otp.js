@@ -6,18 +6,30 @@ const API_BASE = "https://api.msg91.com/api/v5/widget";
 const config = () => {
   if (!process.env.MSG91_AUTH_KEY || !process.env.MSG91_WIDGET_ID)
     throw new ApiError(503, "MSG91 OTP service is not configured");
-  return { widgetId: process.env.MSG91_WIDGET_ID, authkey: process.env.MSG91_AUTH_KEY };
+  return {
+    widgetId: process.env.MSG91_WIDGET_ID,
+    authkey: process.env.MSG91_AUTH_KEY,
+  };
 };
 
 const call = async (path, body) => {
   const { authkey } = config();
   try {
-    return (await axios.post(`${API_BASE}/${path}`, body, {
-      headers: { authkey, "Content-Type": "application/json", Accept: "application/json" },
-      timeout: 10000,
-    })).data;
+    return (
+      await axios.post(`${API_BASE}/${path}`, body, {
+        headers: {
+          authkey,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        timeout: 10000,
+      })
+    ).data;
   } catch (error) {
-    const message = error.response?.data?.message || error.response?.data?.error || "MSG91 OTP request failed";
+    const message =
+      error.response?.data?.message ||
+      error.response?.data?.error ||
+      "MSG91 OTP request failed";
     throw new ApiError(error.response?.status === 429 ? 429 : 502, message);
   }
 };
@@ -25,8 +37,10 @@ const call = async (path, body) => {
 const requestIdForSuccessfulResponse = (data) => {
   if (data?.type !== "success")
     throw new ApiError(502, data?.message || "MSG91 OTP request failed");
-  const requestId = typeof data?.message === "string" ? data.message.trim() : "";
-  if (!requestId) throw new ApiError(502, "MSG91 did not return an OTP request ID");
+  const requestId =
+    typeof data?.message === "string" ? data.message.trim() : "";
+  if (!requestId)
+    throw new ApiError(502, "MSG91 did not return an OTP request ID");
   return requestId;
 };
 
@@ -38,7 +52,11 @@ const sendMsg91Otp = async (mobile) => {
 
 const retryMsg91Otp = async (requestId) => {
   const { widgetId } = config();
-  const data = await call("retryOtp", { widgetId, reqId: requestId, retryChannel: "SMS" });
+  const data = await call("retryOtp", {
+    widgetId,
+    reqId: requestId,
+    retryChannel: "SMS",
+  });
   return requestIdForSuccessfulResponse(data);
 };
 
@@ -50,8 +68,10 @@ const verifyMsg91Otp = async (otp, requestId) => {
   console.log("[MSG91] verifyOtp raw response:", JSON.stringify(data, null, 2));
   if (data?.type !== "success")
     throw new ApiError(401, data?.message || "Invalid or expired OTP");
-  const accessToken = typeof data?.message === "string" ? data.message.trim() : "";
-  if (!accessToken) throw new ApiError(502, "MSG91 did not return a verification token");
+  const accessToken =
+    typeof data?.message === "string" ? data.message.trim() : "";
+  if (!accessToken)
+    throw new ApiError(502, "MSG91 did not return a verification token");
   return accessToken;
 };
 

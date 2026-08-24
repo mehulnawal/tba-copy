@@ -1,6 +1,15 @@
 import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { X, Mail, Lock, User, Phone, ArrowRight, Eye, EyeOff } from "lucide-react"; // Imported Eye and EyeOff icons
+import {
+  X,
+  Mail,
+  Lock,
+  User,
+  Phone,
+  ArrowRight,
+  Eye,
+  EyeOff,
+} from "lucide-react"; // Imported Eye and EyeOff icons
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
@@ -18,11 +27,22 @@ type AuthMode = "login" | "register" | "forgot";
 const OTP_LENGTH = 6;
 const RESEND_DELAY_SECONDS = 20;
 
-export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalProps) {
+export function AuthModal({
+  isOpen,
+  onClose,
+  onAuthenticated,
+}: LuxuryAuthModalProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const currentPage = `${location.pathname}${location.search}${location.hash}`;
-  const returnTo = typeof location.state?.from === "string" && location.state.from.startsWith("/") && !location.state.from.startsWith("//") ? location.state.from : location.pathname === "/auth" ? "/" : currentPage;
+  const returnTo =
+    typeof location.state?.from === "string" &&
+    location.state.from.startsWith("/") &&
+    !location.state.from.startsWith("//")
+      ? location.state.from
+      : location.pathname === "/auth"
+        ? "/"
+        : currentPage;
   const { login, register, setUser } = useAuth();
   const { showToast } = useToast();
 
@@ -37,7 +57,9 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
   const [otpSent, setOtpSent] = useState(false);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [resendSeconds, setResendSeconds] = useState(0);
-  const [resendAvailableAt, setResendAvailableAt] = useState<number | null>(null);
+  const [resendAvailableAt, setResendAvailableAt] = useState<number | null>(
+    null,
+  );
   const otpRefs = useRef<Array<HTMLInputElement | null>>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false); // Visibility state for password
@@ -47,8 +69,14 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
     setShowPassword(false);
   }, [authMode]);
   useEffect(() => {
-    if (!resendAvailableAt) { setResendSeconds(0); return; }
-    const syncResendTimer = () => setResendSeconds(Math.max(0, Math.ceil((resendAvailableAt - Date.now()) / 1_000)));
+    if (!resendAvailableAt) {
+      setResendSeconds(0);
+      return;
+    }
+    const syncResendTimer = () =>
+      setResendSeconds(
+        Math.max(0, Math.ceil((resendAvailableAt - Date.now()) / 1_000)),
+      );
     syncResendTimer();
     const timer = window.setInterval(syncResendTimer, 250);
     return () => window.clearInterval(timer);
@@ -64,8 +92,13 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
       document.head.appendChild(script);
     };
 
-    if (import.meta.env.VITE_GOOGLE_CLIENT_ID) loadScript("google-identity-services", "https://accounts.google.com/gsi/client");
-    if (import.meta.env.VITE_FACEBOOK_APP_ID) loadScript("facebook-jssdk", "https://connect.facebook.net/en_US/sdk.js");
+    if (import.meta.env.VITE_GOOGLE_CLIENT_ID)
+      loadScript(
+        "google-identity-services",
+        "https://accounts.google.com/gsi/client",
+      );
+    if (import.meta.env.VITE_FACEBOOK_APP_ID)
+      loadScript("facebook-jssdk", "https://connect.facebook.net/en_US/sdk.js");
   }, []);
 
   const handleClose = () => {
@@ -75,7 +108,9 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
 
   useEffect(() => {
     if (!isOpen) return;
-    const onKeyDown = (event: KeyboardEvent) => { if (event.key === "Escape") handleClose(); };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") handleClose();
+    };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [isOpen]);
@@ -84,7 +119,10 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
 
   const sendCustomerOtp = async () => {
     const mobile = phone.replace(/\D/g, "").replace(/^91(?=\d{10}$)/, "");
-    if (!/^\d{10}$/.test(mobile)) { showToast("Enter a valid 10-digit Indian mobile number.", "error"); return; }
+    if (!/^\d{10}$/.test(mobile)) {
+      showToast("Enter a valid 10-digit Indian mobile number.", "error");
+      return;
+    }
     setIsSendingOtp(true);
     try {
       const response = await authApi.startOtp(mobile);
@@ -94,13 +132,23 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
       setOtpSent(true);
       showToast("OTP sent to your mobile number.", "success");
     } catch (error) {
-      showToast(error instanceof Error ? error.message : "Unable to send OTP. Please try again.", "error");
-    } finally { setIsSendingOtp(false); }
+      showToast(
+        error instanceof Error
+          ? error.message
+          : "Unable to send OTP. Please try again.",
+        "error",
+      );
+    } finally {
+      setIsSendingOtp(false);
+    }
   };
   const resendCustomerOtp = async () => {
     if (resendSeconds > 0) return;
     const mobile = phone.replace(/\D/g, "").replace(/^91(?=\d{10}$)/, "");
-    if (!/^\d{10}$/.test(mobile)) { showToast("Enter a valid 10-digit Indian mobile number.", "error"); return; }
+    if (!/^\d{10}$/.test(mobile)) {
+      showToast("Enter a valid 10-digit Indian mobile number.", "error");
+      return;
+    }
     setIsSendingOtp(true);
     try {
       if (!otpRequestId) throw new Error("Start a new OTP request first.");
@@ -111,13 +159,23 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
       showToast("A new OTP has been sent.", "success");
       otpRefs.current[0]?.focus();
     } catch (error) {
-      showToast(error instanceof Error ? error.message : "Unable to resend OTP. Please try again.", "error");
-    } finally { setIsSendingOtp(false); }
+      showToast(
+        error instanceof Error
+          ? error.message
+          : "Unable to resend OTP. Please try again.",
+        "error",
+      );
+    } finally {
+      setIsSendingOtp(false);
+    }
   };
 
   const updateOtp = (index: number, value: string) => {
     const digit = value.replace(/\D/g, "").slice(-1);
-    const nextOtp = Array.from({ length: OTP_LENGTH }, (_, digitIndex) => otp[digitIndex] || "");
+    const nextOtp = Array.from(
+      { length: OTP_LENGTH },
+      (_, digitIndex) => otp[digitIndex] || "",
+    );
     nextOtp[index] = digit;
     setOtp(nextOtp.join(""));
     if (digit && index < OTP_LENGTH - 1) otpRefs.current[index + 1]?.focus();
@@ -129,7 +187,10 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
     try {
       if (authMode === "forgot") {
         await authApi.forgotPassword(email);
-        showToast("If an account exists, a secure reset link has been sent", "success");
+        showToast(
+          "If an account exists, a secure reset link has been sent",
+          "success",
+        );
         setAuthMode("login");
         return;
       }
@@ -137,7 +198,8 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
       if (authMode === "login") {
         if (loginMethod === "otp") {
           const mobile = phone.replace(/\D/g, "").replace(/^91(?=\d{10}$)/, "");
-          if (!/^\d{10}$/.test(mobile)) throw new Error("Enter a valid 10-digit Indian mobile number.");
+          if (!/^\d{10}$/.test(mobile))
+            throw new Error("Enter a valid 10-digit Indian mobile number.");
           if (!/^\d{6}$/.test(otp)) throw new Error("Enter the six-digit OTP.");
           if (!otpRequestId) throw new Error("Start a new OTP request first.");
           setUser(await authApi.otpLogin(mobile, otp, otpRequestId));
@@ -152,7 +214,8 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
       }
 
       onClose();
-      if (onAuthenticated) onAuthenticated(); else navigate(returnTo, { replace: true });
+      if (onAuthenticated) onAuthenticated();
+      else navigate(returnTo, { replace: true });
     } catch (error) {
       const message =
         error instanceof ApiRequestError
@@ -172,7 +235,8 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
 
     const client = window.google.accounts.oauth2.initTokenClient({
       client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-      scope: 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email',
+      scope:
+        "https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email",
       callback: async (tokenResponse) => {
         if (tokenResponse && tokenResponse.access_token) {
           setIsSubmitting(true);
@@ -181,7 +245,8 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
             setUser(await authApi.googleLogin(tokenResponse.access_token));
             showToast("Signed in with Google", "success");
             onClose();
-            if (onAuthenticated) onAuthenticated(); else navigate(returnTo, { replace: true });
+            if (onAuthenticated) onAuthenticated();
+            else navigate(returnTo, { replace: true });
           } catch (error) {
             showToast("Google login failed", "error");
           } finally {
@@ -203,24 +268,44 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
       showToast("Facebook sign-in is still loading. Please try again.", "info");
       return;
     }
-    window.FB.init({ appId: import.meta.env.VITE_FACEBOOK_APP_ID, cookie: true, xfbml: false, version: "v22.0" });
+    window.FB.init({
+      appId: import.meta.env.VITE_FACEBOOK_APP_ID,
+      cookie: true,
+      xfbml: false,
+      version: "v22.0",
+    });
 
     // Fixed: Passing a plain synchronous callback to Facebook SDK
-    window.FB.login((response) => {
-      (async () => {
-        const accessToken = response.authResponse?.accessToken;
-        if (!accessToken) return showToast("Facebook sign-in was cancelled or unavailable.", "error");
-        setIsSubmitting(true);
-        try {
-          setUser(await authApi.facebookLogin(accessToken));
-          showToast("Signed in with Facebook", "success");
-          onClose();
-          if (onAuthenticated) onAuthenticated(); else navigate(returnTo, { replace: true });
-        } catch (error) {
-          showToast(error instanceof ApiRequestError ? error.message : "Facebook sign-in failed. Please try again.", "error");
-        } finally { setIsSubmitting(false); }
-      })();
-    }, { scope: "public_profile,email" });
+    window.FB.login(
+      (response) => {
+        (async () => {
+          const accessToken = response.authResponse?.accessToken;
+          if (!accessToken)
+            return showToast(
+              "Facebook sign-in was cancelled or unavailable.",
+              "error",
+            );
+          setIsSubmitting(true);
+          try {
+            setUser(await authApi.facebookLogin(accessToken));
+            showToast("Signed in with Facebook", "success");
+            onClose();
+            if (onAuthenticated) onAuthenticated();
+            else navigate(returnTo, { replace: true });
+          } catch (error) {
+            showToast(
+              error instanceof ApiRequestError
+                ? error.message
+                : "Facebook sign-in failed. Please try again.",
+              "error",
+            );
+          } finally {
+            setIsSubmitting(false);
+          }
+        })();
+      },
+      { scope: "public_profile,email" },
+    );
   };
 
   return (
@@ -276,10 +361,22 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
               className="flex items-center justify-center gap-2 border border-[var(--color-border-subtle)] bg-[var(--color-bg-secondary)] py-2.5 px-4 font-secondary text-xs text-[var(--color-text)] hover:bg-[var(--color-cream-light)] transition-colors cursor-pointer"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24">
-                <path fill="#EA4335" d="M12 5.04c1.64 0 3.12.56 4.28 1.67l3.2-3.2C17.52 1.58 14.98 1 12 1 7.35 1 3.42 3.67 1.5 7.57l3.73 2.89c.88-2.64 3.38-4.42 6.77-4.42z" />
-                <path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.35H12v4.46h6.44c-.28 1.47-1.11 2.71-2.36 3.55l3.66 2.84c2.14-1.98 3.39-4.89 3.39-8.5z" />
-                <path fill="#FBBC05" d="M5.23 10.46a7.03 7.03 0 0 1 0 3.08L1.5 16.43a11.96 11.96 0 0 1 0-8.86l3.73 2.89z" />
-                <path fill="#34A853" d="M12 23c3.24 0 5.97-1.07 7.96-2.92l-3.66-2.84c-1.01.68-2.31 1.08-4.3 1.08-3.39 0-5.89-1.78-6.77-4.42L1.5 16.79A11.96 11.96 0 0 0 12 23z" />
+                <path
+                  fill="#EA4335"
+                  d="M12 5.04c1.64 0 3.12.56 4.28 1.67l3.2-3.2C17.52 1.58 14.98 1 12 1 7.35 1 3.42 3.67 1.5 7.57l3.73 2.89c.88-2.64 3.38-4.42 6.77-4.42z"
+                />
+                <path
+                  fill="#4285F4"
+                  d="M23.49 12.27c0-.81-.07-1.59-.2-2.35H12v4.46h6.44c-.28 1.47-1.11 2.71-2.36 3.55l3.66 2.84c2.14-1.98 3.39-4.89 3.39-8.5z"
+                />
+                <path
+                  fill="#FBBC05"
+                  d="M5.23 10.46a7.03 7.03 0 0 1 0 3.08L1.5 16.43a11.96 11.96 0 0 1 0-8.86l3.73 2.89z"
+                />
+                <path
+                  fill="#34A853"
+                  d="M12 23c3.24 0 5.97-1.07 7.96-2.92l-3.66-2.84c-1.01.68-2.31 1.08-4.3 1.08-3.39 0-5.89-1.78-6.77-4.42L1.5 16.79A11.96 11.96 0 0 0 12 23z"
+                />
               </svg>
               <span>Google</span>
             </button>
@@ -307,7 +404,24 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {authMode === "login" && <div className="grid grid-cols-2 rounded border border-[var(--color-border)] p-1"><button type="button" onClick={() => setLoginMethod("email")} className={`py-2 text-xs font-semibold tracking-widest ${loginMethod === "email" ? "bg-[var(--color-teal)] text-white" : "text-[var(--color-text-muted)]"}`}>EMAIL</button><button type="button" onClick={() => setLoginMethod("otp")} className={`py-2 text-xs font-semibold tracking-widest ${loginMethod === "otp" ? "bg-[var(--color-teal)] text-white" : "text-[var(--color-text-muted)]"}`}>OTP</button></div>}
+          {authMode === "login" && (
+            <div className="grid grid-cols-2 rounded border border-[var(--color-border)] p-1">
+              <button
+                type="button"
+                onClick={() => setLoginMethod("email")}
+                className={`py-2 text-xs font-semibold tracking-widest ${loginMethod === "email" ? "bg-[var(--color-teal)] text-white" : "text-[var(--color-text-muted)]"}`}
+              >
+                EMAIL
+              </button>
+              <button
+                type="button"
+                onClick={() => setLoginMethod("otp")}
+                className={`py-2 text-xs font-semibold tracking-widest ${loginMethod === "otp" ? "bg-[var(--color-teal)] text-white" : "text-[var(--color-text-muted)]"}`}
+              >
+                OTP
+              </button>
+            </div>
+          )}
           {authMode === "register" && (
             <div className="space-y-1.5">
               <label className="font-secondary text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] font-medium block">
@@ -329,56 +443,146 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
 
           {authMode === "register" && (
             <div className="space-y-1.5">
-              <label className="font-secondary text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] font-medium block">Phone Number</label>
-              <div className="relative"><Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-muted)]" /><input type="tel" required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+91 98765 43210" className="w-full bg-[var(--color-bg-secondary)] border border-[var(--color-border)] py-2.5 pl-10 pr-4 font-secondary text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)]/50 focus:outline-none focus:border-[var(--color-teal)] transition-colors" /></div>
+              <label className="font-secondary text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] font-medium block">
+                Phone Number
+              </label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-muted)]" />
+                <input
+                  type="tel"
+                  required
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="+91 98765 43210"
+                  className="w-full bg-[var(--color-bg-secondary)] border border-[var(--color-border)] py-2.5 pl-10 pr-4 font-secondary text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)]/50 focus:outline-none focus:border-[var(--color-teal)] transition-colors"
+                />
+              </div>
             </div>
           )}
-          {(authMode !== "login" || loginMethod === "email") && <div className="space-y-1.5">
-            <label className="font-secondary text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] font-medium block">
-              Email Address
-            </label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-muted)]" />
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@luxury.com"
-                className="w-full bg-[var(--color-bg-secondary)] border border-[var(--color-border)] py-2.5 pl-10 pr-4 font-secondary text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)]/50 focus:outline-none focus:border-[var(--color-teal)] transition-colors"
-              />
-            </div>
-          </div>}
-
-          {(authMode !== "forgot" && (authMode !== "login" || loginMethod === "email")) && (
+          {(authMode !== "login" || loginMethod === "email") && (
             <div className="space-y-1.5">
               <label className="font-secondary text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] font-medium block">
-                Password
+                Email Address
               </label>
-              <div className="relative flex items-center">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-muted)]" />
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-muted)]" />
                 <input
-                  type={showPassword ? "text" : "password"}
+                  type="email"
                   required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-[var(--color-bg-secondary)] border border-[var(--color-border)] py-2.5 pl-10 pr-12 font-secondary text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)]/50 focus:outline-none focus:border-[var(--color-teal)] transition-colors"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="name@luxury.com"
+                  className="w-full bg-[var(--color-bg-secondary)] border border-[var(--color-border)] py-2.5 pl-10 pr-4 font-secondary text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)]/50 focus:outline-none focus:border-[var(--color-teal)] transition-colors"
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 text-[var(--color-text-muted)] hover:text-[var(--color-teal)] transition-colors p-1 cursor-pointer focus:outline-none"
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
               </div>
             </div>
           )}
 
+          {authMode !== "forgot" &&
+            (authMode !== "login" || loginMethod === "email") && (
+              <div className="space-y-1.5">
+                <label className="font-secondary text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] font-medium block">
+                  Password
+                </label>
+                <div className="relative flex items-center">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-muted)]" />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full bg-[var(--color-bg-secondary)] border border-[var(--color-border)] py-2.5 pl-10 pr-12 font-secondary text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)]/50 focus:outline-none focus:border-[var(--color-teal)] transition-colors"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 text-[var(--color-text-muted)] hover:text-[var(--color-teal)] transition-colors p-1 cursor-pointer focus:outline-none"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
+
           {authMode === "login" && loginMethod === "otp" && (
             <>
-              <div className="space-y-1.5"><label className="font-secondary text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] font-medium block">Mobile Number</label><div className="relative"><Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-muted)]" /><input type="tel" required disabled={otpSent} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+91 98765 43210" className="w-full bg-[var(--color-bg-secondary)] border border-[var(--color-border)] py-2.5 pl-10 pr-4 font-secondary text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)]/50 focus:outline-none focus:border-[var(--color-teal)] transition-colors disabled:cursor-not-allowed disabled:opacity-60" /></div>{!otpSent && <button type="button" onClick={() => void sendCustomerOtp()} disabled={isSendingOtp} className="mx-auto mt-3 flex w-full items-center justify-center bg-[var(--color-teal)] px-6 py-3 font-secondary text-sm font-semibold uppercase tracking-widest text-[var(--color-cream)] transition hover:opacity-90 disabled:opacity-60">{isSendingOtp ? "Sending..." : "Get OTP"}</button>}</div>
-              {otpSent && <div className="space-y-1.5"><label className="font-secondary text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] font-medium block">OTP</label><div className="grid w-full grid-cols-6 gap-1.5 sm:gap-2">{Array.from({ length: OTP_LENGTH }, (_, index) => <input key={index} ref={(element) => { otpRefs.current[index] = element; }} value={otp[index] || ""} onChange={(event) => updateOtp(index, event.target.value)} onKeyDown={(event) => { if (event.key === "Backspace" && !otp[index] && index > 0) otpRefs.current[index - 1]?.focus(); }} className="h-12 w-full min-w-0 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-center font-secondary text-lg font-semibold text-[var(--color-text)] focus:outline-none focus:border-[var(--color-teal)] transition-colors" inputMode="numeric" autoComplete={index === 0 ? "one-time-code" : "off"} maxLength={1} aria-label={`OTP digit ${index + 1}`} />)}</div><button type="button" onClick={() => void resendCustomerOtp()} disabled={isSendingOtp || resendSeconds > 0} className="font-secondary text-[11px] text-[var(--color-teal)] hover:underline disabled:pointer-events-none disabled:opacity-60">{isSendingOtp ? "Sending..." : resendSeconds > 0 ? `Resend OTP in 0:${String(resendSeconds).padStart(2, "0")}` : "Resend OTP"}</button></div>}
+              <div className="space-y-1.5">
+                <label className="font-secondary text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] font-medium block">
+                  Mobile Number
+                </label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-muted)]" />
+                  <input
+                    type="tel"
+                    required
+                    disabled={otpSent}
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="+91 98765 43210"
+                    className="w-full bg-[var(--color-bg-secondary)] border border-[var(--color-border)] py-2.5 pl-10 pr-4 font-secondary text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)]/50 focus:outline-none focus:border-[var(--color-teal)] transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+                  />
+                </div>
+                {!otpSent && (
+                  <button
+                    type="button"
+                    onClick={() => void sendCustomerOtp()}
+                    disabled={isSendingOtp}
+                    className="mx-auto mt-3 flex w-full items-center justify-center bg-[var(--color-teal)] px-6 py-3 font-secondary text-sm font-semibold uppercase tracking-widest text-[var(--color-cream)] transition hover:opacity-90 disabled:opacity-60"
+                  >
+                    {isSendingOtp ? "Sending..." : "Get OTP"}
+                  </button>
+                )}
+              </div>
+              {otpSent && (
+                <div className="space-y-1.5">
+                  <label className="font-secondary text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] font-medium block">
+                    OTP
+                  </label>
+                  <div className="grid w-full grid-cols-6 gap-1.5 sm:gap-2">
+                    {Array.from({ length: OTP_LENGTH }, (_, index) => (
+                      <input
+                        key={index}
+                        ref={(element) => {
+                          otpRefs.current[index] = element;
+                        }}
+                        value={otp[index] || ""}
+                        onChange={(event) =>
+                          updateOtp(index, event.target.value)
+                        }
+                        onKeyDown={(event) => {
+                          if (
+                            event.key === "Backspace" &&
+                            !otp[index] &&
+                            index > 0
+                          )
+                            otpRefs.current[index - 1]?.focus();
+                        }}
+                        className="h-12 w-full min-w-0 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-center font-secondary text-lg font-semibold text-[var(--color-text)] focus:outline-none focus:border-[var(--color-teal)] transition-colors"
+                        inputMode="numeric"
+                        autoComplete={index === 0 ? "one-time-code" : "off"}
+                        maxLength={1}
+                        aria-label={`OTP digit ${index + 1}`}
+                      />
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => void resendCustomerOtp()}
+                    disabled={isSendingOtp || resendSeconds > 0}
+                    className="font-secondary text-[11px] text-[var(--color-teal)] hover:underline disabled:pointer-events-none disabled:opacity-60"
+                  >
+                    {isSendingOtp
+                      ? "Sending..."
+                      : resendSeconds > 0
+                        ? `Resend OTP in 0:${String(resendSeconds).padStart(2, "0")}`
+                        : "Resend OTP"}
+                  </button>
+                </div>
+              )}
             </>
           )}
           {authMode === "login" && loginMethod === "email" && (
@@ -403,7 +607,9 @@ export function AuthModal({ isOpen, onClose, onAuthenticated }: LuxuryAuthModalP
                 {isSubmitting
                   ? "Please wait..."
                   : authMode === "login"
-                    ? loginMethod === "otp" ? "Continue with OTP" : "Sign In"
+                    ? loginMethod === "otp"
+                      ? "Continue with OTP"
+                      : "Sign In"
                     : authMode === "register"
                       ? "Register Now"
                       : "Send Reset Link"}

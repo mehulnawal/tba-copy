@@ -12,7 +12,8 @@ const WELCOME_COUPON = {
   eligibilityLabel: "For first-time customers only",
 };
 
-const isWelcomeCoupon = (code) => String(code || "").toUpperCase() === WELCOME_COUPON.code;
+const isWelcomeCoupon = (code) =>
+  String(code || "").toUpperCase() === WELCOME_COUPON.code;
 
 const isWelcomeEligible = async (user) => {
   const phone = String(user?.phone || "").trim();
@@ -29,13 +30,20 @@ const isWelcomeEligible = async (user) => {
   return !priorOrder;
 };
 
-const getAppliedCodes = (cart) => Array.from(new Set([
-  ...(Array.isArray(cart.appliedCoupons) ? cart.appliedCoupons : []),
-  ...(cart.appliedCoupon ? [cart.appliedCoupon] : []),
-].map((code) => String(code).toUpperCase())));
+const getAppliedCodes = (cart) =>
+  Array.from(
+    new Set(
+      [
+        ...(Array.isArray(cart.appliedCoupons) ? cart.appliedCoupons : []),
+        ...(cart.appliedCoupon ? [cart.appliedCoupon] : []),
+      ].map((code) => String(code).toUpperCase()),
+    ),
+  );
 
 const setAppliedCodes = (cart, codes) => {
-  const normalized = Array.from(new Set(codes.map((code) => String(code).toUpperCase())));
+  const normalized = Array.from(
+    new Set(codes.map((code) => String(code).toUpperCase())),
+  );
   cart.appliedCoupons = normalized;
   // Keep the legacy field populated for existing carts and integrations.
   cart.appliedCoupon = normalized[0] || null;
@@ -51,10 +59,17 @@ const resolveCoupons = async ({ codes, user, subtotal }) => {
 
     if (isWelcomeCoupon(code)) {
       if (!(await isWelcomeEligible(user))) {
-        throw new ApiError(400, "WELCOME1000 is only available for first-time customers");
+        throw new ApiError(
+          400,
+          "WELCOME1000 is only available for first-time customers",
+        );
       }
       const discount = Math.min(WELCOME_COUPON.discountValue, remaining);
-      entries.push({ ...WELCOME_COUPON, discount, discountDisplay: "?1000 OFF" });
+      entries.push({
+        ...WELCOME_COUPON,
+        discount,
+        discountDisplay: "?1000 OFF",
+      });
       totalDiscount += discount;
       continue;
     }
@@ -62,13 +77,19 @@ const resolveCoupons = async ({ codes, user, subtotal }) => {
     const coupon = await Coupon.findOne({ code: String(code).toUpperCase() });
     if (!coupon) throw new ApiError(400, `${code} is no longer available`);
 
-    const discount = Math.min(calculateCouponDiscount(coupon, remaining), remaining);
+    const discount = Math.min(
+      calculateCouponDiscount(coupon, remaining),
+      remaining,
+    );
     entries.push({
       code: coupon.code,
       discountType: coupon.discountType,
       discountValue: coupon.discountValue,
       discount,
-      discountDisplay: coupon.discountType === "percentage" ? `${coupon.discountValue}% OFF` : `?${coupon.discountValue} OFF`,
+      discountDisplay:
+        coupon.discountType === "percentage"
+          ? `${coupon.discountValue}% OFF`
+          : `?${coupon.discountValue} OFF`,
     });
     totalDiscount += discount;
   }

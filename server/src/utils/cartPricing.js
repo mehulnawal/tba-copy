@@ -1,9 +1,17 @@
 const { calculatePrice, resolveSettings } = require("./priceCalculator");
 const { calculateCouponDiscount } = require("./checkoutUtils");
-const { resolveActiveCategoryCouponForPricingKey } = require("../controllers/categoryCoupon.controller");
+const {
+  resolveActiveCategoryCouponForPricingKey,
+} = require("../controllers/categoryCoupon.controller");
 
-const roundMoney = (value) => Math.round((Number(value || 0) + Number.EPSILON) * 100) / 100;
-const lineTotal = (item) => roundMoney(item.lineTotal === undefined ? Number(item.price || 0) * Number(item.quantity || 0) : item.lineTotal);
+const roundMoney = (value) =>
+  Math.round((Number(value || 0) + Number.EPSILON) * 100) / 100;
+const lineTotal = (item) =>
+  roundMoney(
+    item.lineTotal === undefined
+      ? Number(item.price || 0) * Number(item.quantity || 0)
+      : item.lineTotal,
+  );
 
 const repriceCartItem = async (item, product) => {
   const price = await calculatePrice(product, item.karat, "B2C");
@@ -17,8 +25,13 @@ const repriceCartItem = async (item, product) => {
     const coupon = await resolveActiveCategoryCouponForPricingKey(settings.key);
     if (coupon) {
       try {
-        discount = roundMoney(calculateCouponDiscount(coupon, basePrice * quantity));
-        label = coupon.discountType === "percentage" ? `${coupon.discountValue}% OFF` : `₹${coupon.discountValue} OFF`;
+        discount = roundMoney(
+          calculateCouponDiscount(coupon, basePrice * quantity),
+        );
+        label =
+          coupon.discountType === "percentage"
+            ? `${coupon.discountValue}% OFF`
+            : `₹${coupon.discountValue} OFF`;
       } catch {
         item.categoryCouponApplied = false;
       }

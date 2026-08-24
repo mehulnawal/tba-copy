@@ -1,5 +1,11 @@
 const express = require("express");
-const { listProducts, listGoldProducts, listSilverProducts, getProduct, getCategoryCouponForProduct } = require("../controllers/product.controller");
+const {
+  listProducts,
+  listGoldProducts,
+  listSilverProducts,
+  getProduct,
+  getCategoryCouponForProduct,
+} = require("../controllers/product.controller");
 const router = express.Router();
 router.get("/gold", listGoldProducts);
 router.get("/silver", listSilverProducts);

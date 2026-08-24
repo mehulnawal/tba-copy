@@ -1,5 +1,12 @@
 import React, { useEffect } from "react";
-import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 
 import Loader from "./components/Loader";
 import ToastContainer from "./components/ToastContainer";
@@ -12,22 +19,12 @@ import { ReactQueryProvider } from "./providers/ReactQueryProvider";
 import { AuthProvider } from "./context/AuthContext";
 import { ToastProvider } from "./context/ToastContext";
 
-
-
 import { AuthModal } from "./pages/AuthModal";
 
 import NotFoundPage from "./pages/404Page";
 
-
-
-
-
-
-
-
-
 // Agar aapne Account page bana liya hai, toh use aise import karein:
-// import AccountPage from "./pages/AccountPage"; 
+// import AccountPage from "./pages/AccountPage";
 
 const IS_COMING_SOON = false;
 const AdminApp = React.lazy(() => import("./admin/AdminApp"));
@@ -46,47 +43,236 @@ const B2BCatalog = React.lazy(() => import("./pages/B2BCatalog"));
 const B2BProductDetails = React.lazy(() => import("./pages/B2BProductDetails"));
 const TermsOfService = React.lazy(() => import("./pages/TermsOfService"));
 const DataDeletion = React.lazy(() => import("./pages/DataDeletion"));
-const Deferred = ({ children }: { children: React.ReactNode }) => <React.Suspense fallback={<div className="min-h-screen grid place-items-center text-[var(--color-text-muted)]">Loading...</div>}>{children}</React.Suspense>;
+const Deferred = ({ children }: { children: React.ReactNode }) => (
+  <React.Suspense
+    fallback={
+      <div className="min-h-screen grid place-items-center text-[var(--color-text-muted)]">
+        Loading...
+      </div>
+    }
+  >
+    {children}
+  </React.Suspense>
+);
 
 function RouteSeo() {
   const { pathname } = useLocation();
-  const pages: Array<{ match: (path: string) => boolean; title: string; description: string; keywords?: string[]; noIndex?: boolean }> = [
-    { match: (path) => path === "/", title: "The Brilliance Atelier | Gold, Silver & Lab Grown Diamond Jewellery", description: "Shop fine gold, silver and lab grown diamond jewellery at The Brilliance Atelier. Explore elegant rings, earrings, necklaces and custom jewellery designs.", keywords: ["The Brilliance Atelier", "TBA jewellery", "gold jewellery", "silver jewellery", "lab grown diamond jewellery", "diamond jewellery", "fine jewellery", "gold rings", "diamond rings", "gold necklaces", "gold earrings", "custom jewellery", "jewellery online India"] },
-    { match: (path) => path === "/products", title: "Gold Jewellery Collection | TBA jewellery", description: "Browse TBA's curated gold jewellery collection, including rings, earrings, necklaces and bracelets." },
-    { match: (path) => path === "/gold-jewellery", title: "Gold Jewellery Online | Rings, Earrings & Necklaces | TBA", description: "Explore gold jewellery online at The Brilliance Atelier, including gold rings, earrings, necklaces and bracelets in elegant modern designs.", keywords: ["gold jewellery", "gold jewellery online", "gold rings", "gold earrings", "gold necklaces", "gold bracelets", "gold pendant", "18kt gold jewellery", "14kt gold jewellery", "diamond gold jewellery", "gold jewellery India"] },
-    { match: (path) => path === "/silver-jewellery", title: "Silver Jewellery Online | Rings, Earrings & Necklaces | TBA", description: "Shop silver jewellery online at The Brilliance Atelier. Discover silver rings, earrings, necklaces, Moissanite and Polki jewellery collections.", keywords: ["silver jewellery", "silver jewellery online", "silver rings", "silver earrings", "silver necklaces", "silver bracelets", "moissanite jewellery", "polki jewellery", "sterling silver jewellery", "silver jewellery India"] },
-    { match: (path) => path.startsWith("/product/"), title: "Jewellery Details | TBA jewellery", description: "View jewellery specifications, available options and the complete price breakup at TBA jewellery." },
-    { match: (path) => path === "/wishlist", title: "Wishlist | TBA jewellery", description: "Review your saved TBA jewellery pieces and return to them whenever you are ready." },
-    { match: (path) => path === "/cart", title: "Shopping Cart | TBA jewellery", description: "Review your selected TBA jewellery items before checkout." },
-    { match: (path) => path === "/checkout", title: "Checkout | TBA jewellery", description: "Complete your TBA jewellery purchase securely." },
-    { match: (path) => path === "/account", title: "My Account | TBA jewellery", description: "Manage your TBA jewellery account details and saved addresses." },
-    { match: (path) => path === "/orders", title: "My Orders | TBA jewellery", description: "View your TBA jewellery purchases and order details." },
-    { match: (path) => path === "/orderConfirmation", title: "Order Confirmation | TBA jewellery", description: "Review the details of your completed TBA jewellery order." },
-    { match: (path) => path === "/auth", title: "Sign In | TBA jewellery", description: "Sign in to your TBA jewellery account to manage your shopping experience." },
-    { match: (path) => path === "/reset-password", title: "Reset Password | TBA jewellery", description: "Securely reset the password for your TBA jewellery account." },
-    { match: (path) => path === "/b2b/access", title: "B2B Access | TBA jewellery", description: "Access the private TBA jewellery trade catalogue." },
-    { match: (path) => path === "/b2b/catalog", title: "B2B Jewellery Catalogue | TBA jewellery", description: "Browse TBA jewellery's private business catalogue." },
-    { match: (path) => path.startsWith("/b2b/product/"), title: "B2B Product Details | TBA jewellery", description: "Review product specifications and B2B pricing information in the TBA trade catalogue." },
-    { match: (path) => path.startsWith("/admin/login"), title: "Admin Sign In | TBA jewellery", description: "Sign in to the TBA jewellery administration panel." },
-    { match: (path) => path.startsWith("/admin/orders"), title: "Customer Orders | TBA Admin", description: "Review customer order records in the TBA administration panel." },
-    { match: (path) => path.startsWith("/admin/products"), title: "Products | TBA Admin", description: "Manage TBA jewellery product details, media and pricing." },
-    { match: (path) => path.startsWith("/admin/categories"), title: "Categories | TBA Admin", description: "Manage TBA jewellery catalogue categories." },
-    { match: (path) => path.startsWith("/admin/metal-rates"), title: "Metal Rates | TBA Admin", description: "Manage current TBA jewellery metal rates." },
-    { match: (path) => path.startsWith("/admin"), title: "Administration | TBA jewellery", description: "Manage TBA jewellery catalogue and store operations." },
+  const pages: Array<{
+    match: (path: string) => boolean;
+    title: string;
+    description: string;
+    keywords?: string[];
+    noIndex?: boolean;
+  }> = [
+    {
+      match: (path) => path === "/",
+      title:
+        "The Brilliance Atelier | Gold, Silver & Lab Grown Diamond Jewellery",
+      description:
+        "Shop fine gold, silver and lab grown diamond jewellery at The Brilliance Atelier. Explore elegant rings, earrings, necklaces and custom jewellery designs.",
+      keywords: [
+        "The Brilliance Atelier",
+        "TBA jewellery",
+        "gold jewellery",
+        "silver jewellery",
+        "lab grown diamond jewellery",
+        "diamond jewellery",
+        "fine jewellery",
+        "gold rings",
+        "diamond rings",
+        "gold necklaces",
+        "gold earrings",
+        "custom jewellery",
+        "jewellery online India",
+      ],
+    },
+    {
+      match: (path) => path === "/products",
+      title: "Gold Jewellery Collection | TBA jewellery",
+      description:
+        "Browse TBA's curated gold jewellery collection, including rings, earrings, necklaces and bracelets.",
+    },
+    {
+      match: (path) => path === "/gold-jewellery",
+      title: "Gold Jewellery Online | Rings, Earrings & Necklaces | TBA",
+      description:
+        "Explore gold jewellery online at The Brilliance Atelier, including gold rings, earrings, necklaces and bracelets in elegant modern designs.",
+      keywords: [
+        "gold jewellery",
+        "gold jewellery online",
+        "gold rings",
+        "gold earrings",
+        "gold necklaces",
+        "gold bracelets",
+        "gold pendant",
+        "18kt gold jewellery",
+        "14kt gold jewellery",
+        "diamond gold jewellery",
+        "gold jewellery India",
+      ],
+    },
+    {
+      match: (path) => path === "/silver-jewellery",
+      title: "Silver Jewellery Online | Rings, Earrings & Necklaces | TBA",
+      description:
+        "Shop silver jewellery online at The Brilliance Atelier. Discover silver rings, earrings, necklaces, Moissanite and Polki jewellery collections.",
+      keywords: [
+        "silver jewellery",
+        "silver jewellery online",
+        "silver rings",
+        "silver earrings",
+        "silver necklaces",
+        "silver bracelets",
+        "moissanite jewellery",
+        "polki jewellery",
+        "sterling silver jewellery",
+        "silver jewellery India",
+      ],
+    },
+    {
+      match: (path) => path.startsWith("/product/"),
+      title: "Jewellery Details | TBA jewellery",
+      description:
+        "View jewellery specifications, available options and the complete price breakup at TBA jewellery.",
+    },
+    {
+      match: (path) => path === "/wishlist",
+      title: "Wishlist | TBA jewellery",
+      description:
+        "Review your saved TBA jewellery pieces and return to them whenever you are ready.",
+    },
+    {
+      match: (path) => path === "/cart",
+      title: "Shopping Cart | TBA jewellery",
+      description: "Review your selected TBA jewellery items before checkout.",
+    },
+    {
+      match: (path) => path === "/checkout",
+      title: "Checkout | TBA jewellery",
+      description: "Complete your TBA jewellery purchase securely.",
+    },
+    {
+      match: (path) => path === "/account",
+      title: "My Account | TBA jewellery",
+      description:
+        "Manage your TBA jewellery account details and saved addresses.",
+    },
+    {
+      match: (path) => path === "/orders",
+      title: "My Orders | TBA jewellery",
+      description: "View your TBA jewellery purchases and order details.",
+    },
+    {
+      match: (path) => path === "/orderConfirmation",
+      title: "Order Confirmation | TBA jewellery",
+      description: "Review the details of your completed TBA jewellery order.",
+    },
+    {
+      match: (path) => path === "/auth",
+      title: "Sign In | TBA jewellery",
+      description:
+        "Sign in to your TBA jewellery account to manage your shopping experience.",
+    },
+    {
+      match: (path) => path === "/reset-password",
+      title: "Reset Password | TBA jewellery",
+      description:
+        "Securely reset the password for your TBA jewellery account.",
+    },
+    {
+      match: (path) => path === "/b2b/access",
+      title: "B2B Access | TBA jewellery",
+      description: "Access the private TBA jewellery trade catalogue.",
+    },
+    {
+      match: (path) => path === "/b2b/catalog",
+      title: "B2B Jewellery Catalogue | TBA jewellery",
+      description: "Browse TBA jewellery's private business catalogue.",
+    },
+    {
+      match: (path) => path.startsWith("/b2b/product/"),
+      title: "B2B Product Details | TBA jewellery",
+      description:
+        "Review product specifications and B2B pricing information in the TBA trade catalogue.",
+    },
+    {
+      match: (path) => path.startsWith("/admin/login"),
+      title: "Admin Sign In | TBA jewellery",
+      description: "Sign in to the TBA jewellery administration panel.",
+    },
+    {
+      match: (path) => path.startsWith("/admin/orders"),
+      title: "Customer Orders | TBA Admin",
+      description:
+        "Review customer order records in the TBA administration panel.",
+    },
+    {
+      match: (path) => path.startsWith("/admin/products"),
+      title: "Products | TBA Admin",
+      description: "Manage TBA jewellery product details, media and pricing.",
+    },
+    {
+      match: (path) => path.startsWith("/admin/categories"),
+      title: "Categories | TBA Admin",
+      description: "Manage TBA jewellery catalogue categories.",
+    },
+    {
+      match: (path) => path.startsWith("/admin/metal-rates"),
+      title: "Metal Rates | TBA Admin",
+      description: "Manage current TBA jewellery metal rates.",
+    },
+    {
+      match: (path) => path.startsWith("/admin"),
+      title: "Administration | TBA jewellery",
+      description: "Manage TBA jewellery catalogue and store operations.",
+    },
   ];
-  const page: { title: string; description: string; keywords?: string[]; noIndex?: boolean } = pages.find(({ match }) => match(pathname)) || { title: "Page Not Found | TBA jewellery", description: "The requested TBA jewellery page could not be found." };
-  const noIndex = ["/admin", "/b2b", "/wishlist", "/cart", "/checkout", "/account", "/orders", "/orderConfirmation", "/auth", "/reset-password"].some((path) => pathname === path || pathname.startsWith(`${path}/`));
+  const page: {
+    title: string;
+    description: string;
+    keywords?: string[];
+    noIndex?: boolean;
+  } = pages.find(({ match }) => match(pathname)) || {
+    title: "Page Not Found | TBA jewellery",
+    description: "The requested TBA jewellery page could not be found.",
+  };
+  const noIndex = [
+    "/admin",
+    "/b2b",
+    "/wishlist",
+    "/cart",
+    "/checkout",
+    "/account",
+    "/orders",
+    "/orderConfirmation",
+    "/auth",
+    "/reset-password",
+  ].some((path) => pathname === path || pathname.startsWith(`${path}/`));
   return <Seo {...page} noIndex={noIndex || page.noIndex} />;
 }
 function AuthRoute() {
   const location = useLocation();
   const navigate = useNavigate();
-  const from = typeof location.state?.from === "string" && location.state.from.startsWith("/") && !location.state.from.startsWith("//") ? location.state.from : "/";
-  return <div className="min-h-screen bg-[var(--color-bg)] flex items-center justify-center"><AuthModal isOpen={true} onClose={() => navigate(from, { replace: true })} /></div>;
+  const from =
+    typeof location.state?.from === "string" &&
+    location.state.from.startsWith("/") &&
+    !location.state.from.startsWith("//")
+      ? location.state.from
+      : "/";
+  return (
+    <div className="min-h-screen bg-[var(--color-bg)] flex items-center justify-center">
+      <AuthModal
+        isOpen={true}
+        onClose={() => navigate(from, { replace: true })}
+      />
+    </div>
+  );
 }
 function ScrollToTop() {
   const { pathname } = useLocation();
-  useEffect(() => { window.scrollTo({ top: 0, left: 0, behavior: "auto" }); }, [pathname]);
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [pathname]);
   return null;
 }
 
@@ -108,34 +294,114 @@ export default function App() {
             <ScrollToTop />
             <RouteSeo />
             <Routes>
-              <Route path="/b2b" element={<Navigate to="/b2b/access" replace />} />
-              <Route path="/admin/*" element={<Deferred><AdminApp /></Deferred>} />
-              <Route path="/b2b/access" element={<Deferred><B2BAccess /></Deferred>} />
-              <Route path="/b2b/catalog" element={<Deferred><B2BCatalog /></Deferred>} />
-              <Route path="/b2b/product/:identifier" element={<Deferred><B2BProductDetails /></Deferred>} />
-              <Route path="/reset-password" element={<Deferred><ResetPassword /></Deferred>} />
+              <Route
+                path="/b2b"
+                element={<Navigate to="/b2b/access" replace />}
+              />
+              <Route
+                path="/admin/*"
+                element={
+                  <Deferred>
+                    <AdminApp />
+                  </Deferred>
+                }
+              />
+              <Route
+                path="/b2b/access"
+                element={
+                  <Deferred>
+                    <B2BAccess />
+                  </Deferred>
+                }
+              />
+              <Route
+                path="/b2b/catalog"
+                element={
+                  <Deferred>
+                    <B2BCatalog />
+                  </Deferred>
+                }
+              />
+              <Route
+                path="/b2b/product/:identifier"
+                element={
+                  <Deferred>
+                    <B2BProductDetails />
+                  </Deferred>
+                }
+              />
+              <Route
+                path="/reset-password"
+                element={
+                  <Deferred>
+                    <ResetPassword />
+                  </Deferred>
+                }
+              />
               <Route
                 path="/"
                 element={
                   <>
                     <Loader />
-                    <Deferred><HomePage /></Deferred>
+                    <Deferred>
+                      <HomePage />
+                    </Deferred>
                   </>
                 }
               />
 
-              <Route path="/products" element={<Navigate to="/gold-jewellery" replace />} />
-              <Route path="/gold-jewellery" element={<Deferred><ProductsPage metal="gold" /></Deferred>} />
-              <Route path="/silver-jewellery" element={<Deferred><ProductsPage metal="silver" /></Deferred>} />
-              <Route path="/product/:slug" element={<Deferred><ProductDetailPage /></Deferred>} />
-              <Route path="/terms-of-service" element={<Deferred><TermsOfService /></Deferred>} />
-              <Route path="/data-deletion" element={<Deferred><DataDeletion /></Deferred>} />
+              <Route
+                path="/products"
+                element={<Navigate to="/gold-jewellery" replace />}
+              />
+              <Route
+                path="/gold-jewellery"
+                element={
+                  <Deferred>
+                    <ProductsPage metal="gold" />
+                  </Deferred>
+                }
+              />
+              <Route
+                path="/silver-jewellery"
+                element={
+                  <Deferred>
+                    <ProductsPage metal="silver" />
+                  </Deferred>
+                }
+              />
+              <Route
+                path="/product/:slug"
+                element={
+                  <Deferred>
+                    <ProductDetailPage />
+                  </Deferred>
+                }
+              />
+              <Route
+                path="/terms-of-service"
+                element={
+                  <Deferred>
+                    <TermsOfService />
+                  </Deferred>
+                }
+              />
+              <Route
+                path="/data-deletion"
+                element={
+                  <Deferred>
+                    <DataDeletion />
+                  </Deferred>
+                }
+              />
 
               <Route
                 path="/wishlist"
                 element={
                   <ProtectedRoute allowedRoles={[]}>
-                    <Deferred><WishlistPage /></Deferred>
+                    <Deferred>
+                      <WishlistPage />
+                    </Deferred>
                   </ProtectedRoute>
                 }
               />
@@ -144,7 +410,9 @@ export default function App() {
                 path="/cart"
                 element={
                   <ProtectedRoute allowedRoles={[]}>
-                    <Deferred><CartPage /></Deferred>
+                    <Deferred>
+                      <CartPage />
+                    </Deferred>
                   </ProtectedRoute>
                 }
               />
@@ -153,28 +421,46 @@ export default function App() {
                 path="/account"
                 element={
                   <ProtectedRoute allowedRoles={[]}>
-                    <Deferred><Account /></Deferred>
+                    <Deferred>
+                      <Account />
+                    </Deferred>
                   </ProtectedRoute>
                 }
               />
 
-              <Route
-                path="/auth"
-                element={<AuthRoute />}
-
-              />
+              <Route path="/auth" element={<AuthRoute />} />
 
               <Route
                 path="/checkout"
                 element={
                   <ProtectedRoute allowedRoles={[]}>
-                    <Deferred><CheckoutPage /></Deferred>
+                    <Deferred>
+                      <CheckoutPage />
+                    </Deferred>
                   </ProtectedRoute>
                 }
               />
 
-              <Route path="/orderConfirmation" element={<ProtectedRoute allowedRoles={[]}><Deferred><OrderConfirmation /></Deferred></ProtectedRoute>} />
-              <Route path="/orders" element={<ProtectedRoute allowedRoles={[]}><Deferred><OrderHistory /></Deferred></ProtectedRoute>} />
+              <Route
+                path="/orderConfirmation"
+                element={
+                  <ProtectedRoute allowedRoles={[]}>
+                    <Deferred>
+                      <OrderConfirmation />
+                    </Deferred>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/orders"
+                element={
+                  <ProtectedRoute allowedRoles={[]}>
+                    <Deferred>
+                      <OrderHistory />
+                    </Deferred>
+                  </ProtectedRoute>
+                }
+              />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </BrowserRouter>

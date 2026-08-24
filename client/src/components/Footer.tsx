@@ -3,16 +3,36 @@ import { Link } from "react-router-dom";
 import { useCategories } from "../hooks/useCategories";
 import { motion } from "framer-motion";
 import { SOCIAL_LINKS } from "../constants/assets";
-import { Phone, Mail, MapPin, Instagram, Heart, Shield, Award } from "lucide-react";
+import {
+  Phone,
+  Mail,
+  MapPin,
+  Instagram,
+  Heart,
+  Shield,
+  Award,
+} from "lucide-react";
 import logo from "../assets/logo/footer-logo.png";
 
-export default function Footer({ onCategoryChange: _onCategoryChange }: { onCategoryChange: (category: string) => void }) {
+export default function Footer({
+  onCategoryChange: _onCategoryChange,
+}: {
+  onCategoryChange: (category: string) => void;
+}) {
   const { data: categories } = useCategories();
   const silverTypePath = (name: string) => {
-    const category = categories.find((item) => item.metal === "silver" && item.categoryKind === "type" && item.name.toLowerCase() === name.toLowerCase());
-    return category ? `/silver-jewellery?mainCategory=${encodeURIComponent(category._id)}` : "/silver-jewellery";
+    const category = categories.find(
+      (item) =>
+        item.metal === "silver" &&
+        item.categoryKind === "type" &&
+        item.name.toLowerCase() === name.toLowerCase(),
+    );
+    return category
+      ? `/silver-jewellery?mainCategory=${encodeURIComponent(category._id)}`
+      : "/silver-jewellery";
   };
-  const appointmentMessage = "Hello, I would like to book an appointment with The Brilliance Atelier. Please help me with the available dates and timings.";
+  const appointmentMessage =
+    "Hello, I would like to book an appointment with The Brilliance Atelier. Please help me with the available dates and timings.";
   const appointmentWhatsAppUrl = `${SOCIAL_LINKS.whatsapp}?text=${encodeURIComponent(appointmentMessage)}`;
   const exploreLinks = [
     { label: "Diamond Jewellery", to: "/gold-jewellery" },
@@ -23,11 +43,14 @@ export default function Footer({ onCategoryChange: _onCategoryChange }: { onCate
   return (
     <footer className="w-full bg-[var(--color-teal-dark)] text-white pt-4">
       <div className="container grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 pb-4 lg-pb-2">
-
         {/* COLUMN 1: BRAND PLATFORM */}
         <div className="flex flex-col gap-5 pb-4">
           <div className="flex items-center gap-2 select-none">
-            <a href="/" className="flex items-center select-none shrink-0" aria-label="Home">
+            <a
+              href="/"
+              className="flex items-center select-none shrink-0"
+              aria-label="Home"
+            >
               <img
                 src={logo}
                 alt="TBA"
@@ -41,7 +64,8 @@ export default function Footer({ onCategoryChange: _onCategoryChange }: { onCate
           </p>
 
           <p className="font-secondary  text-xs leading-relaxed max-w-[280px]">
-            Exquisite handcrafted jewellery marrying rich Indian heritage with modern design aesthetics. Curated for the sophisticated connoisseur.
+            Exquisite handcrafted jewellery marrying rich Indian heritage with
+            modern design aesthetics. Curated for the sophisticated connoisseur.
           </p>
 
           {/* Social icons row */}
@@ -52,7 +76,10 @@ export default function Footer({ onCategoryChange: _onCategoryChange }: { onCate
               rel="noopener noreferrer"
               whileHover={{ scale: 1.1 }}
               className="flex items-center justify-center w-10 h-10 rounded-full text-white transition-all"
-              style={{ background: "linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)" }}
+              style={{
+                background:
+                  "linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)",
+              }}
               aria-label="Instagram Profile"
               id="footer-insta-social-btn"
             >
@@ -82,29 +109,72 @@ export default function Footer({ onCategoryChange: _onCategoryChange }: { onCate
 
         {/* COLUMN 2: EXPLORE SECTIONS */}
         <div className="flex flex-col gap-4">
-          <h4 className="font-secondary text-xs uppercase tracking-[0.3em] font-bold mb-2 !text-[var(--color-cream)]">Explore</h4>
+          <h4 className="font-secondary text-xs uppercase tracking-[0.3em] font-bold mb-2 !text-[var(--color-cream)]">
+            Explore
+          </h4>
           <ul className="flex flex-col gap-3 font-secondary text-xs">
-            {exploreLinks.map((item) => <li key={item.label}><Link to={item.to} className="hover:text-[var(--color-cream)] transition-all duration-300 hover:pl-1">{item.label}</Link></li>)}
+            {exploreLinks.map((item) => (
+              <li key={item.label}>
+                <Link
+                  to={item.to}
+                  className="hover:text-[var(--color-cream)] transition-all duration-300 hover:pl-1"
+                >
+                  {item.label}
+                </Link>
+              </li>
+            ))}
           </ul>
         </div>
         {/* COLUMN 3: DIRECT CONNECT */}
         <div className="flex flex-col gap-4">
-          <h4 className="font-secondary text-xs uppercase tracking-[0.3em] !text-[var(--color-cream)] font-bold mb-2">Get In Touch</h4>
+          <h4 className="font-secondary text-xs uppercase tracking-[0.3em] !text-[var(--color-cream)] font-bold mb-2">
+            Get In Touch
+          </h4>
           <ul className="flex flex-col gap-4 font-secondary text-xs ">
             <li className="flex gap-3 items-start">
-              <Phone size={14} className="text-[var(--color-cream)] shrink-0 mt-0.5" />
-              <a href="tel:+918160797411" className="hover:text-[var(--color-cream)] transition-colors">+918160797411</a>
+              <Phone
+                size={14}
+                className="text-[var(--color-cream)] shrink-0 mt-0.5"
+              />
+              <a
+                href="tel:+918160797411"
+                className="hover:text-[var(--color-cream)] transition-colors"
+              >
+                +918160797411
+              </a>
             </li>
             <li className="flex gap-3 items-start">
-              <Mail size={14} className="text-[var(--color-cream)] shrink-0 mt-0.5" />
-              <a href="mailto: customercare.tba@gmail.com" className="hover:text-[var(--color-cream)] transition-colors">customercare.tba@gmail.com</a>
+              <Mail
+                size={14}
+                className="text-[var(--color-cream)] shrink-0 mt-0.5"
+              />
+              <a
+                href="mailto: customercare.tba@gmail.com"
+                className="hover:text-[var(--color-cream)] transition-colors"
+              >
+                customercare.tba@gmail.com
+              </a>
             </li>
             <li className="flex gap-3 items-start">
-              <MapPin size={14} className="text-[var(--color-cream)] shrink-0 mt-0.5" />
+              <MapPin
+                size={14}
+                className="text-[var(--color-cream)] shrink-0 mt-0.5"
+              />
               <span>Surat, Gujarat, India</span>
-            </li>            <li className="flex gap-3 items-start">
-              <Phone size={14} className="text-[var(--color-cream)] shrink-0 mt-0.5" />
-              <a href={appointmentWhatsAppUrl} target="_blank" rel="noopener noreferrer" className="hover:text-[var(--color-cream)] transition-colors">Book an Appointment</a>
+            </li>{" "}
+            <li className="flex gap-3 items-start">
+              <Phone
+                size={14}
+                className="text-[var(--color-cream)] shrink-0 mt-0.5"
+              />
+              <a
+                href={appointmentWhatsAppUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-[var(--color-cream)] transition-colors"
+              >
+                Book an Appointment
+              </a>
             </li>
           </ul>
         </div>
@@ -114,7 +184,24 @@ export default function Footer({ onCategoryChange: _onCategoryChange }: { onCate
       <div className="border-t border-white/10 w-full">
         <div className="container py-6 flex flex-col sm:flex-row justify-between items-center gap-3 text-[10px] font-secondary text-white/40 tracking-wider">
           <span>© 2026 TBA - The Brilliance Atelier. All rights reserved.</span>
-          <nav className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2"><Link to="/terms-of-service" className="hover:text-white transition-colors">Terms of Service</Link><Link to="/data-deletion" className="hover:text-white transition-colors">Data Deletion</Link><span className="flex items-center gap-1">Crafted with <Heart size={10} className="text-red-500 fill-red-500" /> in India</span></nav>
+          <nav className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+            <Link
+              to="/terms-of-service"
+              className="hover:text-white transition-colors"
+            >
+              Terms of Service
+            </Link>
+            <Link
+              to="/data-deletion"
+              className="hover:text-white transition-colors"
+            >
+              Data Deletion
+            </Link>
+            <span className="flex items-center gap-1">
+              Crafted with{" "}
+              <Heart size={10} className="text-red-500 fill-red-500" /> in India
+            </span>
+          </nav>
         </div>
       </div>
     </footer>

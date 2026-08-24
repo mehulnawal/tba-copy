@@ -28,7 +28,10 @@ const ApiError = require("./src/utils/ApiError");
 
 const app = express();
 
-app.use((req, res, next) => { res.charset = 'utf-8'; next(); });
+app.use((req, res, next) => {
+  res.charset = "utf-8";
+  next();
+});
 
 app.set("trust proxy", 1);
 
@@ -38,12 +41,40 @@ app.use(
   }),
 );
 
-const configuredClientOrigins = [process.env.CLIENT_URL, process.env.CLIENT_URL_WWW, process.env.CLIENT_URL_ALT].filter(Boolean); const productionAliases = configuredClientOrigins.flatMap((origin) => { try { const url = new URL(origin); if (!/^(www\.)?thebrillianceatelier\.com$/i.test(url.hostname)) return [url.origin]; const alternate = url.hostname.startsWith("www.") ? "thebrillianceatelier.com" : "www.thebrillianceatelier.com"; return [url.origin, `${url.protocol}//${alternate}`]; } catch { return []; } }); const allowedOrigins = new Set([...configuredClientOrigins, ...productionAliases, "http://localhost:3000", "http://localhost:5173"]);
+const configuredClientOrigins = [
+  process.env.CLIENT_URL,
+  process.env.CLIENT_URL_WWW,
+  process.env.CLIENT_URL_ALT,
+].filter(Boolean);
+const productionAliases = configuredClientOrigins.flatMap((origin) => {
+  try {
+    const url = new URL(origin);
+    if (!/^(www\.)?thebrillianceatelier\.com$/i.test(url.hostname))
+      return [url.origin];
+    const alternate = url.hostname.startsWith("www.")
+      ? "thebrillianceatelier.com"
+      : "www.thebrillianceatelier.com";
+    return [url.origin, `${url.protocol}//${alternate}`];
+  } catch {
+    return [];
+  }
+});
+const allowedOrigins = new Set([
+  ...configuredClientOrigins,
+  ...productionAliases,
+  "http://localhost:3000",
+  "http://localhost:5173",
+]);
 app.use(
   cors({
     origin(origin, callback) {
-      const isDevelopmentLanOrigin = process.env.NODE_ENV !== "production" && /^http:\/\/(?:localhost|127\.0\.0\.1|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}):\d+$/.test(origin || "");
-      if (!origin || allowedOrigins.has(origin) || isDevelopmentLanOrigin) return callback(null, true);
+      const isDevelopmentLanOrigin =
+        process.env.NODE_ENV !== "production" &&
+        /^http:\/\/(?:localhost|127\.0\.0\.1|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}):\d+$/.test(
+          origin || "",
+        );
+      if (!origin || allowedOrigins.has(origin) || isDevelopmentLanOrigin)
+        return callback(null, true);
       return callback(new Error("CORS origin not allowed"));
     },
     credentials: true,

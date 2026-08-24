@@ -1,13 +1,72 @@
 import type { Product } from "../types";
-export type VariantImage = { url: string; source: "link" | "upload"; slot?: number };
+export type VariantImage = {
+  url: string;
+  source: "link" | "upload";
+  slot?: number;
+};
 export const GOLD_COLORS = ["Yellow Gold", "White Gold", "Rose Gold"] as const;
 export const YELLOW = "Yellow Gold";
 export const MOISSANITE_SECOND_COLOR = "White Gold";
 export const shortColor = (color: string) => color.replace(/\s+Gold$/i, "");
-const categoryName = (category?: Product["mainCategory"]) => typeof category === "string" ? category : category?.name || "";
-export const isMoissaniteProduct = (product: Pick<Product, "metal" | "mainCategory">) => product.metal === "silver" && /moissanite|mossanite/i.test(categoryName(product.mainCategory));
-export const isPolkiProduct = (product: Pick<Product, "metal" | "mainCategory">) => product.metal === "silver" && /polki/i.test(categoryName(product.mainCategory));
-export const variantConfig = (product: Pick<Product, "metal" | "mainCategory">) => product.metal === "gold" ? { colors: [...GOLD_COLORS], groups: [[1, 2], [3, 4], [5, 6]] } : isMoissaniteProduct(product) ? { colors: [YELLOW, MOISSANITE_SECOND_COLOR], groups: [[1, 2], [3, 4]] } : { colors: [YELLOW], groups: [[1, 2]] };
-export const normalizeVariantImages = (images?: VariantImage[]) => (images || []).filter((image) => Boolean(image?.url)).map((image, index) => ({ ...image, slot: Number(image.slot) || index + 1 })).sort((a, b) => (a.slot || 0) - (b.slot || 0));
-export const colorForSlot = (product: Pick<Product, "metal" | "mainCategory">, slot: number) => { const config = variantConfig(product); const index = config.groups.findIndex(([from, to]) => slot >= from && slot <= to); return index < 0 ? "" : config.colors[index] || ""; };
-export const selectedVariantColors = (product: Pick<Product, "metal" | "mainCategory" | "colors">) => { const config = variantConfig(product); const selected = (product.colors || []).filter((color) => config.colors.includes(color)); return selected.length ? config.colors.filter((color) => selected.includes(color)) : config.colors; };
+const categoryName = (category?: Product["mainCategory"]) =>
+  typeof category === "string" ? category : category?.name || "";
+export const isMoissaniteProduct = (
+  product: Pick<Product, "metal" | "mainCategory">,
+) =>
+  product.metal === "silver" &&
+  /moissanite|mossanite/i.test(categoryName(product.mainCategory));
+export const isPolkiProduct = (
+  product: Pick<Product, "metal" | "mainCategory">,
+) =>
+  product.metal === "silver" &&
+  /polki/i.test(categoryName(product.mainCategory));
+export const variantConfig = (
+  product: Pick<Product, "metal" | "mainCategory">,
+) =>
+  product.metal === "gold"
+    ? {
+        colors: [...GOLD_COLORS],
+        groups: [
+          [1, 2],
+          [3, 4],
+          [5, 6],
+        ],
+      }
+    : isMoissaniteProduct(product)
+      ? {
+          colors: [YELLOW, MOISSANITE_SECOND_COLOR],
+          groups: [
+            [1, 2],
+            [3, 4],
+          ],
+        }
+      : { colors: [YELLOW], groups: [[1, 2]] };
+export const normalizeVariantImages = (images?: VariantImage[]) =>
+  (images || [])
+    .filter((image) => Boolean(image?.url))
+    .map((image, index) => ({
+      ...image,
+      slot: Number(image.slot) || index + 1,
+    }))
+    .sort((a, b) => (a.slot || 0) - (b.slot || 0));
+export const colorForSlot = (
+  product: Pick<Product, "metal" | "mainCategory">,
+  slot: number,
+) => {
+  const config = variantConfig(product);
+  const index = config.groups.findIndex(
+    ([from, to]) => slot >= from && slot <= to,
+  );
+  return index < 0 ? "" : config.colors[index] || "";
+};
+export const selectedVariantColors = (
+  product: Pick<Product, "metal" | "mainCategory" | "colors">,
+) => {
+  const config = variantConfig(product);
+  const selected = (product.colors || []).filter((color) =>
+    config.colors.includes(color),
+  );
+  return selected.length
+    ? config.colors.filter((color) => selected.includes(color))
+    : config.colors;
+};

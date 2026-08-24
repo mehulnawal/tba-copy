@@ -41,7 +41,9 @@ const adminLogin = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Email and password are required");
   }
 
-  const admin = await User.findOne({ email: email.toLowerCase() }).select("+password");
+  const admin = await User.findOne({ email: email.toLowerCase() }).select(
+    "+password",
+  );
 
   if (!admin || !(await admin.comparePassword(password))) {
     throw new ApiError(401, "Invalid admin credentials");
@@ -57,14 +59,22 @@ const adminLogin = asyncHandler(async (req, res) => {
 
   setAdminAuthCookies(res, admin._id);
 
-  res.status(200).json(
-    new ApiResponse(200, formatAdminResponse(admin), "Admin logged in successfully"),
-  );
+  res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        formatAdminResponse(admin),
+        "Admin logged in successfully",
+      ),
+    );
 });
 
 const adminLogout = asyncHandler(async (req, res) => {
   clearAdminAuthCookies(res);
-  res.status(200).json(new ApiResponse(200, null, "Admin logged out successfully"));
+  res
+    .status(200)
+    .json(new ApiResponse(200, null, "Admin logged out successfully"));
 });
 
 const adminRefreshToken = asyncHandler(async (req, res) => {
@@ -89,15 +99,27 @@ const adminRefreshToken = asyncHandler(async (req, res) => {
 
   setAdminAuthCookies(res, admin._id);
 
-  res.status(200).json(
-    new ApiResponse(200, formatAdminResponse(admin), "Admin session refreshed"),
-  );
+  res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        formatAdminResponse(admin),
+        "Admin session refreshed",
+      ),
+    );
 });
 
 const getAdminMe = asyncHandler(async (req, res) => {
-  res.status(200).json(
-    new ApiResponse(200, formatAdminResponse(req.admin), "Admin fetched successfully"),
-  );
+  res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        formatAdminResponse(req.admin),
+        "Admin fetched successfully",
+      ),
+    );
 });
 
 module.exports = {

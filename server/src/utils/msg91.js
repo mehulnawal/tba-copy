@@ -15,11 +15,24 @@ const verifyMsg91AccessToken = async (accessToken) => {
     const { data } = await axios.post(
       VERIFY_URL,
       { authkey: process.env.MSG91_AUTH_KEY, "access-token": accessToken },
-      { headers: { "Content-Type": "application/json", Accept: "application/json" }, timeout: 10000 },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        timeout: 10000,
+      },
     );
     // Temporary diagnostic: remove after deployed end-to-end confirmation.
-    console.log("[MSG91] verifyAccessToken raw response:", JSON.stringify(data, null, 2));
-    const successful = data?.success === true || data?.type === "success" || data?.status === "success" || data?.data?.success === true;
+    console.log(
+      "[MSG91] verifyAccessToken raw response:",
+      JSON.stringify(data, null, 2),
+    );
+    const successful =
+      data?.success === true ||
+      data?.type === "success" ||
+      data?.status === "success" ||
+      data?.data?.success === true;
     if (!successful) throw new ApiError(401, "OTP verification failed");
     return data;
   } catch (error) {

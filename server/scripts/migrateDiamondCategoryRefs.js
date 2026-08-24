@@ -1,4 +1,6 @@
-require("dotenv").config({ path: require("path").resolve(__dirname, "../.env") });
+require("dotenv").config({
+  path: require("path").resolve(__dirname, "../.env"),
+});
 const connectDB = require("../src/database/connectDB");
 const Product = require("../src/models/product.model");
 const DiamondCategory = require("../src/models/diamondCategory.model");
@@ -16,10 +18,14 @@ const run = async () => {
     let changed = false;
     for (const entry of product.diamonds) {
       if (entry.diamondCategoryRef) continue;
-      const matches = categories.filter((category) =>
-        category.categoryName === entry.category &&
-        sameNumber(category.b2bPrice, entry.ratePerCtB2B ?? entry.ratePerCt) &&
-        sameNumber(category.b2cPrice, entry.ratePerCtB2C ?? entry.ratePerCt)
+      const matches = categories.filter(
+        (category) =>
+          category.categoryName === entry.category &&
+          sameNumber(
+            category.b2bPrice,
+            entry.ratePerCtB2B ?? entry.ratePerCt,
+          ) &&
+          sameNumber(category.b2cPrice, entry.ratePerCtB2C ?? entry.ratePerCt),
       );
       if (matches.length === 1) {
         entry.diamondCategoryRef = matches[0]._id;
@@ -36,4 +42,7 @@ const run = async () => {
   process.exit(0);
 };
 
-run().catch((error) => { console.error(error); process.exit(1); });
+run().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});

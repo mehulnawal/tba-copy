@@ -1,7 +1,7 @@
-
 # TBA — The Brilliance Atelier — Phase 3 Build Spec
 
 ## Project context
+
 - Frontend: React + TypeScript + Vite, Tailwind
 - Backend: Node.js + Express + MongoDB
 - Already built (Phase 1 & 2): auth (email/password + Google/Facebook OAuth), cart, wishlist, banners, announcements, basic coupons, partial admin panel
@@ -28,6 +28,7 @@ Read this entire document before writing any code. Several rules below exist spe
 ## product.json — exact field list
 
 **Product Details**
+
 1. SKU
 2. Title
 3. Description
@@ -41,43 +42,19 @@ Read this entire document before writing any code. Several rules below exist spe
 11. colors
 12. size_options
 
-**Weight Details**
-13. gross_weight_gm-9K
-14. gross_weight_gm-14K
-15. gross_weight_gm-18K
-16. net_weight_gm-9k
-17. net_weight_gm-14k
-18. net_weight_gm-18k
+**Weight Details** 13. gross_weight_gm-9K 14. gross_weight_gm-14K 15. gross_weight_gm-18K 16. net_weight_gm-9k 17. net_weight_gm-14k 18. net_weight_gm-18k
 
-**Diamond Details**
-19. diamond_price_round
-20. diamond_carat_round
-21. diamond_price_fancy
-22. diamond_carat_fancy
+**Diamond Details** 19. diamond_price_round 20. diamond_carat_round 21. diamond_price_fancy 22. diamond_carat_fancy
 
-**Certificate**
-23. certificate_charges
+**Certificate** 23. certificate_charges
 
-**Gold Value**
-24. gold_price_9kt
-25. gold_price_14kt
-26. gold_price_18kt
+**Gold Value** 24. gold_price_9kt 25. gold_price_14kt 26. gold_price_18kt
 
-**Making Charge**
-27. making_charge_rate_per_gram
-28. making_charge_9kt
-29. making_charge_14kt
-30. making_charge_18kt
+**Making Charge** 27. making_charge_rate_per_gram 28. making_charge_9kt 29. making_charge_14kt 30. making_charge_18kt
 
-**Final Pricing**
-31. gst_9kt
-32. final_price_9kt
-33. gst_14kt
-34. final_price_14kt
-35. gst_18kt
-36. final_price_18kt
+**Final Pricing** 31. gst_9kt 32. final_price_9kt 33. gst_14kt 34. final_price_14kt 35. gst_18kt 36. final_price_18kt
 
-> Note: fields 28–36 (making_charge_*, gst_*, final_price_*) may already be present in the JSON as precomputed values, but the backend must **never trust or read them directly for display**. Always recompute live from the base inputs (gold_price, gross_weight, making_charge_rate_per_gram, diamond prices, certificate_charges) through the single pricing function described below. Treat any precomputed values in the JSON as reference/seed data only, not the runtime source of truth — this is what makes future formula changes take effect without touching product.json.
+> Note: fields 28–36 (making_charge__, gst__, final_price_*) may already be present in the JSON as precomputed values, but the backend must **never trust or read them directly for display**. Always recompute live from the base inputs (gold_price, gross_weight, making_charge_rate_per_gram, diamond prices, certificate_charges) through the single pricing function described below. Treat any precomputed values in the JSON as reference/seed data only, not the runtime source of truth — this is what makes future formula changes take effect without touching product.json.
 
 ---
 
@@ -103,6 +80,7 @@ final_price_<karat> = Total Product Cost (<karat>) + gst_<karat>
 Repeat identically for karat = 9kt, 14kt, 18kt — same formula, different inputs.
 
 The function should return something like:
+
 ```
 { karat, makingCharge, totalCost, gst, finalPrice }
 ```
@@ -120,18 +98,22 @@ Every consumer (product page, catalog listing, cart, checkout, order creation, o
 ## Feature scope for this phase
 
 ### A. Critical security fix — do this first
+
 Gold pricing currently exposes a third-party API key in the frontend. Move the gold-rate fetch entirely server-side: backend fetches/caches/stores the live rate, frontend only ever calls an internal backend endpoint. No API key should exist in any frontend bundle or network request.
 
 ### B. Catalog & product data
+
 - Load `product.json` into the app (via a one-time/re-runnable import script that upserts by SKU into MongoDB, or via read-through at request time — pick one approach, document which one was used, and make sure re-importing never creates duplicate SKUs)
 - Categories dynamically derived — no hardcoded category enum/list anywhere
 - Catalog/listing pages get: search, filter by category, filter by price range (using the calculated final_price, not a raw field), sort (price low-high, price high-low, newest, best sellers). Apply this same capability to every page that lists products (catalog page, category landing pages, any homepage product sections)
 - No stock/out-of-stock states anywhere in this UI
 
 ### C. Cart & product page bug fixes
+
 - "Add to Cart" and "Add to Wishlist" are currently broken on the product page. Fix both. Manually verify: add an item, refresh the page, confirm it persists; same for wishlist.
 
 ### D. Orders & Payments
+
 Razorpay is currently in **Test mode** (no live keys yet) — build and test entirely against Razorpay test keys/test cards. Keep the key names generic (`RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, etc.) so switching to live later is just an env var swap, not a code change.
 
 - Order model: customer reference, line items (product, selected karat/color/size, a **price snapshot** captured at order time from the pricing function — never recompute historical order prices later even if the formula changes), coupon applied (if any), payment status, order status (`pending`/`confirmed`/`failed`), timestamps
@@ -148,6 +130,7 @@ Razorpay is currently in **Test mode** (no live keys yet) — build and test ent
 - No in-app production/shipment tracking. Order status only needs: `pending` → `confirmed` (payment successful) or `failed` (payment failed). Nothing beyond "confirmed" is tracked in the app — actual fulfillment/shipment tracking is handled manually by Mehul outside the system. On the OrderConfirmation page and order history/detail view, show a static note like "For order tracking, contact us at [phone number]" — this number should be a config value (env var or a simple admin-editable setting), not hardcoded inline in a component.
 
 ### E. Reviews
+
 - Customers can submit a rating + text review on a product
 - Reviews are open to anyone (no purchase required to submit one)
 - Reviews display on the product page
@@ -155,13 +138,16 @@ Razorpay is currently in **Test mode** (no live keys yet) — build and test ent
 - Edge case: prevent the same customer submitting multiple reviews on the same product (either block a second submission or let them edit their existing one — pick one and be consistent)
 
 ### F. Coupons — scope logic
+
 Extend the coupon model with:
+
 - `scope`: `"all" | "category" | "product"`
 - a reference field pointing to the specific category or product when scope isn't `"all"`
 
 Admin coupon form: a dropdown for scope, and when `category` or `product` is selected, a searchable select to choose which one (pulled from the dynamically-derived category list / product list).
 
 Display logic:
+
 - `scope: all` → shown on every product page + checkout
 - `scope: category` → shown only on product pages within that category, and at checkout only if the cart contains an item from that category
 - `scope: product` → shown only on that specific product's page, and at checkout only if the cart contains that exact product
@@ -169,29 +155,34 @@ Display logic:
 Checkout must re-validate scope **server-side** before applying any discount — never trust a frontend-only check.
 
 Edge cases to handle explicitly:
+
 - Expired coupon (`expiryDate` passed) must be rejected at apply-time, not just hidden from display
 - `usageLimit` reached must be rejected server-side, even if the frontend hasn't refreshed and still shows the coupon as usable
 - Cart below `minimumCartValue` must be rejected with a clear message
 - If cart contains no item matching a `category`/`product`-scoped coupon, reject with a clear message rather than silently applying $0 discount
 
 ### G. Admin panel fixes
+
 - **Banners:** replace the current "Image URL" text field + separate file upload with exactly **3 fixed banner slots**, each with only an upload control and an order value. Remove the raw image-URL text input entirely.
 - **Announcements:** toggling "Active" off must actually hide it from the live frontend. Verify the public-facing announcements endpoint filters by `isActive` — not just the admin list view.
 - **General UI/UX pass:** the admin panel currently works functionally but is visually and structurally unclear — vague labels, cramped inputs, truncated placeholder text, no visual hierarchy between primary/secondary/destructive actions. Do a real design pass: clear section labels, properly sized/spaced inputs, consistent button hierarchy, self-explanatory field labels.
 - Coupon scope UI as described in section F.
 
 ### H. Auth — verify, don't rebuild
+
 - Google OAuth: backend now expects an `accessToken` field (verified via `https://www.googleapis.com/oauth2/v3/userinfo`), not an `idToken`/`verifyIdToken` flow. Frontend `auth.api.ts` `googleLogin()` sends `{ accessToken }`. Confirm this is implemented exactly this way, then manually test end-to-end Google sign-in.
 - Facebook OAuth: existing code path (access_token flow both sides) looked internally consistent already. Manually test end-to-end. If it still fails, the likely cause is the Meta Developer Console app mode (Development vs Live) or missing app roles/testers — not the code.
 - Admin seeding: `seedAdmin` in `server.js` must create the admin on first run **and** sync the password if `ADMIN_PASSWORD` in `.env` changes later (previously it silently did nothing if the admin already existed). Confirm this upsert-style behavior is in place.
 - OTP authentication is **not yet implemented** and not automatically in scope — confirm with Mehul whether to build it in this phase before starting it.
 
 ### I. WhatsApp cart-reminder (low priority — build last, non-blocking for launch)
+
 - If a customer adds items to cart but doesn't check out, trigger a WhatsApp reminder message after a delay (exact delay/timing to confirm with Mehul — e.g. 24 hours of inactivity)
 - Needs a WhatsApp Business API / provider integration (reuse whatever setup exists from the SMART SOLUTION project if applicable, otherwise flag that a provider decision is needed)
 - This should not block or delay shipping the checkout/payment/order flow — build it after sections A–H are working
 
 ### J. Explicitly out of scope for this phase
+
 - Product inventory/stock (ground rule 1)
 - Order cancellation/return/refund (ground rule 2)
 - Admin CRUD screens for creating/editing/deleting products (ground rule 4 — data comes from `product.json` only)
@@ -220,11 +211,13 @@ Edge cases to handle explicitly:
 ---
 
 ## Environment variables
+
 Whenever this work requires a new environment variable (client or server — e.g. for Razorpay keys, gold-rate API, etc.), don't stop and ask for the value. Add a placeholder entry with a clear name and a comment describing what it's for, in both the actual `.env` (with a dummy/placeholder value) and any `.env.example` file, for both the client and server. Mehul will fill in the real values afterward. Never hardcode a real key inline as a workaround for a missing env var.
 
 ---
 
 ## Delivery expectation
+
 - Build and test section by section (A → I), not as one giant PR.
 - After each section, do a manual smoke test before moving to the next.
 - The one test that proves ground rule 3 is actually met: change a number inside the pricing function only, and confirm the new price shows up on the product page, catalog, cart, and checkout — with zero other file changes.

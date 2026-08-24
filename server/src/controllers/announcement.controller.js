@@ -9,9 +9,15 @@ const getActiveAnnouncements = asyncHandler(async (req, res) => {
     createdAt: -1,
   });
 
-  res.status(200).json(
-    new ApiResponse(200, announcements, "Active announcements fetched successfully"),
-  );
+  res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        announcements,
+        "Active announcements fetched successfully",
+      ),
+    );
 });
 
 const createAnnouncement = asyncHandler(async (req, res) => {
@@ -28,9 +34,11 @@ const createAnnouncement = asyncHandler(async (req, res) => {
     createdBy: req.admin._id,
   });
 
-  res.status(201).json(
-    new ApiResponse(201, announcement, "Announcement created successfully"),
-  );
+  res
+    .status(201)
+    .json(
+      new ApiResponse(201, announcement, "Announcement created successfully"),
+    );
 });
 
 const updateAnnouncement = asyncHandler(async (req, res) => {
@@ -46,9 +54,11 @@ const updateAnnouncement = asyncHandler(async (req, res) => {
 
   await announcement.save();
 
-  res.status(200).json(
-    new ApiResponse(200, announcement, "Announcement updated successfully"),
-  );
+  res
+    .status(200)
+    .json(
+      new ApiResponse(200, announcement, "Announcement updated successfully"),
+    );
 });
 
 const deleteAnnouncement = asyncHandler(async (req, res) => {
@@ -59,9 +69,9 @@ const deleteAnnouncement = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Announcement not found");
   }
 
-  res.status(200).json(
-    new ApiResponse(200, null, "Announcement deleted successfully"),
-  );
+  res
+    .status(200)
+    .json(new ApiResponse(200, null, "Announcement deleted successfully"));
 });
 
 const listAnnouncements = asyncHandler(async (req, res) => {
@@ -70,9 +80,11 @@ const listAnnouncements = asyncHandler(async (req, res) => {
     createdAt: -1,
   });
 
-  res.status(200).json(
-    new ApiResponse(200, announcements, "Announcements fetched successfully"),
-  );
+  res
+    .status(200)
+    .json(
+      new ApiResponse(200, announcements, "Announcements fetched successfully"),
+    );
 });
 
 const activateAnnouncement = asyncHandler(async (req, res) => {
@@ -88,9 +100,11 @@ const activateAnnouncement = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Announcement not found");
   }
 
-  res.status(200).json(
-    new ApiResponse(200, announcement, "Announcement activated successfully"),
-  );
+  res
+    .status(200)
+    .json(
+      new ApiResponse(200, announcement, "Announcement activated successfully"),
+    );
 });
 
 const deactivateAnnouncement = asyncHandler(async (req, res) => {
@@ -106,9 +120,15 @@ const deactivateAnnouncement = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Announcement not found");
   }
 
-  res.status(200).json(
-    new ApiResponse(200, announcement, "Announcement deactivated successfully"),
-  );
+  res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        announcement,
+        "Announcement deactivated successfully",
+      ),
+    );
 });
 
 module.exports = {

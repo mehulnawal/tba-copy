@@ -58,6 +58,15 @@ export const cartApi = {
   removeFromCart: (itemId: string) =>
     apiRequest<Cart>(`/cart/${itemId}`, { method: "DELETE" }),
 
-  setCategoryCoupon: (payload: Pick<CartProductPayload, "productId" | "karat" | "color" | "size"> & { applied: boolean }) => apiRequest<Cart>("/cart/category-coupon", { method: "PATCH", body: JSON.stringify(payload) }),
+  setCategoryCoupon: (
+    payload: Pick<
+      CartProductPayload,
+      "productId" | "karat" | "color" | "size"
+    > & { applied: boolean },
+  ) =>
+    apiRequest<Cart>("/cart/category-coupon", {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    }),
   clearCart: () => apiRequest<Cart>("/cart", { method: "DELETE" }),
 };

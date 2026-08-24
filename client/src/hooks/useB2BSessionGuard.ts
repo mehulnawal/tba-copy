@@ -8,7 +8,11 @@ export function useB2BSessionGuard() {
   const location = useLocation();
   useEffect(() => {
     let active = true;
-    void apiRequest("/b2b/status").catch(() => { if (active) navigate("/b2b/access", { replace: true }); });
-    return () => { active = false; };
+    void apiRequest("/b2b/status").catch(() => {
+      if (active) navigate("/b2b/access", { replace: true });
+    });
+    return () => {
+      active = false;
+    };
   }, [location.state, navigate]);
 }

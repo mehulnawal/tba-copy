@@ -1,5 +1,8 @@
 const express = require("express");
-const { list: listDiamondSubTypes, create: createDiamondSubType } = require("../controllers/diamondSubType.controller");
+const {
+  list: listDiamondSubTypes,
+  create: createDiamondSubType,
+} = require("../controllers/diamondSubType.controller");
 const {
   adminLogin,
   adminLogout,
@@ -28,8 +31,20 @@ const {
   deleteCoupon,
   listCoupons,
 } = require("../controllers/coupon.controller");
-const { listCategoryCoupons, createCategoryCoupon, updateCategoryCoupon, deleteCategoryCoupon } = require("../controllers/categoryCoupon.controller");
-const { list: listPartners, create: createPartner, update: updatePartner, setPoints, redeemPoints, remove: removePartner } = require("../controllers/partner.controller");
+const {
+  listCategoryCoupons,
+  createCategoryCoupon,
+  updateCategoryCoupon,
+  deleteCategoryCoupon,
+} = require("../controllers/categoryCoupon.controller");
+const {
+  list: listPartners,
+  create: createPartner,
+  update: updatePartner,
+  setPoints,
+  redeemPoints,
+  remove: removePartner,
+} = require("../controllers/partner.controller");
 const {
   listUsers,
   blockUser,
@@ -59,11 +74,40 @@ const {
   remove: removeReview,
 } = require("../controllers/review.controller");
 
-const { list: listDiamondCategories, get: getDiamondCategory, create: createDiamondCategory, listSizes: listDiamondCategorySizes, update: updateDiamondCategory, remove: removeDiamondCategory } = require("../controllers/diamondCategory.controller");
-const { list: listDiamondClarities, save: saveDiamondClarity } = require("../controllers/diamondClarity.controller");
-const { list: listCertificates, save: saveCertificate, remove: removeCertificate } = require("../controllers/certificate.controller");
-const { status: getB2BStatus, listAccessLogs: listB2BAccessLogs, setPassword: setB2BPassword, revoke: revokeB2BPassword } = require("../controllers/b2b.controller");
-const { adminListProducts, adminGetProduct, listPricingConfigs, updatePricingConfig, createProduct, updateProduct, deleteProduct, previewPrice, uploadImageHandler } = require("../controllers/product.controller");
+const {
+  list: listDiamondCategories,
+  get: getDiamondCategory,
+  create: createDiamondCategory,
+  listSizes: listDiamondCategorySizes,
+  update: updateDiamondCategory,
+  remove: removeDiamondCategory,
+} = require("../controllers/diamondCategory.controller");
+const {
+  list: listDiamondClarities,
+  save: saveDiamondClarity,
+} = require("../controllers/diamondClarity.controller");
+const {
+  list: listCertificates,
+  save: saveCertificate,
+  remove: removeCertificate,
+} = require("../controllers/certificate.controller");
+const {
+  status: getB2BStatus,
+  listAccessLogs: listB2BAccessLogs,
+  setPassword: setB2BPassword,
+  revoke: revokeB2BPassword,
+} = require("../controllers/b2b.controller");
+const {
+  adminListProducts,
+  adminGetProduct,
+  listPricingConfigs,
+  updatePricingConfig,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+  previewPrice,
+  uploadImageHandler,
+} = require("../controllers/product.controller");
 
 const router = express.Router();
 

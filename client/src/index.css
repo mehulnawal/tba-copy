@@ -2,38 +2,34 @@
 @import "tailwindcss";
 
 @theme {
-  
   --color-bg: #ffffff;
-  --color-bg-secondary: #f5efeb; 
-  --color-cream: #dbd5b5; 
-  --color-cream-light: #f0ede6; 
+  --color-bg-secondary: #f5efeb;
+  --color-cream: #dbd5b5;
+  --color-cream-light: #f0ede6;
 
-  --color-teal: #1c3b48; 
-  --color-teal-light: #567c8d; 
-  --color-teal-dark: #132831; 
+  --color-teal: #1c3b48;
+  --color-teal-light: #567c8d;
+  --color-teal-dark: #132831;
 
-  --color-charcoal: #1c1c1c; 
-  --color-text: #1c1c1c; 
-  --color-text-secondary: #1c3b48; 
-  --color-text-muted: #6b7a80; 
+  --color-charcoal: #1c1c1c;
+  --color-text: #1c1c1c;
+  --color-text-secondary: #1c3b48;
+  --color-text-muted: #6b7a80;
   --color-white: #ffffff;
 
-  --color-border: #dbd5b5; 
+  --color-border: #dbd5b5;
   --color-border-subtle: rgba(28, 59, 72, 0.1);
   --color-border-tertiary: rgba(28, 59, 72, 0.06);
 
-  
   --color-success: #27ae60;
   --color-error: #c0392b;
 
-  
   --font-primary: "Cormorant SC", Georgia, serif;
   --font-secondary: "Jost", "Helvetica Neue", sans-serif;
   --font-sans: "Jost", "Helvetica Neue", sans-serif;
   --font-serif: "Cormorant SC", Georgia, serif;
   --font-mono: "Jost", "Helvetica Neue", sans-serif;
 
-  
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
   --text-base: 1rem;
@@ -46,7 +42,6 @@
   --text-6xl: clamp(3rem, 7vw, 5.5rem);
   --text-hero: clamp(3.5rem, 10vw, 9rem);
 
-  
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
@@ -61,26 +56,22 @@
   --space-24: 6rem;
   --space-32: 8rem;
 
-  
   --radius-sm: 2px;
   --radius-md: 8px;
   --radius-lg: 16px;
   --radius-xl: 24px;
   --radius-full: 9999px;
 
-  
   --shadow-sm: 0 1px 3px rgba(28, 59, 72, 0.06);
   --shadow-md: 0 4px 16px rgba(28, 59, 72, 0.1);
   --shadow-lg: 0 8px 32px rgba(28, 59, 72, 0.14);
   --shadow-cream: 0 4px 24px rgba(219, 213, 181, 0.4);
 
-  
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-base: 300ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 500ms cubic-bezier(0.76, 0, 0.24, 1);
   --transition-spring: 600ms cubic-bezier(0.34, 1.56, 0.64, 1);
 
-  
   --z-base: 1;
   --z-dropdown: 100;
   --z-sticky: 200;
@@ -89,7 +80,6 @@
   --z-loader: 900;
   --z-float: 999;
 
-  
   --navbar-height: 72px;
   --announcement-height: 44px;
   --gold-bar-height: 48px;

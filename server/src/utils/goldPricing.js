@@ -44,7 +44,12 @@ const diamondValue = (product, buyer) =>
     (total, entry, index) =>
       total +
       requiredNumber(entry.caratWeight, `Diamond ${index + 1} carat weight`) *
-        requiredNumber(buyer === "B2B" ? (entry.ratePerCtB2B ?? entry.ratePerCt) : (entry.ratePerCtB2C ?? entry.ratePerCt), `Diamond ${index + 1} ${buyer} rate per ct`),
+        requiredNumber(
+          buyer === "B2B"
+            ? (entry.ratePerCtB2B ?? entry.ratePerCt)
+            : (entry.ratePerCtB2C ?? entry.ratePerCt),
+          `Diamond ${index + 1} ${buyer} rate per ct`,
+        ),
     0,
   );
 const calculateGoldPrice = ({
@@ -60,8 +65,13 @@ const calculateGoldPrice = ({
   const normalizedBuyer = String(buyer).toUpperCase();
   if (!["B2C", "B2B"].includes(normalizedBuyer))
     throw new Error("Buyer must be B2C or B2B");
-  const rate24PerTenGrams = requiredNumber(rates?.gold24kt, "24kt gold rate per 10 grams");
-  const karatRatePerTenGrams = rate24PerTenGrams * (selectedKarat === "18kt" ? GOLD_18KT_FACTOR : GOLD_14KT_FACTOR);
+  const rate24PerTenGrams = requiredNumber(
+    rates?.gold24kt,
+    "24kt gold rate per 10 grams",
+  );
+  const karatRatePerTenGrams =
+    rate24PerTenGrams *
+    (selectedKarat === "18kt" ? GOLD_18KT_FACTOR : GOLD_14KT_FACTOR);
   const goldRate = karatRatePerTenGrams / 10;
   const grossWeight = weight(product, "grossWeight", selectedKarat);
   const netWeight = weight(product, "netWeight", selectedKarat);

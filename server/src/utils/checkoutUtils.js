@@ -33,14 +33,42 @@ const calculateCouponDiscount = (coupon, cartTotal) => {
 };
 
 const calculateCartSummary = (items, discount = 0, referenceDiscount = 0) => {
-  const roundMoney = (value) => Math.round((Number(value || 0) + Number.EPSILON) * 100) / 100;
-  const subtotal = roundMoney(items.reduce((sum, item) => sum + (item.lineTotal === undefined ? Number(item.price || 0) * Number(item.quantity || 0) : Number(item.lineTotal || 0)), 0));
-  const checkoutDiscount = roundMoney(Math.min(Number(discount || 0), subtotal));
-  const appliedReferenceDiscount = roundMoney(Math.min(Number(referenceDiscount || 0), Math.max(subtotal - checkoutDiscount, 0)));
-  const taxableSubtotal = roundMoney(Math.max(subtotal - checkoutDiscount - appliedReferenceDiscount, 0));
+  const roundMoney = (value) =>
+    Math.round((Number(value || 0) + Number.EPSILON) * 100) / 100;
+  const subtotal = roundMoney(
+    items.reduce(
+      (sum, item) =>
+        sum +
+        (item.lineTotal === undefined
+          ? Number(item.price || 0) * Number(item.quantity || 0)
+          : Number(item.lineTotal || 0)),
+      0,
+    ),
+  );
+  const checkoutDiscount = roundMoney(
+    Math.min(Number(discount || 0), subtotal),
+  );
+  const appliedReferenceDiscount = roundMoney(
+    Math.min(
+      Number(referenceDiscount || 0),
+      Math.max(subtotal - checkoutDiscount, 0),
+    ),
+  );
+  const taxableSubtotal = roundMoney(
+    Math.max(subtotal - checkoutDiscount - appliedReferenceDiscount, 0),
+  );
   const gst = roundMoney(taxableSubtotal * 0.03);
   const shippingFee = items.length ? 150 : 0;
-  return { subtotal, discount: checkoutDiscount, referenceDiscount: appliedReferenceDiscount, taxableSubtotal, gst, shippingFee, total: roundMoney(taxableSubtotal + gst + shippingFee), itemCount: items.reduce((sum, item) => sum + Number(item.quantity || 0), 0) };
+  return {
+    subtotal,
+    discount: checkoutDiscount,
+    referenceDiscount: appliedReferenceDiscount,
+    taxableSubtotal,
+    gst,
+    shippingFee,
+    total: roundMoney(taxableSubtotal + gst + shippingFee),
+    itemCount: items.reduce((sum, item) => sum + Number(item.quantity || 0), 0),
+  };
 };
 module.exports = {
   calculateCouponDiscount,

@@ -29,7 +29,8 @@ export function useRemoveFromWishlist() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (productId: string) => wishlistApi.removeFromWishlist(productId),
+    mutationFn: (productId: string) =>
+      wishlistApi.removeFromWishlist(productId),
     onSuccess: (data: WishlistItem[]) => {
       queryClient.setQueryData(["wishlist"], data);
     },

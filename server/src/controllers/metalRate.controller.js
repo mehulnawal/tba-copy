@@ -4,14 +4,119 @@ const ApiError = require("../utils/ApiError");
 const ApiResponse = require("../utils/ApiResponse");
 const asyncHandler = require("../utils/asyncHandler");
 
-const editableFields = ["makingRatePerGram", "certificateRatePerGram", "silverMoissaniteMakingRate", "silverPolkiMakingRate", "moissaniteRatePerCarat"];
+const editableFields = [
+  "makingRatePerGram",
+  "certificateRatePerGram",
+  "silverMoissaniteMakingRate",
+  "silverPolkiMakingRate",
+  "moissaniteRatePerCarat",
+];
 const b2cFields = ["gold24kt", "silver", ...editableFields];
-const asNumber = value => value === undefined || value === null ? undefined : Number(value);
-const sheet = (rate, fields) => Object.fromEntries(fields.map(field => [field, asNumber(rate[field])]));
-const apply = (b2c, b2b) => { const sheets = { b2c: { ...sheet(b2c, b2cFields), updatedAt: b2c.updatedAt }, b2b: { gold24kt: Number(b2c.gold24kt), silver: Number(b2c.silver), ...sheet(b2b, editableFields), updatedAt: b2b.updatedAt } }; global.TBA_METAL_RATES = { B2C: sheets.b2c, B2B: sheets.b2b }; return sheets; };
-const readSheets = async () => { const [b2c, b2b] = await Promise.all([MetalRate.findOne({ key: "B2C" }), MetalRate.findOne({ key: "B2B" })]); if (!b2c || !b2b) throw new ApiError(503, "Metal rates have not been configured"); return { b2c, b2b }; };
-const get = asyncHandler(async (req, res) => { const { b2c, b2b } = await readSheets(); res.json(new ApiResponse(200, apply(b2c, b2b), "Metal rate sheets fetched")); });
-const getPublic = asyncHandler(async (req, res) => { const { b2c, b2b } = await readSheets(); res.json(new ApiResponse(200, apply(b2c, b2b).b2c, "Metal rates fetched")); });
-const update = asyncHandler(async (req, res) => { const rateSheet = String(req.body?.sheet || "").toUpperCase(); if (!["B2C", "B2B"].includes(rateSheet)) throw new ApiError(400, "sheet must be B2C or B2B"); const fields = rateSheet === "B2C" ? b2cFields : editableFields; if (rateSheet === "B2B" && (req.body.gold24kt !== undefined || req.body.silver !== undefined)) throw new ApiError(400, "B2B gold and silver rates are synced from B2C and cannot be updated"); for (const field of fields) if (req.body[field] === undefined || !Number.isFinite(Number(req.body[field])) || Number(req.body[field]) < 0) throw new ApiError(400, `${fields.join(", ")} must all be non-negative numbers`); const payload = Object.fromEntries(fields.map(field => [field, Number(req.body[field])])); await MetalRate.findOneAndUpdate({ key: rateSheet }, { $set: { ...payload, updatedBy: req.admin._id } }, { new: true, runValidators: true }); const { b2c, b2b } = await readSheets(); res.json(new ApiResponse(200, apply(b2c, b2b), `${rateSheet} metal rates updated`)); });
-const initialize = async () => { let b2c = await MetalRate.findOne({ key: "B2C" }); if (!b2c) { const [legacy, moissaniteConfig, polkiConfig] = await Promise.all([MetalRate.findOne({ key: "current" }), CategoryPricingConfig.findOne({ key: "SILVER_MOISSANITE" }), CategoryPricingConfig.findOne({ key: "SILVER_POLKI" })]); const seed = { gold24kt: legacy?.gold24kt ?? 9000, silver: legacy?.silver ?? 90, makingRatePerGram: legacy?.makingRatePerGram ?? 850, certificateRatePerGram: legacy?.certificateRatePerGram ?? 0, silverMoissaniteMakingRate: moissaniteConfig?.makingRatePerGram ?? 500, silverPolkiMakingRate: polkiConfig?.makingRatePerGram ?? 350, moissaniteRatePerCarat: moissaniteConfig?.moissaniteRatePerCarat }; b2c = legacy ? await MetalRate.findByIdAndUpdate(legacy._id, { $set: { ...seed, key: "B2C" } }, { new: true, runValidators: true }) : await MetalRate.create({ key: "B2C", ...seed }); } let b2b = await MetalRate.findOne({ key: "B2B" }); if (!b2b) b2b = await MetalRate.create({ key: "B2B", makingRatePerGram: b2c.makingRatePerGram, certificateRatePerGram: b2c.certificateRatePerGram, silverMoissaniteMakingRate: b2c.silverMoissaniteMakingRate, silverPolkiMakingRate: b2c.silverPolkiMakingRate, moissaniteRatePerCarat: b2c.moissaniteRatePerCarat }); apply(b2c, b2b); };
+const asNumber = (value) =>
+  value === undefined || value === null ? undefined : Number(value);
+const sheet = (rate, fields) =>
+  Object.fromEntries(fields.map((field) => [field, asNumber(rate[field])]));
+const apply = (b2c, b2b) => {
+  const sheets = {
+    b2c: { ...sheet(b2c, b2cFields), updatedAt: b2c.updatedAt },
+    b2b: {
+      gold24kt: Number(b2c.gold24kt),
+      silver: Number(b2c.silver),
+      ...sheet(b2b, editableFields),
+      updatedAt: b2b.updatedAt,
+    },
+  };
+  global.TBA_METAL_RATES = { B2C: sheets.b2c, B2B: sheets.b2b };
+  return sheets;
+};
+const readSheets = async () => {
+  const [b2c, b2b] = await Promise.all([
+    MetalRate.findOne({ key: "B2C" }),
+    MetalRate.findOne({ key: "B2B" }),
+  ]);
+  if (!b2c || !b2b)
+    throw new ApiError(503, "Metal rates have not been configured");
+  return { b2c, b2b };
+};
+const get = asyncHandler(async (req, res) => {
+  const { b2c, b2b } = await readSheets();
+  res.json(new ApiResponse(200, apply(b2c, b2b), "Metal rate sheets fetched"));
+});
+const getPublic = asyncHandler(async (req, res) => {
+  const { b2c, b2b } = await readSheets();
+  res.json(new ApiResponse(200, apply(b2c, b2b).b2c, "Metal rates fetched"));
+});
+const update = asyncHandler(async (req, res) => {
+  const rateSheet = String(req.body?.sheet || "").toUpperCase();
+  if (!["B2C", "B2B"].includes(rateSheet))
+    throw new ApiError(400, "sheet must be B2C or B2B");
+  const fields = rateSheet === "B2C" ? b2cFields : editableFields;
+  if (
+    rateSheet === "B2B" &&
+    (req.body.gold24kt !== undefined || req.body.silver !== undefined)
+  )
+    throw new ApiError(
+      400,
+      "B2B gold and silver rates are synced from B2C and cannot be updated",
+    );
+  for (const field of fields)
+    if (
+      req.body[field] === undefined ||
+      !Number.isFinite(Number(req.body[field])) ||
+      Number(req.body[field]) < 0
+    )
+      throw new ApiError(
+        400,
+        `${fields.join(", ")} must all be non-negative numbers`,
+      );
+  const payload = Object.fromEntries(
+    fields.map((field) => [field, Number(req.body[field])]),
+  );
+  await MetalRate.findOneAndUpdate(
+    { key: rateSheet },
+    { $set: { ...payload, updatedBy: req.admin._id } },
+    { new: true, runValidators: true },
+  );
+  const { b2c, b2b } = await readSheets();
+  res.json(
+    new ApiResponse(200, apply(b2c, b2b), `${rateSheet} metal rates updated`),
+  );
+});
+const initialize = async () => {
+  let b2c = await MetalRate.findOne({ key: "B2C" });
+  if (!b2c) {
+    const [legacy, moissaniteConfig, polkiConfig] = await Promise.all([
+      MetalRate.findOne({ key: "current" }),
+      CategoryPricingConfig.findOne({ key: "SILVER_MOISSANITE" }),
+      CategoryPricingConfig.findOne({ key: "SILVER_POLKI" }),
+    ]);
+    const seed = {
+      gold24kt: legacy?.gold24kt ?? 9000,
+      silver: legacy?.silver ?? 90,
+      makingRatePerGram: legacy?.makingRatePerGram ?? 850,
+      certificateRatePerGram: legacy?.certificateRatePerGram ?? 0,
+      silverMoissaniteMakingRate: moissaniteConfig?.makingRatePerGram ?? 500,
+      silverPolkiMakingRate: polkiConfig?.makingRatePerGram ?? 350,
+      moissaniteRatePerCarat: moissaniteConfig?.moissaniteRatePerCarat,
+    };
+    b2c = legacy
+      ? await MetalRate.findByIdAndUpdate(
+          legacy._id,
+          { $set: { ...seed, key: "B2C" } },
+          { new: true, runValidators: true },
+        )
+      : await MetalRate.create({ key: "B2C", ...seed });
+  }
+  let b2b = await MetalRate.findOne({ key: "B2B" });
+  if (!b2b)
+    b2b = await MetalRate.create({
+      key: "B2B",
+      makingRatePerGram: b2c.makingRatePerGram,
+      certificateRatePerGram: b2c.certificateRatePerGram,
+      silverMoissaniteMakingRate: b2c.silverMoissaniteMakingRate,
+      silverPolkiMakingRate: b2c.silverPolkiMakingRate,
+      moissaniteRatePerCarat: b2c.moissaniteRatePerCarat,
+    });
+  apply(b2c, b2b);
+};
 module.exports = { get, update, initialize, getPublic };

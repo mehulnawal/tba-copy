@@ -33,42 +33,66 @@ export default function Loader() {
         document.documentElement.setAttribute("data-loaded", "true");
         document.body.style.overflow = "";
         setShow(false);
-      }
+      },
     });
 
     // Make the system visible smoothly at boot
     tl.set(containerRef.current, { display: "flex", opacity: 1 })
 
       // Phase 1: High-Fashion Typographic Masked Entrance
-      .fromTo(monogramLettersRef.current,
+      .fromTo(
+        monogramLettersRef.current,
         { yPercent: 100, rotateX: -40, opacity: 0 },
-        { yPercent: 0, rotateX: 0, opacity: 1, duration: 0.6, ease: "power4.out" }
+        {
+          yPercent: 0,
+          rotateX: 0,
+          opacity: 1,
+          duration: 0.6,
+          ease: "power4.out",
+        },
       )
-      .fromTo([brandTitleRef.current, brandSubtitleRef.current],
+      .fromTo(
+        [brandTitleRef.current, brandSubtitleRef.current],
         { yPercent: 100, opacity: 0 },
-        { yPercent: 0, opacity: 1, duration: 0.5, stagger: 0.08, ease: "power3.out" },
-        "-=0.4"
+        {
+          yPercent: 0,
+          opacity: 1,
+          duration: 0.5,
+          stagger: 0.08,
+          ease: "power3.out",
+        },
+        "-=0.4",
       )
 
       // Phase 2: Concurrent Tracking Progress Line & Micro-Counter Ticking
-      .fromTo(progressLineRef.current,
+      .fromTo(
+        progressLineRef.current,
         { scaleX: 0 },
-        { scaleX: 1, duration: 1.1, ease: "power2.inOut", transformOrigin: "left center" },
-        "-=0.5"
+        {
+          scaleX: 1,
+          duration: 1.1,
+          ease: "power2.inOut",
+          transformOrigin: "left center",
+        },
+        "-=0.5",
       )
-      .to(counterObj, {
-        value: 100,
-        duration: 1.1,
-        ease: "power2.inOut",
-        onUpdate: () => {
-          if (counterTextRef.current) {
-            // Keeps the number formatting clean with premium padding (00, 05, etc.)
-            counterTextRef.current.innerText = Math.floor(counterObj.value)
-              .toString()
-              .padStart(2, "0");
-          }
-        }
-      }, "-=1.1")
+      .to(
+        counterObj,
+        {
+          value: 100,
+          duration: 1.1,
+          ease: "power2.inOut",
+          onUpdate: () => {
+            if (counterTextRef.current) {
+              // Keeps the number formatting clean with premium padding (00, 05, etc.)
+              counterTextRef.current.innerText = Math.floor(counterObj.value)
+                .toString()
+                .padStart(2, "0");
+            }
+          },
+        },
+        "-=1.1",
+      )
 
       // Phase 3: Ultra-Premium Luxury Cinematic Exit (Scale, Blur & Lift Out)
       .to(containerRef.current, {
@@ -77,7 +101,7 @@ export default function Loader() {
         filter: "blur(10px)",
         duration: 0.65,
         ease: "power4.inOut",
-        delay: 0.05
+        delay: 0.05,
       });
 
     return () => {
@@ -109,13 +133,13 @@ export default function Loader() {
       <div
         className="absolute inset-0 opacity-40 pointer-events-none"
         style={{
-          background: "radial-gradient(circle at center, var(--color-teal-light) 0%, transparent 70%)"
+          background:
+            "radial-gradient(circle at center, var(--color-teal-light) 0%, transparent 70%)",
         }}
       />
 
       {/* CENTER PIECE BRAND ARCHITECTURE BLOCK */}
       <div className="text-center select-none px-8 flex flex-col items-center relative z-10">
-
         <div className="overflow-hidden py-1 mb-2">
           {/* <div
             ref={monogramLettersRef}
@@ -157,7 +181,6 @@ export default function Loader() {
 
       {/* RE-ENGINEERED HIGH-END METRIC PROGRESS AREA */}
       <div className="absolute bottom-20 flex flex-col items-center gap-3 w-40 md:w-48 z-10">
-
         {/* Luxury Micro Ticking Counter Indicator */}
         <div className="font-display text-xs tracking-widest text-[var(--color-cream)]/70 font-light flex items-center gap-1">
           <span ref={counterTextRef}>00</span>

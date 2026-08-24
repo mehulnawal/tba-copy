@@ -19,7 +19,12 @@ import { useAuth } from "../context/AuthContext";
 import { useCart } from "../hooks/useCart";
 import { useAnnouncements } from "../hooks/useContent";
 import { useToast } from "../context/ToastContext";
-type NavCategory = { id: string; name: string; parentId?: string; children: NavCategory[] };
+type NavCategory = {
+  id: string;
+  name: string;
+  parentId?: string;
+  children: NavCategory[];
+};
 
 export default function Navbar({
   onSearchChange,
@@ -44,12 +49,19 @@ export default function Navbar({
   const cartCount =
     cartData?.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
 
-  const handleAuthAction = (returnTo = `${location.pathname}${location.search}${location.hash}`) => {
+  const handleAuthAction = (
+    returnTo = `${location.pathname}${location.search}${location.hash}`,
+  ) => {
     if (onAuthOpen) {
       onAuthOpen(returnTo);
       return;
     }
-    navigate("/auth", { state: { from: returnTo, background: `${location.pathname}${location.search}${location.hash}` } });
+    navigate("/auth", {
+      state: {
+        from: returnTo,
+        background: `${location.pathname}${location.search}${location.hash}`,
+      },
+    });
   };
 
   const handleProtectedNav = (path: string) => {
@@ -60,12 +72,21 @@ export default function Navbar({
     handleAuthAction(path);
   };
 
-  const handleCategoryClick = (category: NavCategory | null, metal?: "gold" | "silver") => {
+  const handleCategoryClick = (
+    category: NavCategory | null,
+    metal?: "gold" | "silver",
+  ) => {
     const path = metal === "silver" ? "/silver-jewellery" : "/gold-jewellery";
-    if (!category) { navigate(path); return; }
+    if (!category) {
+      navigate(path);
+      return;
+    }
     const params = new URLSearchParams();
     if (category.children.length) params.set("mainCategory", category.id);
-    else { params.set("mainCategory", category.parentId || ""); params.set("subCategory", category.id); }
+    else {
+      params.set("mainCategory", category.parentId || "");
+      params.set("subCategory", category.id);
+    }
     navigate(`${path}?${params.toString()}`);
   };
   const [isAnnouncementVisible, setIsAnnouncementVisible] = useState(true);
@@ -74,28 +95,78 @@ export default function Navbar({
   const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
-  const [mobileExpanded, setMobileExpanded] = useState<Record<string, boolean>>({ Gold: true, Silver: true });
+  const [mobileExpanded, setMobileExpanded] = useState<Record<string, boolean>>(
+    { Gold: true, Silver: true },
+  );
   const accountDropdownRef = useRef<HTMLDivElement>(null);
   const lenis = useLenis();
-  const toggleMobileAccordion = (title: string) => setMobileExpanded((prev) => ({ ...prev, [title]: !prev[title] }));
+  const toggleMobileAccordion = (title: string) =>
+    setMobileExpanded((prev) => ({ ...prev, [title]: !prev[title] }));
 
   useEffect(() => {
-    if (isMobileMenuOpen) { lenis.stop(); document.body.style.overflow = "hidden"; document.documentElement.style.overflow = "hidden"; }
-    else { lenis.start(); document.body.style.overflow = ""; document.documentElement.style.overflow = ""; }
-    return () => { lenis.start(); document.body.style.overflow = ""; document.documentElement.style.overflow = ""; };
+    if (isMobileMenuOpen) {
+      lenis.stop();
+      document.body.style.overflow = "hidden";
+      document.documentElement.style.overflow = "hidden";
+    } else {
+      lenis.start();
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+    }
+    return () => {
+      lenis.start();
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+    };
   }, [isMobileMenuOpen, lenis]);
 
   const { data: categories } = useCategories();
   const navStructure = useMemo(() => {
     if (!categories) return [];
-    const childrenOf = (parentId: string): NavCategory[] => categories.filter((category) => (typeof category.parent === "string" ? category.parent : category.parent?._id) === parentId && category.isActive).sort((a, b) => a.displayOrder - b.displayOrder).map((category) => ({ id: category._id, name: category.name, children: childrenOf(category._id) }));
-    return categories.filter((category) => !category.parent && category.categoryKind === "metal-root" && category.isActive).map((main) => ({ title: main.name, metal: main.metal, hasDropdown: true, categoryId: main._id, path: undefined, categories: childrenOf(main._id) }));
+    const childrenOf = (parentId: string): NavCategory[] =>
+      categories
+        .filter(
+          (category) =>
+            (typeof category.parent === "string"
+              ? category.parent
+              : category.parent?._id) === parentId && category.isActive,
+        )
+        .sort((a, b) => a.displayOrder - b.displayOrder)
+        .map((category) => ({
+          id: category._id,
+          name: category.name,
+          children: childrenOf(category._id),
+        }));
+    return categories
+      .filter(
+        (category) =>
+          !category.parent &&
+          category.categoryKind === "metal-root" &&
+          category.isActive,
+      )
+      .map((main) => ({
+        title: main.name,
+        metal: main.metal,
+        hasDropdown: true,
+        categoryId: main._id,
+        path: undefined,
+        categories: childrenOf(main._id),
+      }));
   }, [categories]);
   const expandAllMobileCategories = () => {
-    setMobileExpanded(Object.fromEntries(navStructure.filter((item) => item.hasDropdown).map((item) => [item.title, true])));
+    setMobileExpanded(
+      Object.fromEntries(
+        navStructure
+          .filter((item) => item.hasDropdown)
+          .map((item) => [item.title, true]),
+      ),
+    );
   };
-  const { data: metalRates, isLoading: isMetalLoading, isError: isMetalError } = useMetalRates();
-
+  const {
+    data: metalRates,
+    isLoading: isMetalLoading,
+    isError: isMetalError,
+  } = useMetalRates();
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -133,7 +204,10 @@ export default function Navbar({
     onSearchChange("");
   };
 
-  const handleCategorySelect = (category: NavCategory | null, metal?: "gold" | "silver") => {
+  const handleCategorySelect = (
+    category: NavCategory | null,
+    metal?: "gold" | "silver",
+  ) => {
     handleCategoryClick(category, metal);
     setIsMobileMenuOpen(false);
     setActiveDropdown(null);
@@ -157,8 +231,16 @@ export default function Navbar({
 
   const handleLogoutAction = async () => {
     setIsAccountDropdownOpen(false);
-    const loginRequiredPaths = ["/checkout", "/cart", "/account", "/wishlist", "/orders", "/orderConfirmation"];
-    if (loginRequiredPaths.includes(location.pathname)) navigate("/", { replace: true });
+    const loginRequiredPaths = [
+      "/checkout",
+      "/cart",
+      "/account",
+      "/wishlist",
+      "/orders",
+      "/orderConfirmation",
+    ];
+    if (loginRequiredPaths.includes(location.pathname))
+      navigate("/", { replace: true });
     try {
       await logout();
       showToast("Logged out successfully", "success");
@@ -263,15 +345,35 @@ export default function Navbar({
               ) : (
                 <div className="flex gap-3 md:gap-5 text-[12px] md:text-sm whitespace-nowrap">
                   <span className="inline-flex flex-col tracking-wider leading-tight">
-                    <span>Gold 24K: <strong className="font-mono">{"\u20B9"}{Number(metalRates.gold24kt || 0).toLocaleString("en-IN")}</strong></span>
-                    <span className="text-[9px] sm:text-[10px] leading-none">(per 10 gram)</span>
+                    <span>
+                      Gold 24K:{" "}
+                      <strong className="font-mono">
+                        {"\u20B9"}
+                        {Number(metalRates.gold24kt || 0).toLocaleString(
+                          "en-IN",
+                        )}
+                      </strong>
+                    </span>
+                    <span className="text-[9px] sm:text-[10px] leading-none">
+                      (per 10 gram)
+                    </span>
                   </span>
                   {/* <span className="tracking-wider">
                     Gold 14K: <strong className="font-mono">{"\u20B9"}{Math.round((metalRates.gold24kt || 0) * 0.60).toLocaleString("en-IN")}</strong>
                   </span> */}
                   <span className="inline-flex flex-col tracking-wider leading-tight">
-                    <span>Silver (999): <strong className="font-mono">{"\u20B9"}{(Number(metalRates.silver || 0) * 1000).toLocaleString("en-IN")}</strong></span>
-                    <span className="text-[9px] sm:text-[10px] leading-none">(per kg)</span>
+                    <span>
+                      Silver (999):{" "}
+                      <strong className="font-mono">
+                        {"\u20B9"}
+                        {(Number(metalRates.silver || 0) * 1000).toLocaleString(
+                          "en-IN",
+                        )}
+                      </strong>
+                    </span>
+                    <span className="text-[9px] sm:text-[10px] leading-none">
+                      (per kg)
+                    </span>
                   </span>
                 </div>
               )}
@@ -297,11 +399,13 @@ export default function Navbar({
         >
           {/* 3-Column Layout Grid for Balanced Symmetry */}
           <div className="container h-full px-4 sm:px-6 lg:px-8 grid grid-cols-2 lg:grid-cols-3 items-center">
-
             {/* Left Column: Mobile Hamburger & Logo (Padded & Balanced) */}
             <div className="flex items-center gap-4 justify-start">
               <button
-                onClick={() => { expandAllMobileCategories(); setIsMobileMenuOpen(true); }}
+                onClick={() => {
+                  expandAllMobileCategories();
+                  setIsMobileMenuOpen(true);
+                }}
                 className="lg:hidden text-[var(--color-text)] hover:text-[var(--color-teal)] transition-colors duration-200 p-1 cursor-pointer"
                 aria-label="Open navigation menu"
               >
@@ -332,14 +436,15 @@ export default function Navbar({
                       onMouseEnter={() => setActiveDropdown(item.title)}
                       onMouseLeave={() => setActiveDropdown(null)}
                     >
-                      <button
-                        className="font-secondary text-[12px] font-medium uppercase tracking-[0.15em] text-[var(--color-text)] hover:text-[var(--color-teal)] transition-colors duration-200 relative py-2 cursor-pointer bg-transparent border-none outline-none group flex items-center gap-1.5"
-                      >
+                      <button className="font-secondary text-[12px] font-medium uppercase tracking-[0.15em] text-[var(--color-text)] hover:text-[var(--color-teal)] transition-colors duration-200 relative py-2 cursor-pointer bg-transparent border-none outline-none group flex items-center gap-1.5">
                         <span className="relative z-10">{item.title}</span>
                         <ChevronDown
                           size={13}
-                          className={`transition-transform duration-200 ${activeDropdown === item.title ? "rotate-180 text-[var(--color-teal)]" : "text-[var(--color-text-muted)]"
-                            }`}
+                          className={`transition-transform duration-200 ${
+                            activeDropdown === item.title
+                              ? "rotate-180 text-[var(--color-teal)]"
+                              : "text-[var(--color-text-muted)]"
+                          }`}
                         />
 
                         {/* Premium Underline Hover Transition */}
@@ -356,13 +461,61 @@ export default function Navbar({
                             transition={{ duration: 0.18, ease: "easeOut" }}
                             className="absolute top-[85%] left-1/2 -translate-x-1/2 w-48 bg-[var(--color-white)] shadow-xl border border-[var(--color-border-subtle)] py-2 z-[var(--z-dropdown)] rounded-b-md"
                           >
-                            <button onClick={() => handleCategorySelect(null, item.metal)} className="w-full text-left px-4 py-2 text-xs font-medium uppercase tracking-wider font-secondary text-[var(--color-text)] hover:text-[var(--color-teal)] hover:bg-[var(--color-bg-secondary)]">All</button>
-                            {item.categories?.map((category) => category.children.length ? (
-                              <div key={category.id} className="border-t border-[var(--color-border-subtle)] py-1">
-                                <button onClick={() => handleCategorySelect(category, item.metal)} className="w-full text-left px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[var(--color-teal)]">{category.name}</button>
-                                {category.children.map((child) => <button key={child.id} onClick={() => handleCategorySelect({ ...child, parentId: category.id }, item.metal)} className="w-full text-left px-7 py-1.5 text-xs uppercase tracking-wider text-[var(--color-text)] hover:text-[var(--color-teal)] hover:bg-[var(--color-bg-secondary)]">{child.name}</button>)}
-                              </div>
-                            ) : <button key={category.id} onClick={() => handleCategorySelect({ ...category, parentId: item.categoryId }, item.metal)} className="w-full text-left px-4 py-2 text-xs font-medium uppercase tracking-wider font-secondary text-[var(--color-text)] hover:text-[var(--color-teal)] hover:bg-[var(--color-bg-secondary)]">{category.name}</button>)}
+                            <button
+                              onClick={() =>
+                                handleCategorySelect(null, item.metal)
+                              }
+                              className="w-full text-left px-4 py-2 text-xs font-medium uppercase tracking-wider font-secondary text-[var(--color-text)] hover:text-[var(--color-teal)] hover:bg-[var(--color-bg-secondary)]"
+                            >
+                              All
+                            </button>
+                            {item.categories?.map((category) =>
+                              category.children.length ? (
+                                <div
+                                  key={category.id}
+                                  className="border-t border-[var(--color-border-subtle)] py-1"
+                                >
+                                  <button
+                                    onClick={() =>
+                                      handleCategorySelect(category, item.metal)
+                                    }
+                                    className="w-full text-left px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[var(--color-teal)]"
+                                  >
+                                    {category.name}
+                                  </button>
+                                  {category.children.map((child) => (
+                                    <button
+                                      key={child.id}
+                                      onClick={() =>
+                                        handleCategorySelect(
+                                          { ...child, parentId: category.id },
+                                          item.metal,
+                                        )
+                                      }
+                                      className="w-full text-left px-7 py-1.5 text-xs uppercase tracking-wider text-[var(--color-text)] hover:text-[var(--color-teal)] hover:bg-[var(--color-bg-secondary)]"
+                                    >
+                                      {child.name}
+                                    </button>
+                                  ))}
+                                </div>
+                              ) : (
+                                <button
+                                  key={category.id}
+                                  onClick={() =>
+                                    handleCategorySelect(
+                                      {
+                                        ...category,
+                                        parentId: item.categoryId,
+                                      },
+                                      item.metal,
+                                    )
+                                  }
+                                  className="w-full text-left px-4 py-2 text-xs font-medium uppercase tracking-wider font-secondary text-[var(--color-text)] hover:text-[var(--color-teal)] hover:bg-[var(--color-bg-secondary)]"
+                                >
+                                  {category.name}
+                                </button>
+                              ),
+                            )}
                           </motion.div>
                         )}
                       </AnimatePresence>
@@ -385,7 +538,6 @@ export default function Navbar({
 
             {/* Right Column: Action Icons (Wishlist, Cart, Account) */}
             <div className="flex items-center justify-end gap-3 sm:gap-5 text-[var(--color-text)]">
-
               <button
                 onClick={() => handleProtectedNav("/wishlist")}
                 className="hover:text-[var(--color-teal)] transition-colors duration-200 p-2 cursor-pointer bg-transparent border-none relative flex items-center justify-center"
@@ -408,7 +560,10 @@ export default function Navbar({
               </button>
 
               {/* Account Dropdown Context Wrapper */}
-              <div ref={accountDropdownRef} className="relative flex items-center">
+              <div
+                ref={accountDropdownRef}
+                className="relative flex items-center"
+              >
                 <button
                   onClick={handleUserButtonClick}
                   className="hover:text-[var(--color-teal)] transition-colors duration-200 p-2 cursor-pointer bg-transparent border-none relative flex items-center justify-center"
@@ -454,29 +609,34 @@ export default function Navbar({
         </div>
 
         {/* MOBILE SEARCH BAR */}
-        {showMobileSearch && <div className="lg:hidden w-full bg-[var(--color-white)] border-b border-[var(--color-border-subtle)] py-2">
-          <div className="container px-4 sm:px-6">
-            <div className="flex items-center gap-2 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-full px-3 py-1.5">
-              <Search size={13} className="text-[var(--color-text-muted)] shrink-0" />
-              <input
-                type="text"
-                placeholder="Search jewellery..."
-                value={searchQuery}
-                onChange={handleInputChange}
-                className="w-full bg-transparent border-none outline-none text-xs text-[var(--color-text)] font-secondary placeholder:text-[var(--color-text-muted)]"
-              />
-              {searchQuery && (
-                <button
-                  onClick={handleClearSearch}
-                  className="text-[var(--color-text-muted)] hover:text-[var(--color-teal)] transition-colors cursor-pointer shrink-0"
-                  aria-label="Clear"
-                >
-                  <X size={12} />
-                </button>
-              )}
+        {showMobileSearch && (
+          <div className="lg:hidden w-full bg-[var(--color-white)] border-b border-[var(--color-border-subtle)] py-2">
+            <div className="container px-4 sm:px-6">
+              <div className="flex items-center gap-2 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-full px-3 py-1.5">
+                <Search
+                  size={13}
+                  className="text-[var(--color-text-muted)] shrink-0"
+                />
+                <input
+                  type="text"
+                  placeholder="Search jewellery..."
+                  value={searchQuery}
+                  onChange={handleInputChange}
+                  className="w-full bg-transparent border-none outline-none text-xs text-[var(--color-text)] font-secondary placeholder:text-[var(--color-text-muted)]"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={handleClearSearch}
+                    className="text-[var(--color-text-muted)] hover:text-[var(--color-teal)] transition-colors cursor-pointer shrink-0"
+                    aria-label="Clear"
+                  >
+                    <X size={12} />
+                  </button>
+                )}
+              </div>
             </div>
           </div>
-        </div>}
+        )}
       </div>
 
       <AnimatePresence>
@@ -521,7 +681,10 @@ export default function Navbar({
                     if (item.hasDropdown) {
                       const isExpanded = !!mobileExpanded[item.title];
                       return (
-                        <div key={item.title} className="border-b border-white/10 pb-2">
+                        <div
+                          key={item.title}
+                          className="border-b border-white/10 pb-2"
+                        >
                           <button
                             onClick={() => toggleMobileAccordion(item.title)}
                             className="font-primary w-full flex items-center justify-between text-left text-2xl sm:text-3xl py-2 cursor-pointer bg-transparent border-none text-[var(--color-cream)] hover:text-white transition-colors"
@@ -529,8 +692,9 @@ export default function Navbar({
                             <span>{item.title}</span>
                             <ChevronDown
                               size={20}
-                              className={`transition-transform duration-300 ${isExpanded ? "rotate-180" : ""
-                                }`}
+                              className={`transition-transform duration-300 ${
+                                isExpanded ? "rotate-180" : ""
+                              }`}
                             />
                           </button>
 
@@ -543,8 +707,64 @@ export default function Navbar({
                                 transition={{ duration: 0.25 }}
                                 className="overflow-hidden flex flex-col pl-4 border-l border-white/20 mt-1 space-y-2 py-2"
                               >
-                                <button onClick={() => handleCategorySelect(null, item.metal)} className="font-primary text-left text-base tracking-wider uppercase py-2 cursor-pointer bg-transparent border-none text-white/70 hover:text-white">All</button>
-                                {item.categories?.map((category) => category.children.length ? <div key={category.id} className="pt-2"><button onClick={() => handleCategorySelect(category, item.metal)} className="font-primary text-left text-base tracking-wider uppercase py-2 cursor-pointer bg-transparent border-none text-white">{category.name}</button>{category.children.map((child) => <button key={child.id} onClick={() => handleCategorySelect({ ...child, parentId: category.id }, item.metal)} className="font-primary block w-full text-left text-base tracking-wider uppercase py-2 pl-5 cursor-pointer bg-transparent border-none text-white/75 hover:text-white">{child.name}</button>)}</div> : <button key={category.id} onClick={() => handleCategorySelect({ ...category, parentId: item.categoryId }, item.metal)} className="font-primary text-left text-base tracking-wider uppercase py-2 cursor-pointer bg-transparent border-none text-white/75 hover:text-white">{category.name}</button>)}
+                                <button
+                                  onClick={() =>
+                                    handleCategorySelect(null, item.metal)
+                                  }
+                                  className="font-primary text-left text-base tracking-wider uppercase py-2 cursor-pointer bg-transparent border-none text-white/70 hover:text-white"
+                                >
+                                  All
+                                </button>
+                                {item.categories?.map((category) =>
+                                  category.children.length ? (
+                                    <div key={category.id} className="pt-2">
+                                      <button
+                                        onClick={() =>
+                                          handleCategorySelect(
+                                            category,
+                                            item.metal,
+                                          )
+                                        }
+                                        className="font-primary text-left text-base tracking-wider uppercase py-2 cursor-pointer bg-transparent border-none text-white"
+                                      >
+                                        {category.name}
+                                      </button>
+                                      {category.children.map((child) => (
+                                        <button
+                                          key={child.id}
+                                          onClick={() =>
+                                            handleCategorySelect(
+                                              {
+                                                ...child,
+                                                parentId: category.id,
+                                              },
+                                              item.metal,
+                                            )
+                                          }
+                                          className="font-primary block w-full text-left text-base tracking-wider uppercase py-2 pl-5 cursor-pointer bg-transparent border-none text-white/75 hover:text-white"
+                                        >
+                                          {child.name}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <button
+                                      key={category.id}
+                                      onClick={() =>
+                                        handleCategorySelect(
+                                          {
+                                            ...category,
+                                            parentId: item.categoryId,
+                                          },
+                                          item.metal,
+                                        )
+                                      }
+                                      className="font-primary text-left text-base tracking-wider uppercase py-2 cursor-pointer bg-transparent border-none text-white/75 hover:text-white"
+                                    >
+                                      {category.name}
+                                    </button>
+                                  ),
+                                )}
                               </motion.div>
                             )}
                           </AnimatePresence>

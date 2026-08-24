@@ -11,8 +11,8 @@ interface LenisContextValue {
 }
 
 const LenisContext = createContext<LenisContextValue>({
-  stop: () => { },
-  start: () => { },
+  stop: () => {},
+  start: () => {},
 });
 
 export function useLenis() {

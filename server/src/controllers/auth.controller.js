@@ -17,8 +17,11 @@ const { sendEmail } = require("../utils/emailUtils");
 const { verifyGoogleAccessToken } = require("../utils/oauthUtils");
 const { verifyFacebookToken } = require("../utils/facebookOAuthUtils");
 const { ROLES } = require("../constants/roles");
-const { startOtpSession, resendOtpSession, verifyOtpSession } = require("../utils/otpSession");
-
+const {
+  startOtpSession,
+  resendOtpSession,
+  verifyOtpSession,
+} = require("../utils/otpSession");
 
 const setAuthCookies = (res, userId) => {
   const accessToken = generateAccessToken(userId);
@@ -97,7 +100,6 @@ const login = asyncHandler(async (req, res) => {
     throw new ApiError(403, "Your account has been blocked");
   }
 
-
   setAuthCookies(res, user._id);
 
   res
@@ -108,23 +110,53 @@ const login = asyncHandler(async (req, res) => {
 });
 
 const startOtp = asyncHandler(async (req, res) => {
-  const { requestId, resendAvailableAt } = await startOtpSession(req.body?.mobile);
+  const { requestId, resendAvailableAt } = await startOtpSession(
+    req.body?.mobile,
+  );
   res.json(new ApiResponse(200, { requestId, resendAvailableAt }, "OTP sent"));
 });
 
 const resendOtp = asyncHandler(async (req, res) => {
-  const result = await resendOtpSession(req.body?.mobile, String(req.body?.requestId || ""));
-  res.json(new ApiResponse(200, { requestId: result.requestId, resendCount: result.resendCount, resendAvailableAt: result.resendAvailableAt }, "OTP resent"));
+  const result = await resendOtpSession(
+    req.body?.mobile,
+    String(req.body?.requestId || ""),
+  );
+  res.json(
+    new ApiResponse(
+      200,
+      {
+        requestId: result.requestId,
+        resendCount: result.resendCount,
+        resendAvailableAt: result.resendAvailableAt,
+      },
+      "OTP resent",
+    ),
+  );
 });
 
 const otpLogin = asyncHandler(async (req, res) => {
-  const mobile = await verifyOtpSession(req.body?.mobile, req.body?.otp, String(req.body?.requestId || ""));
+  const mobile = await verifyOtpSession(
+    req.body?.mobile,
+    req.body?.otp,
+    String(req.body?.requestId || ""),
+  );
   const phoneVariants = [mobile, `91${mobile}`, `+91${mobile}`];
   let user = await User.findOne({ phone: { $in: phoneVariants } });
-  if (!user) user = await User.create({ name: "TBA Customer", email: `otp-${mobile}@tba.local`, password: crypto.randomBytes(32).toString("hex"), phone: `91${mobile}`, role: ROLES.USER });
+  if (!user)
+    user = await User.create({
+      name: "TBA Customer",
+      email: `otp-${mobile}@tba.local`,
+      password: crypto.randomBytes(32).toString("hex"),
+      phone: `91${mobile}`,
+      role: ROLES.USER,
+    });
   if (user.isBlocked) throw new ApiError(403, "Your account has been blocked");
   setAuthCookies(res, user._id);
-  res.status(200).json(new ApiResponse(200, formatUserResponse(user), "OTP login successful"));
+  res
+    .status(200)
+    .json(
+      new ApiResponse(200, formatUserResponse(user), "OTP login successful"),
+    );
 });
 const logout = asyncHandler(async (req, res) => {
   clearAuthCookies(res);
@@ -201,7 +233,10 @@ const forgotPassword = asyncHandler(async (req, res) => {
   const resetToken = user.getResetPasswordToken();
   await user.save({ validateBeforeSave: false });
 
-  const clientUrl = (process.env.CLIENT_URL || "http://localhost:5173").replace(/\/+$/, "");
+  const clientUrl = (process.env.CLIENT_URL || "http://localhost:5173").replace(
+    /\/+$/,
+    "",
+  );
   const resetUrl = `${clientUrl}/reset-password?token=${encodeURIComponent(resetToken)}`;
   const emailText = `Hello,
 

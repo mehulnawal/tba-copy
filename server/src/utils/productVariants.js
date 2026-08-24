@@ -2,19 +2,142 @@ const GOLD_COLORS = ["Yellow Gold", "White Gold", "Rose Gold"];
 const YELLOW = "Yellow Gold";
 const MOISSANITE_SECOND_COLOR = "White Gold";
 const shortColor = (color) => String(color || "").replace(/\s+Gold$/i, "");
-const categoryName = (category) => typeof category === "string" ? category : category?.name || "";
-const isMoissanite = (product) => /moissanite|mossanite/i.test(categoryName(product?.mainCategory));
+const categoryName = (category) =>
+  typeof category === "string" ? category : category?.name || "";
+const isMoissanite = (product) =>
+  /moissanite|mossanite/i.test(categoryName(product?.mainCategory));
 const isPolki = (product) => /polki/i.test(categoryName(product?.mainCategory));
-const variantConfig = (product) => product?.metal === "gold" ? { colors: GOLD_COLORS, groups: [[1, 2], [3, 4], [5, 6]] } : isMoissanite(product) ? { colors: [YELLOW, MOISSANITE_SECOND_COLOR], groups: [[1, 2], [3, 4]] } : { colors: [YELLOW], groups: [[1, 2]] };
-const normalizeImages = (images) => (Array.isArray(images) ? images : []).filter((image) => image?.url).map((image, index) => ({ ...image, slot: Number(image.slot) || index + 1 })).sort((a, b) => a.slot - b.slot);
-const colorForSlot = (product, slot) => { const config = variantConfig(product); const group = config.groups.findIndex(([from, to]) => slot >= from && slot <= to); return group < 0 ? "" : config.colors[group] || ""; };
-const selectedColors = (product) => { const config = variantConfig(product); const stored = Array.isArray(product?.colors) ? product.colors.filter((color) => config.colors.includes(color)) : []; return stored.length ? config.colors.filter((color) => stored.includes(color)) : config.colors; };
-const validateVariantConfiguration = (product) => { const config = variantConfig(product); const colors = Array.isArray(product?.colors) ? product.colors : []; const images = normalizeImages(product?.images); if (!colors.length) return "Select at least one allowed color."; if (colors.some((color) => !config.colors.includes(color))) return "Selected color is not allowed for this category."; if (isPolki(product) && (colors.length !== 1 || colors[0] !== YELLOW)) return "Polki products use Yellow color only."; if (!images.length) return "Add at least one product image."; if (new Set(images.map((image) => image.slot)).size !== images.length || images.some((image) => image.slot < 1 || image.slot > config.groups.length * 2)) return "Image slots must be unique and valid for this category."; const unselected = images.map((image) => colorForSlot(product, image.slot)).find((color) => color && !colors.includes(color)); return unselected ? `Select ${shortColor(unselected)} color or remove its images.` : ""; };
-const validateSelectedColor = (product, color) => selectedColors(product).includes(color) ? "" : "Selected color is not available for this product.";
-const STANDARD_RING_SIZES = new Set(Array.from({ length: 21 }, (_, index) => String(index + 5)));
-const BANGLE_SIZES = new Set(["4.5", "5", "5.5", "6", "6.5", "7", "7.5", "8", "8.5", "9", "9.5"]);
-const BANGLE_ANA_SIZES = new Set(["2.2", "2.4", "2.6", "2.8", "2.10", "2.12", "2.14", "3.0"]);
-const validateSelectedSize = (product, size) => { const categories = [categoryName(product?.mainCategory), categoryName(product?.subCategory)]; const value = String(size || ""); if (categories.some((name) => /\brings?\b/i.test(name))) return STANDARD_RING_SIZES.has(value) ? "" : "Select a size from 5 to 25"; if (categories.some((name) => /\bbracelets?\b/i.test(name))) return BANGLE_SIZES.has(value) ? "" : "Select a valid bracelet size"; if (categories.some((name) => /\bbangles?\b/i.test(name))) return BANGLE_ANA_SIZES.has(value) ? "" : "Select a valid bangle size"; return value ? "Selected size is not available for this product." : ""; };
+const variantConfig = (product) =>
+  product?.metal === "gold"
+    ? {
+        colors: GOLD_COLORS,
+        groups: [
+          [1, 2],
+          [3, 4],
+          [5, 6],
+        ],
+      }
+    : isMoissanite(product)
+      ? {
+          colors: [YELLOW, MOISSANITE_SECOND_COLOR],
+          groups: [
+            [1, 2],
+            [3, 4],
+          ],
+        }
+      : { colors: [YELLOW], groups: [[1, 2]] };
+const normalizeImages = (images) =>
+  (Array.isArray(images) ? images : [])
+    .filter((image) => image?.url)
+    .map((image, index) => ({
+      ...image,
+      slot: Number(image.slot) || index + 1,
+    }))
+    .sort((a, b) => a.slot - b.slot);
+const colorForSlot = (product, slot) => {
+  const config = variantConfig(product);
+  const group = config.groups.findIndex(
+    ([from, to]) => slot >= from && slot <= to,
+  );
+  return group < 0 ? "" : config.colors[group] || "";
+};
+const selectedColors = (product) => {
+  const config = variantConfig(product);
+  const stored = Array.isArray(product?.colors)
+    ? product.colors.filter((color) => config.colors.includes(color))
+    : [];
+  return stored.length
+    ? config.colors.filter((color) => stored.includes(color))
+    : config.colors;
+};
+const validateVariantConfiguration = (product) => {
+  const config = variantConfig(product);
+  const colors = Array.isArray(product?.colors) ? product.colors : [];
+  const images = normalizeImages(product?.images);
+  if (!colors.length) return "Select at least one allowed color.";
+  if (colors.some((color) => !config.colors.includes(color)))
+    return "Selected color is not allowed for this category.";
+  if (isPolki(product) && (colors.length !== 1 || colors[0] !== YELLOW))
+    return "Polki products use Yellow color only.";
+  if (!images.length) return "Add at least one product image.";
+  if (
+    new Set(images.map((image) => image.slot)).size !== images.length ||
+    images.some(
+      (image) => image.slot < 1 || image.slot > config.groups.length * 2,
+    )
+  )
+    return "Image slots must be unique and valid for this category.";
+  const unselected = images
+    .map((image) => colorForSlot(product, image.slot))
+    .find((color) => color && !colors.includes(color));
+  return unselected
+    ? `Select ${shortColor(unselected)} color or remove its images.`
+    : "";
+};
+const validateSelectedColor = (product, color) =>
+  selectedColors(product).includes(color)
+    ? ""
+    : "Selected color is not available for this product.";
+const STANDARD_RING_SIZES = new Set(
+  Array.from({ length: 21 }, (_, index) => String(index + 5)),
+);
+const BANGLE_SIZES = new Set([
+  "4.5",
+  "5",
+  "5.5",
+  "6",
+  "6.5",
+  "7",
+  "7.5",
+  "8",
+  "8.5",
+  "9",
+  "9.5",
+]);
+const BANGLE_ANA_SIZES = new Set([
+  "2.2",
+  "2.4",
+  "2.6",
+  "2.8",
+  "2.10",
+  "2.12",
+  "2.14",
+  "3.0",
+]);
+const validateSelectedSize = (product, size) => {
+  const categories = [
+    categoryName(product?.mainCategory),
+    categoryName(product?.subCategory),
+  ];
+  const value = String(size || "");
+  if (categories.some((name) => /\brings?\b/i.test(name)))
+    return STANDARD_RING_SIZES.has(value) ? "" : "Select a size from 5 to 25";
+  if (categories.some((name) => /\bbracelets?\b/i.test(name)))
+    return BANGLE_SIZES.has(value) ? "" : "Select a valid bracelet size";
+  if (categories.some((name) => /\bbangles?\b/i.test(name)))
+    return BANGLE_ANA_SIZES.has(value) ? "" : "Select a valid bangle size";
+  return value ? "Selected size is not available for this product." : "";
+};
 
-const imageForColor = (product, color) => normalizeImages(product?.images).find((image) => colorForSlot(product, image.slot) === color) || normalizeImages(product?.images)[0] || null;
-module.exports = { GOLD_COLORS, YELLOW, MOISSANITE_SECOND_COLOR, shortColor, isMoissanite, isPolki, variantConfig, normalizeImages, colorForSlot, selectedColors, validateVariantConfiguration, validateSelectedColor, validateSelectedSize, imageForColor };
+const imageForColor = (product, color) =>
+  normalizeImages(product?.images).find(
+    (image) => colorForSlot(product, image.slot) === color,
+  ) ||
+  normalizeImages(product?.images)[0] ||
+  null;
+module.exports = {
+  GOLD_COLORS,
+  YELLOW,
+  MOISSANITE_SECOND_COLOR,
+  shortColor,
+  isMoissanite,
+  isPolki,
+  variantConfig,
+  normalizeImages,
+  colorForSlot,
+  selectedColors,
+  validateVariantConfiguration,
+  validateSelectedColor,
+  validateSelectedSize,
+  imageForColor,
+};

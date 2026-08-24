@@ -9,13 +9,26 @@ const ApiError = require("../utils/ApiError");
 const ApiResponse = require("../utils/ApiResponse");
 const asyncHandler = require("../utils/asyncHandler");
 const { repriceCartItem, lineTotal } = require("../utils/cartPricing");
-const { validateSelectedColor, validateSelectedSize, imageForColor } = require("../utils/productVariants");
+const {
+  validateSelectedColor,
+  validateSelectedSize,
+  imageForColor,
+} = require("../utils/productVariants");
 const { calculateCartSummary } = require("../utils/checkoutUtils");
-const { getAppliedCodes, resolveCoupons, setAppliedCodes, isWelcomeCoupon } = require("../utils/checkoutCoupons");
+const {
+  getAppliedCodes,
+  resolveCoupons,
+  setAppliedCodes,
+  isWelcomeCoupon,
+} = require("../utils/checkoutCoupons");
 
 const client = () => {
-  if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) throw new ApiError(503, "Razorpay is not configured");
-  return new Razorpay({ key_id: process.env.RAZORPAY_KEY_ID, key_secret: process.env.RAZORPAY_KEY_SECRET });
+  if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET)
+    throw new ApiError(503, "Razorpay is not configured");
+  return new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET,
+  });
 };
 
 const confirm = async (order, paymentId) => {
@@ -23,21 +36,44 @@ const confirm = async (order, paymentId) => {
     order.orderStatus = "confirmed";
     order.paymentStatus = "paid";
     order.razorpayPaymentId = paymentId;
-    const coupons = order.coupons?.length ? order.coupons : (order.coupon?.code ? [order.coupon] : []);
+    const coupons = order.coupons?.length
+      ? order.coupons
+      : order.coupon?.code
+        ? [order.coupon]
+        : [];
     for (const coupon of coupons) {
-      if (coupon.code && !isWelcomeCoupon(coupon.code)) await Coupon.updateOne({ code: coupon.code }, { $inc: { usedCount: 1 } });
+      if (coupon.code && !isWelcomeCoupon(coupon.code))
+        await Coupon.updateOne(
+          { code: coupon.code },
+          { $inc: { usedCount: 1 } },
+        );
     }
     await order.save();
-    await Cart.updateOne({ user: order.customer }, { $set: { items: [], appliedCoupon: null, appliedCoupons: [], referenceId: null } });
+    await Cart.updateOne(
+      { user: order.customer },
+      {
+        $set: {
+          items: [],
+          appliedCoupon: null,
+          appliedCoupons: [],
+          referenceId: null,
+        },
+      },
+    );
   }
   if (order.partner && !order.partnerPointsCredited) {
     const earned = Math.trunc((Number(order.amount || 0) / 100) * 100) / 100;
     const credited = await Order.findOneAndUpdate(
       { _id: order._id, partnerPointsCredited: false },
       { $set: { partnerPointsCredited: true } },
-      { new: true }
+      { new: true },
     );
-    if (credited) await Partner.updateOne({ _id: order.partner }, [{ $set: { points: { $trunc: [{ $add: ["$points", earned] }, 2] } } }], { updatePipeline: true });
+    if (credited)
+      await Partner.updateOne(
+        { _id: order.partner },
+        [{ $set: { points: { $trunc: [{ $add: ["$points", earned] }, 2] } } }],
+        { updatePipeline: true },
+      );
   }
   return order;
 };
@@ -47,52 +83,169 @@ const place = asyncHandler(async (req, res) => {
 
   const items = [];
   for (const entry of cart.items) {
-    const product = await Product.findOne({ SKU: entry.productId }).populate("mainCategory", "name").populate("subCategory", "name");
-    if (!product) throw new ApiError(400, "A cart product is no longer available");
+    const product = await Product.findOne({ SKU: entry.productId })
+      .populate("mainCategory", "name")
+      .populate("subCategory", "name");
+    if (!product)
+      throw new ApiError(400, "A cart product is no longer available");
     const colorError = validateSelectedColor(product, String(entry.color));
     if (colorError) throw new ApiError(400, colorError);
     const sizeError = validateSelectedSize(product, entry.size);
     if (sizeError) throw new ApiError(400, sizeError);
     await repriceCartItem(entry, product);
-    items.push({ productSku: entry.productId, title: product.title, image: entry.image || imageForColor(product, String(entry.color))?.url || "", karat: entry.karat, color: entry.color, size: entry.size, quantity: entry.quantity, priceSnapshot: { totalCost: lineTotal(entry), gst: 0, finalPrice: lineTotal(entry) } });
+    items.push({
+      productSku: entry.productId,
+      title: product.title,
+      image:
+        entry.image || imageForColor(product, String(entry.color))?.url || "",
+      karat: entry.karat,
+      color: entry.color,
+      size: entry.size,
+      quantity: entry.quantity,
+      priceSnapshot: {
+        totalCost: lineTotal(entry),
+        gst: 0,
+        finalPrice: lineTotal(entry),
+      },
+    });
   }
 
-  const pricedItems = items.map((item) => ({ productId: item.productSku, category: cart.items.find((cartItem) => cartItem.productId === item.productSku)?.category, price: item.priceSnapshot.totalCost, lineTotal: item.priceSnapshot.totalCost, quantity: 1 }));
+  const pricedItems = items.map((item) => ({
+    productId: item.productSku,
+    category: cart.items.find(
+      (cartItem) => cartItem.productId === item.productSku,
+    )?.category,
+    price: item.priceSnapshot.totalCost,
+    lineTotal: item.priceSnapshot.totalCost,
+    quantity: 1,
+  }));
   const subtotal = pricedItems.reduce((sum, item) => sum + item.lineTotal, 0);
-  const { entries, totalDiscount } = await resolveCoupons({ codes: getAppliedCodes(cart), user: req.user, subtotal });
-  const partner = cart.referenceId ? await Partner.findOne({ referenceId: cart.referenceId }) : null;
+  const { entries, totalDiscount } = await resolveCoupons({
+    codes: getAppliedCodes(cart),
+    user: req.user,
+    subtotal,
+  });
+  const partner = cart.referenceId
+    ? await Partner.findOne({ referenceId: cart.referenceId })
+    : null;
   const referenceDiscount = partner ? 500 : 0;
-  const summary = calculateCartSummary(pricedItems, totalDiscount, referenceDiscount);
-  const storedCoupons = entries.map((coupon) => ({ code: coupon.code, discount: coupon.discount }));
+  const summary = calculateCartSummary(
+    pricedItems,
+    totalDiscount,
+    referenceDiscount,
+  );
+  const storedCoupons = entries.map((coupon) => ({
+    code: coupon.code,
+    discount: coupon.discount,
+  }));
 
-  let order = await Order.findOne({ customer: req.user._id, orderStatus: "pending", paymentStatus: "pending" });
+  let order = await Order.findOne({
+    customer: req.user._id,
+    orderStatus: "pending",
+    paymentStatus: "pending",
+  });
   if (order) {
     order.items = items;
     order.amount = summary.total;
     order.coupon = storedCoupons[0];
     order.coupons = storedCoupons;
-    order.partner = partner?._id || null; order.referenceId = partner?.referenceId || null; order.referenceDiscount = referenceDiscount;
+    order.partner = partner?._id || null;
+    order.referenceId = partner?.referenceId || null;
+    order.referenceDiscount = referenceDiscount;
   } else {
-    order = new Order({ customer: req.user._id, items, amount: summary.total, coupon: storedCoupons[0], coupons: storedCoupons, partner: partner?._id || null, referenceId: partner?.referenceId || null, referenceDiscount });
+    order = new Order({
+      customer: req.user._id,
+      items,
+      amount: summary.total,
+      coupon: storedCoupons[0],
+      coupons: storedCoupons,
+      partner: partner?._id || null,
+      referenceId: partner?.referenceId || null,
+      referenceDiscount,
+    });
   }
 
-  const razorpayOrder = await client().orders.create({ amount: Math.round(summary.total * 100), currency: "INR", receipt: String(order._id) });
+  const razorpayOrder = await client().orders.create({
+    amount: Math.round(summary.total * 100),
+    currency: "INR",
+    receipt: String(order._id),
+  });
   order.razorpayOrderId = razorpayOrder.id;
   await order.save();
-  res.status(201).json(new ApiResponse(201, { order, razorpayOrder, keyId: process.env.RAZORPAY_KEY_ID }, "Payment order created"));
+  res
+    .status(201)
+    .json(
+      new ApiResponse(
+        201,
+        { order, razorpayOrder, keyId: process.env.RAZORPAY_KEY_ID },
+        "Payment order created",
+      ),
+    );
 });
 
 const verify = asyncHandler(async (req, res) => {
-  const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
-  const expected = crypto.createHmac("sha256", process.env.RAZORPAY_KEY_SECRET).update(`${razorpay_order_id}|${razorpay_payment_id}`).digest("hex");
-  if (expected !== razorpay_signature) throw new ApiError(400, "Invalid payment signature");
-  const order = await Order.findOne({ razorpayOrderId: razorpay_order_id, customer: req.user._id });
+  const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
+    req.body;
+  const expected = crypto
+    .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+    .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+    .digest("hex");
+  if (expected !== razorpay_signature)
+    throw new ApiError(400, "Invalid payment signature");
+  const order = await Order.findOne({
+    razorpayOrderId: razorpay_order_id,
+    customer: req.user._id,
+  });
   if (!order) throw new ApiError(404, "Order not found");
   await confirm(order, razorpay_payment_id);
   res.json(new ApiResponse(200, order, "Payment confirmed"));
 });
 
-const getMyOrders = asyncHandler(async (req, res) => res.json(new ApiResponse(200, await Order.find({ customer: req.user._id }).sort({ createdAt: -1 }), "Orders fetched")));
-const getMyOrder = asyncHandler(async (req, res) => { const order = await Order.findOne({ _id: req.params.orderId, customer: req.user._id }); if (!order) throw new ApiError(404, "Order not found"); res.json(new ApiResponse(200, order, "Order fetched")); });
-const webhook = asyncHandler(async (req, res) => { const signature = req.headers["x-razorpay-signature"]; const rawBody = req.body; if (!signature || !Buffer.isBuffer(rawBody)) throw new ApiError(400, "Invalid webhook signature"); const expected = crypto.createHmac("sha256", process.env.RAZORPAY_WEBHOOK_SECRET || "").update(rawBody).digest("hex"); if (expected.length !== signature.length || !crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signature))) throw new ApiError(400, "Invalid webhook signature"); const event = JSON.parse(rawBody.toString("utf8")); const payment = event.payload?.payment?.entity; const order = await Order.findOne({ razorpayOrderId: payment?.order_id }); if (order && event.event === "payment.captured") await confirm(order, payment.id); if (order && event.event === "payment.failed" && order.orderStatus !== "confirmed") { order.orderStatus = "failed"; order.paymentStatus = "failed"; await order.save(); } res.status(200).json({ ok: true }); });
+const getMyOrders = asyncHandler(async (req, res) =>
+  res.json(
+    new ApiResponse(
+      200,
+      await Order.find({ customer: req.user._id }).sort({ createdAt: -1 }),
+      "Orders fetched",
+    ),
+  ),
+);
+const getMyOrder = asyncHandler(async (req, res) => {
+  const order = await Order.findOne({
+    _id: req.params.orderId,
+    customer: req.user._id,
+  });
+  if (!order) throw new ApiError(404, "Order not found");
+  res.json(new ApiResponse(200, order, "Order fetched"));
+});
+const webhook = asyncHandler(async (req, res) => {
+  const signature = req.headers["x-razorpay-signature"];
+  const rawBody = req.body;
+  if (!signature || !Buffer.isBuffer(rawBody))
+    throw new ApiError(400, "Invalid webhook signature");
+  const expected = crypto
+    .createHmac("sha256", process.env.RAZORPAY_WEBHOOK_SECRET || "")
+    .update(rawBody)
+    .digest("hex");
+  if (
+    expected.length !== signature.length ||
+    !crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signature))
+  )
+    throw new ApiError(400, "Invalid webhook signature");
+  const event = JSON.parse(rawBody.toString("utf8"));
+  const payment = event.payload?.payment?.entity;
+  const order = await Order.findOne({ razorpayOrderId: payment?.order_id });
+  if (order && event.event === "payment.captured")
+    await confirm(order, payment.id);
+  if (
+    order &&
+    event.event === "payment.failed" &&
+    order.orderStatus !== "confirmed"
+  ) {
+    order.orderStatus = "failed";
+    order.paymentStatus = "failed";
+    await order.save();
+  }
+  res.status(200).json({ ok: true });
+});
 module.exports = { place, verify, getMyOrders, getMyOrder, webhook };

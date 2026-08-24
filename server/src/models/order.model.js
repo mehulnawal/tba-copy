@@ -1,4 +1,69 @@
 const mongoose = require("mongoose");
-const item = new mongoose.Schema({ productSku: String, title: String, image: String, karat: String, color: String, size: String, quantity: Number, priceSnapshot: { makingCharge: Number, totalCost: Number, gst: Number, finalPrice: Number } }, { _id: false });
-const schema = new mongoose.Schema({ customer: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true }, items: [item], coupon: { code: String, discount: Number }, coupons: [{ code: String, discount: Number }], amount: { type: Number, required: true }, partner: { type: mongoose.Schema.Types.ObjectId, ref: "Partner", default: null }, referenceId: { type: String, default: null }, referenceDiscount: { type: Number, default: 0 }, partnerPointsCredited: { type: Boolean, default: false }, razorpayOrderId: { type: String, index: true }, razorpayPaymentId: String, paymentStatus: { type: String, enum: ["pending", "paid", "failed"], default: "pending" }, orderStatus: { type: String, enum: ["pending", "confirmed", "failed"], default: "pending" }, productionStatus: { type: String, enum: ["order_placed", "designing", "in_production", "quality_check", "ready_to_ship", "shipped", "delivered"], default: "order_placed" }, productionStatusUpdatedAt: Date }, { timestamps: true });
+const item = new mongoose.Schema(
+  {
+    productSku: String,
+    title: String,
+    image: String,
+    karat: String,
+    color: String,
+    size: String,
+    quantity: Number,
+    priceSnapshot: {
+      makingCharge: Number,
+      totalCost: Number,
+      gst: Number,
+      finalPrice: Number,
+    },
+  },
+  { _id: false },
+);
+const schema = new mongoose.Schema(
+  {
+    customer: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
+    },
+    items: [item],
+    coupon: { code: String, discount: Number },
+    coupons: [{ code: String, discount: Number }],
+    amount: { type: Number, required: true },
+    partner: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Partner",
+      default: null,
+    },
+    referenceId: { type: String, default: null },
+    referenceDiscount: { type: Number, default: 0 },
+    partnerPointsCredited: { type: Boolean, default: false },
+    razorpayOrderId: { type: String, index: true },
+    razorpayPaymentId: String,
+    paymentStatus: {
+      type: String,
+      enum: ["pending", "paid", "failed"],
+      default: "pending",
+    },
+    orderStatus: {
+      type: String,
+      enum: ["pending", "confirmed", "failed"],
+      default: "pending",
+    },
+    productionStatus: {
+      type: String,
+      enum: [
+        "order_placed",
+        "designing",
+        "in_production",
+        "quality_check",
+        "ready_to_ship",
+        "shipped",
+        "delivered",
+      ],
+      default: "order_placed",
+    },
+    productionStatusUpdatedAt: Date,
+  },
+  { timestamps: true },
+);
 module.exports = mongoose.model("Order", schema);

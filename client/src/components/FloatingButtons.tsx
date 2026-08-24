@@ -6,7 +6,6 @@ import { Instagram, Phone } from "lucide-react";
 export default function FloatingButtons() {
   return (
     <div className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-[var(--z-float)] flex flex-col gap-3">
-
       {/* Calling */}
       <motion.a
         href={`tel:${SOCIAL_LINKS.phone}`}
@@ -36,7 +35,8 @@ export default function FloatingButtons() {
         whileHover={{ scale: 1.12 }}
         className="group relative w-11 h-11 md:w-13 md:h-13 rounded-full flex items-center justify-center shadow-lg hover:shadow-[var(--shadow-cream)] transition-all cursor-pointer"
         style={{
-          background: "linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)",
+          background:
+            "linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)",
         }}
         id="floating-insta-btn"
       >
@@ -74,7 +74,6 @@ export default function FloatingButtons() {
           Chat on WhatsApp
         </span>
       </motion.a>
-
     </div>
   );
 }

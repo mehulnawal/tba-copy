@@ -1,5 +1,13 @@
 const express = require("express");
-const { getCartSummary, applyCoupon, removeCoupon, applyReferenceId, removeReferenceId, getAvailableCoupons, getOrderSummary } = require("../controllers/checkout.controller");
+const {
+  getCartSummary,
+  applyCoupon,
+  removeCoupon,
+  applyReferenceId,
+  removeReferenceId,
+  getAvailableCoupons,
+  getOrderSummary,
+} = require("../controllers/checkout.controller");
 const { authenticate } = require("../middlewares/auth.middleware");
 const router = express.Router();
 router.use(authenticate);

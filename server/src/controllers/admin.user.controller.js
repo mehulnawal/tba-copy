@@ -9,9 +9,9 @@ const listUsers = asyncHandler(async (req, res) => {
     .select("-password")
     .sort({ createdAt: -1 });
 
-  res.status(200).json(
-    new ApiResponse(200, users, "Users fetched successfully"),
-  );
+  res
+    .status(200)
+    .json(new ApiResponse(200, users, "Users fetched successfully"));
 });
 
 const blockUser = asyncHandler(async (req, res) => {
@@ -24,15 +24,24 @@ const blockUser = asyncHandler(async (req, res) => {
   }
 
   if (user.role !== ROLES.USER) {
-    throw new ApiError(400, "Only user accounts can be blocked through this endpoint");
+    throw new ApiError(
+      400,
+      "Only user accounts can be blocked through this endpoint",
+    );
   }
 
   user.isBlocked = true;
   await user.save();
 
-  res.status(200).json(
-    new ApiResponse(200, { id: user._id, isBlocked: user.isBlocked }, "User blocked successfully"),
-  );
+  res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { id: user._id, isBlocked: user.isBlocked },
+        "User blocked successfully",
+      ),
+    );
 });
 
 const unblockUser = asyncHandler(async (req, res) => {
@@ -47,9 +56,15 @@ const unblockUser = asyncHandler(async (req, res) => {
   user.isBlocked = false;
   await user.save();
 
-  res.status(200).json(
-    new ApiResponse(200, { id: user._id, isBlocked: user.isBlocked }, "User unblocked successfully"),
-  );
+  res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { id: user._id, isBlocked: user.isBlocked },
+        "User unblocked successfully",
+      ),
+    );
 });
 
 module.exports = {

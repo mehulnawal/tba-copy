@@ -2,7 +2,5 @@
   "name": "TBA — The Brilliance Atelier",
   "description": "The Brilliance Atelier (TBA) - Premium Indian jewellery brand delivering international luxury, lifetime exchange, and transparent live pricing.",
   "requestFramePermissions": [],
-  "majorCapabilities": [
-    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
-  ]
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

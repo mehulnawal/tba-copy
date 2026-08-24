@@ -4,7 +4,10 @@ const Product = require("../models/product.model");
 const ApiError = require("../utils/ApiError");
 const ApiResponse = require("../utils/ApiResponse");
 const asyncHandler = require("../utils/asyncHandler");
-const shortCode = (value) => String(value || "").trim().toUpperCase();
+const shortCode = (value) =>
+  String(value || "")
+    .trim()
+    .toUpperCase();
 
 const FIXED_SUBCATEGORIES = [
   "Rings",
@@ -14,9 +17,7 @@ const FIXED_SUBCATEGORIES = [
   "Pendants",
 ];
 const withParent = (query) =>
-  query
-    .populate("parent", "name metal categoryKind")
-    .sort({ createdAt: 1 });
+  query.populate("parent", "name metal categoryKind").sort({ createdAt: 1 });
 const rootFor = async (metal) =>
   Category.findOne({ metal, categoryKind: "metal-root" });
 const deriveHierarchy = async ({ name, parent, categoryId }) => {
@@ -109,7 +110,9 @@ const create = asyncHandler(async (req, res) => {
     isActive: req.body.isActive !== false,
     showOnHomepage: req.body.showOnHomepage === true,
     homepageCoverImage: String(req.body.homepageCoverImage || "").trim(),
-    shortCode: String(req.body.shortCode || "").trim().toUpperCase(),
+    shortCode: String(req.body.shortCode || "")
+      .trim()
+      .toUpperCase(),
   });
   await category.populate("parent", "name metal categoryKind");
   res.status(201).json(new ApiResponse(201, category, "Category created"));
@@ -128,11 +131,25 @@ const update = asyncHandler(async (req, res) => {
     parent,
     categoryId: existing._id,
   });
-  if (existing.categoryKind === "metal-root" && hierarchy.categoryKind !== "metal-root")
+  if (
+    existing.categoryKind === "metal-root" &&
+    hierarchy.categoryKind !== "metal-root"
+  )
     throw new ApiError(400, "Root categories cannot be moved");
   const category = await Category.findByIdAndUpdate(
     existing._id,
-    { ...req.body, name, ...hierarchy, ...(Object.prototype.hasOwnProperty.call(req.body, "shortCode") ? { shortCode: String(req.body.shortCode || "").trim().toUpperCase() } : {}) },
+    {
+      ...req.body,
+      name,
+      ...hierarchy,
+      ...(Object.prototype.hasOwnProperty.call(req.body, "shortCode")
+        ? {
+            shortCode: String(req.body.shortCode || "")
+              .trim()
+              .toUpperCase(),
+          }
+        : {}),
+    },
     { new: true, runValidators: true },
   ).populate("parent", "name metal categoryKind");
   res.json(new ApiResponse(200, category, "Category updated"));

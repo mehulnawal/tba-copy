@@ -7,10 +7,17 @@ const { calculatePrice } = require("../utils/priceCalculator");
 const refreshCartPrices = async (cart) => {
   let changed = false;
   for (const item of cart.items) {
-    const product = await Product.findOne({ SKU: item.productId, isActive: true });
-    if (!product) throw new ApiError(400, `${item.name} is no longer available`);
+    const product = await Product.findOne({
+      SKU: item.productId,
+      isActive: true,
+    });
+    if (!product)
+      throw new ApiError(400, `${item.name} is no longer available`);
     const price = await calculatePrice(product, item.karat);
-    if (Math.round(Number(item.price) * 100) !== Math.round(Number(price.finalPrice) * 100)) {
+    if (
+      Math.round(Number(item.price) * 100) !==
+      Math.round(Number(price.finalPrice) * 100)
+    ) {
       item.price = price.finalPrice;
       changed = true;
     }

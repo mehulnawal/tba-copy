@@ -52,31 +52,51 @@ const resolveSettings = async (product) => {
   return settings;
 };
 
-const calculatePrice = async (
-  product,
-  karat,
-  buyer = "B2C",
-  suppliedRates,
-) => {
+const calculatePrice = async (product, karat, buyer = "B2C", suppliedRates) => {
   const normalizedBuyer = String(buyer).toUpperCase();
   const rates = suppliedRates || global.TBA_METAL_RATES?.[normalizedBuyer];
   product = await hydrateLiveDiamondEntryRates(product);
   // TEMPORARY FLOW — silver only: rate/category settings for manual Price + GST.
   if (String(product?.metal || "").toLowerCase() === "silver") {
     const baseSettings = await resolveSettings(product);
-    const settings = { ...baseSettings, makingRatePerGram: String(baseSettings.categoryType).toLowerCase() === "polki" ? rates?.silverPolkiMakingRate : rates?.silverMoissaniteMakingRate, moissaniteRatePerCarat: rates?.moissaniteRatePerCarat };
+    const settings = {
+      ...baseSettings,
+      makingRatePerGram:
+        String(baseSettings.categoryType).toLowerCase() === "polki"
+          ? rates?.silverPolkiMakingRate
+          : rates?.silverMoissaniteMakingRate,
+      moissaniteRatePerCarat: rates?.moissaniteRatePerCarat,
+    };
     return calculateSilverPrice({ product, buyer, rates, settings });
   }
 
   if (!rates) throw new Error("Live metal rates are required for pricing");
   const settings = await resolveSettings(product);
-  let calculated = calculateGoldPrice({ product, karat, buyer, rates, settings });
+  let calculated = calculateGoldPrice({
+    product,
+    karat,
+    buyer,
+    rates,
+    settings,
+  });
   // Legacy certificate charge (Universal Price × Total Diamond Weight) remains in goldPricing.js; gold products with a manual certificateWeight use the replacement basis here.
-  if (product?.certificateWeight !== undefined && settings.certificateApplies && !(String(buyer).toUpperCase() === "B2B" && settings.b2bExcludeCharges)) {
-    const certificateCharges = Number(rates.certificateRatePerGram) * Number(product.certificateWeight);
-    const totalCost = calculated.totalCost - calculated.certificateCharges + certificateCharges;
+  if (
+    product?.certificateWeight !== undefined &&
+    settings.certificateApplies &&
+    !(String(buyer).toUpperCase() === "B2B" && settings.b2bExcludeCharges)
+  ) {
+    const certificateCharges =
+      Number(rates.certificateRatePerGram) * Number(product.certificateWeight);
+    const totalCost =
+      calculated.totalCost - calculated.certificateCharges + certificateCharges;
     const gst = totalCost * 0.03;
-    calculated = { ...calculated, certificateCharges, totalCost, gst, finalPrice: totalCost + gst };
+    calculated = {
+      ...calculated,
+      certificateCharges,
+      totalCost,
+      gst,
+      finalPrice: totalCost + gst,
+    };
   }
   return calculated;
 };

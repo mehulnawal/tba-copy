@@ -1,5 +1,12 @@
 const express = require("express");
-const { access, logout, validatePassword, listProducts, getProduct, status } = require("../controllers/b2b.controller");
+const {
+  access,
+  logout,
+  validatePassword,
+  listProducts,
+  getProduct,
+  status,
+} = require("../controllers/b2b.controller");
 const { mine: myPartner } = require("../controllers/partner.controller");
 const { requireB2BAccess } = require("../middlewares/b2b.middleware");
 const router = express.Router();

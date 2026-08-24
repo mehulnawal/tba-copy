@@ -73,7 +73,9 @@ const changePassword = asyncHandler(async (req, res) => {
   user.password = newPassword;
   await user.save();
 
-  res.status(200).json(new ApiResponse(200, null, "Password changed successfully"));
+  res
+    .status(200)
+    .json(new ApiResponse(200, null, "Password changed successfully"));
 });
 
 const getAddresses = asyncHandler(async (req, res) => {
@@ -82,9 +84,9 @@ const getAddresses = asyncHandler(async (req, res) => {
     createdAt: -1,
   });
 
-  res.status(200).json(
-    new ApiResponse(200, addresses, "Addresses fetched successfully"),
-  );
+  res
+    .status(200)
+    .json(new ApiResponse(200, addresses, "Addresses fetched successfully"));
 });
 
 const addAddress = asyncHandler(async (req, res) => {
@@ -126,9 +128,9 @@ const addAddress = asyncHandler(async (req, res) => {
     isDefault: shouldBeDefault,
   });
 
-  res.status(201).json(
-    new ApiResponse(201, address, "Address added successfully"),
-  );
+  res
+    .status(201)
+    .json(new ApiResponse(201, address, "Address added successfully"));
 });
 
 const updateAddress = asyncHandler(async (req, res) => {
@@ -163,9 +165,9 @@ const updateAddress = asyncHandler(async (req, res) => {
 
   await address.save();
 
-  res.status(200).json(
-    new ApiResponse(200, address, "Address updated successfully"),
-  );
+  res
+    .status(200)
+    .json(new ApiResponse(200, address, "Address updated successfully"));
 });
 
 const deleteAddress = asyncHandler(async (req, res) => {
@@ -190,7 +192,9 @@ const deleteAddress = asyncHandler(async (req, res) => {
     }
   }
 
-  res.status(200).json(new ApiResponse(200, null, "Address deleted successfully"));
+  res
+    .status(200)
+    .json(new ApiResponse(200, null, "Address deleted successfully"));
 });
 
 const setDefaultAddress = asyncHandler(async (req, res) => {
@@ -209,9 +213,11 @@ const setDefaultAddress = asyncHandler(async (req, res) => {
   address.isDefault = true;
   await address.save();
 
-  res.status(200).json(
-    new ApiResponse(200, address, "Default address updated successfully"),
-  );
+  res
+    .status(200)
+    .json(
+      new ApiResponse(200, address, "Default address updated successfully"),
+    );
 });
 
 module.exports = {

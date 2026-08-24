@@ -64,7 +64,10 @@ const initializePricingConfigs = async () => {
   );
 
   // Migrate the existing Lab-Grown config once; do not overwrite future admin changes.
-  await CategoryPricingConfig.updateOne({ key: "GOLD_LAB_GROWN", b2bExcludeCharges: { $ne: true } }, { $set: { b2bExcludeCharges: true } });
+  await CategoryPricingConfig.updateOne(
+    { key: "GOLD_LAB_GROWN", b2bExcludeCharges: { $ne: true } },
+    { $set: { b2bExcludeCharges: true } },
+  );
 
   return CategoryPricingConfig.find({
     key: { $in: DEFAULT_PRICING_CONFIGS.map((config) => config.key) },

@@ -4,7 +4,9 @@ const crypto = require("crypto");
 
 const normalizeIndianPhone = (value) => {
   if (value === null || value === undefined || value === "") return null;
-  const mobile = String(value).replace(/\D/g, "").replace(/^91(?=\d{10}$)/, "");
+  const mobile = String(value)
+    .replace(/\D/g, "")
+    .replace(/^91(?=\d{10}$)/, "");
   return /^\d{10}$/.test(mobile) ? `91${mobile}` : String(value).trim();
 };
 
@@ -114,7 +116,10 @@ userSchema.methods.getResetPasswordToken = function () {
   return resetToken;
 };
 
-userSchema.index({ phone: 1 }, { unique: true, partialFilterExpression: { phone: { $type: "string" } } });
+userSchema.index(
+  { phone: 1 },
+  { unique: true, partialFilterExpression: { phone: { $type: "string" } } },
+);
 
 const User = mongoose.model("User", userSchema);
 

@@ -17,7 +17,15 @@ export default function ProtectedRoute({
   if (isLoading) return <PageSkeleton />;
 
   if (!isAuthenticated) {
-    return <Navigate to="/auth" replace state={{ from: `${location.pathname}${location.search}${location.hash}` }} />;
+    return (
+      <Navigate
+        to="/auth"
+        replace
+        state={{
+          from: `${location.pathname}${location.search}${location.hash}`,
+        }}
+      />
+    );
   }
 
   if (user && allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
