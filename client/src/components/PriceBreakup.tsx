@@ -5,7 +5,8 @@ import { formatINR, formatMeasurement } from "../utils/currency";
 type CouponBreakup = {
   label: string;
   discount: number;
-  subtotalAfterCoupon: number;
+  appliesTo: "diamond" | "making" | "moissanite";
+  isProductDiscount?: boolean;
 };
 type Props = {
   product: Product;
@@ -24,9 +25,13 @@ type StoneRow = {
 };
 type FourRow = {
   component: string;
-  weight: string;
+  weight: Measurement;
   rate: string;
   price: string;
+};
+type Measurement = {
+  value: string;
+  unit: "g" | "ct";
 };
 
 const number = (value?: number) => Number(value || 0);
@@ -42,7 +47,36 @@ const wrapCell = `${bodyCell} break-words`;
 const numCell = `${bodyCell} whitespace-nowrap tabular-nums`;
 const numHeader = `${headerCell} whitespace-nowrap`;
 
-const fourColGrid = "grid grid-cols-[minmax(0,1fr)_auto_auto_auto] items-baseline gap-x-7 sm:gap-x-10";
+const measurement = (value: number, unit: Measurement["unit"]): Measurement => ({
+  value: formatMeasurement(value),
+  unit,
+});
+const widestIntegerPart = (weights: Measurement[]) =>
+  Math.max(1, ...weights.map((weight) => weight.value.split(".")[0].length));
+
+function DecimalAlignedWeight({
+  weight,
+  integerWidth,
+}: {
+  weight: Measurement;
+  integerWidth: number;
+}) {
+  const [integer, fraction] = weight.value.split(".");
+
+  return (
+    <span
+      className="inline-grid whitespace-nowrap tabular-nums"
+      style={{ gridTemplateColumns: `${integerWidth}ch auto auto` }}
+    >
+      <span className="text-right">{integer}</span>
+      <span>.{fraction}</span>
+      <span className="ml-1">{weight.unit}</span>
+    </span>
+  );
+}
+
+const fourColGrid =
+  "grid grid-cols-[minmax(0,1fr)_auto_auto_auto] items-baseline gap-x-7 sm:gap-x-10";
 
 function RowDivider() {
   return <div className="col-span-full border-b border-[var(--color-border)]" />;
@@ -59,6 +93,7 @@ function FourColumnTable({
   rateLabel: string;
   rows: FourRow[];
 }) {
+  const weightIntegerWidth = widestIntegerPart(rows.map((row) => row.weight));
   return (
     <div>
       <h3 className="mb-2 font-bold [-webkit-text-stroke:0.2px_currentColor] text-[var(--color-teal)]">
@@ -80,18 +115,33 @@ function FourColumnTable({
         <div className={`${numHeader} text-right`}>Price</div>
         <RowDivider />
         {rows.map((row) => (
-          <FourColumnRow key={row.component} row={row} />
+          <FourColumnRow
+            key={row.component}
+            row={row}
+            weightIntegerWidth={weightIntegerWidth}
+          />
         ))}
       </div>
     </div>
   );
 }
 
-function FourColumnRow({ row }: { row: FourRow }) {
+function FourColumnRow({
+  row,
+  weightIntegerWidth,
+}: {
+  row: FourRow;
+  weightIntegerWidth: number;
+}) {
   return (
     <>
       <div className={wrapCell}>{row.component}</div>
-      <div className={numCell}>{row.weight}</div>
+      <div className={numCell}>
+        <DecimalAlignedWeight
+          weight={row.weight}
+          integerWidth={weightIntegerWidth}
+        />
+      </div>
       <div className={`${numCell} text-left sm:text-right`}>{row.rate}</div>
       <div className={`${numCell} text-right`}>{row.price}</div>
       <RowDivider />
@@ -105,11 +155,14 @@ function StoneTable({
   title,
   rows,
   formatAmount = formatINR,
+  totalLabel,
 }: {
   title: string;
   rows: StoneRow[];
   formatAmount?: (value: number) => string;
+  totalLabel?: string;
 }) {
+  const total = rows.reduce((sum, row) => sum + row.value, 0);
   return (
     <div>
       <h3 className="mb-2 font-bold [-webkit-text-stroke:0.2px_currentColor] text-[var(--color-teal)]">
@@ -129,8 +182,26 @@ function StoneTable({
         <div className={`${numHeader} text-right`}>Price</div>
         <RowDivider />
         {rows.map((row) => (
-          <StoneRowCells key={row.key} row={row} formatAmount={formatAmount} />
+          <StoneRowCells
+            key={row.key}
+            row={row}
+            formatAmount={formatAmount}
+          />
         ))}
+        {totalLabel && (
+          <>
+            <div className={`${wrapCell} font-bold text-[var(--color-teal)]`}>
+              {totalLabel}
+            </div>
+            <div />
+            <div />
+            <div />
+            <div className={`${numCell} text-right font-bold text-[var(--color-teal)]`}>
+              {formatAmount(total)}
+            </div>
+            <RowDivider />
+          </>
+        )}
       </div>
     </div>
   );
@@ -147,7 +218,12 @@ function StoneRowCells({
     <>
       <div className={wrapCell}>{row.component}</div>
       <div className={wrapCell}>{row.clarity}</div>
-      <div className={numCell}>{formatMeasurement(row.carat)}</div>
+      <div className={numCell}>
+        <span className="relative inline-block tabular-nums">
+          {formatMeasurement(row.carat)}
+          <span className="absolute left-full ml-1 whitespace-nowrap">ct</span>
+        </span>
+      </div>
       <div className={`${numCell} text-left sm:text-right`}>{formatAmount(row.rate)}</div>
       <div className={`${numCell} text-right`}>{formatAmount(row.value)}</div>
       <RowDivider />
@@ -166,8 +242,6 @@ export default function PriceBreakup({
   const isGold = price.metal === "gold" || product.metal === "gold";
   const formatBreakupINR = (value: number) =>
     !isGold && value === 0 ? "—" : formatINR(value);
-  // Customer-facing silver breakups keep calculated amounts, but do not disclose component rates.
-  const hideSilverRates = !isGold;
   const categoryName = (
     value: Product["mainCategory"] | Product["subCategory"],
   ) => (typeof value === "string" ? value : value?.name || "").toLowerCase();
@@ -200,13 +274,11 @@ export default function PriceBreakup({
       component: entry.category || "Diamond",
       clarity: entry.colorClarity || "\u2014",
       carat: number(entry.caratWeight),
-      rate: hideSilverRates
-        ? 0
-        : number(
-          b2b
-            ? (entry.ratePerCtB2B ?? entry.ratePerCt)
-            : (entry.ratePerCtB2C ?? entry.ratePerCt),
-        ),
+      rate: number(
+        b2b
+          ? (entry.ratePerCtB2B ?? entry.ratePerCt)
+          : (entry.ratePerCtB2C ?? entry.ratePerCt),
+      ),
       value:
         number(entry.caratWeight) *
         number(
@@ -226,13 +298,16 @@ export default function PriceBreakup({
     component: "Moissanite",
     clarity: entry.colorClarity || "\u2014",
     carat: number(entry.caratWeight),
-    rate: hideSilverRates ? 0 : number(price.moissaniteRatePerCarat),
+    rate: number(price.moissaniteRatePerCarat),
     value: number(entry.caratWeight) * number(price.moissaniteRatePerCarat),
   }));
   const stoneEntries = diamondEntries.length
     ? diamondEntries
     : moissaniteEntries;
-  const goldWeight = `${formatMeasurement(number(price.netWeight ?? price.grossWeight))} g`;
+  const goldWeight = measurement(
+    number(price.netWeight ?? price.grossWeight),
+    "g",
+  );
   const metalRows: FourRow[] = isGold
     ? [
       {
@@ -255,21 +330,37 @@ export default function PriceBreakup({
     : [
       {
         component: "Silver",
-        weight: `${formatMeasurement(silverWeight)} g`,
-        rate: formatBreakupINR(0),
+        weight: measurement(silverWeight, "g"),
+        rate: formatINR(number(price.silverRate)),
         price: formatBreakupINR(metalValue),
       },
       ...(showMaking
         ? [
           {
             component: "Design and Craftsmanship",
-            weight: `${formatMeasurement(silverWeight)} g`,
-            rate: formatBreakupINR(0),
+            weight: measurement(silverWeight, "g"),
+            rate: formatINR(number(price.makingRatePerGram)),
             price: formatBreakupINR(makingValue),
           },
         ]
         : []),
     ];
+  const moissaniteRows: FourRow[] =
+    !isGold && hasMoissanite
+      ? [
+          {
+            component: "Moissanite",
+            weight: measurement(
+              number(
+                price.totalMoissaniteWeight ?? product.moissaniteCaratWeight,
+              ),
+              "ct",
+            ),
+            rate: formatINR(number(price.moissaniteRatePerCarat)),
+            price: formatBreakupINR(number(price.moissaniteValue)),
+          },
+        ]
+      : [];
   const stoneTitle = diamondEntries.length
     ? `Lab-Grown Diamonds${Number(product.totalNumberOfDiamonds || 0) > 0 ? ` (Total diamonds - ${product.totalNumberOfDiamonds})` : ""}`
     : "Moissanite";
@@ -279,37 +370,16 @@ export default function PriceBreakup({
       <div>
         <div className="flex items-center justify-between border-b border-[var(--color-border)] py-2">
           <h3 className="font-bold [-webkit-text-stroke:0.2px_currentColor] text-[14px] text-[var(--color-teal)]">
-            {coupon ? "Original Subtotal" : "Subtotal"}
+            Subtotal
           </h3>
           <span className="whitespace-nowrap tabular-nums">
-            {formatBreakupINR(
-              number(
-                coupon
-                  ? coupon.subtotalAfterCoupon + coupon.discount
-                  : price.totalCost,
-              ),
-            )}
+            {formatBreakupINR(number(price.totalCost))}
           </span>
         </div>
-        {coupon && (
-          <>
-            <div className="flex items-center justify-between border-b border-[var(--color-border)] py-2">
-              <span>Coupon Applied - {coupon.label}</span>
-              <span className="whitespace-nowrap tabular-nums text-[var(--color-teal)]">
-                -{formatBreakupINR(number(coupon.discount))}
-              </span>
-            </div>
-            <div className="flex items-center justify-between border-b border-[var(--color-border)] py-2">
-              <h3 className="font-bold [-webkit-text-stroke:0.2px_currentColor] text-[14px] text-[var(--color-teal)]">
-                Subtotal After Coupon
-              </h3>
-              <span className="whitespace-nowrap tabular-nums">
-                {formatBreakupINR(number(coupon.subtotalAfterCoupon))}
-              </span>
-            </div>
-          </>
-        )}
-        {showGst && (
+        <div className="flex items-center justify-between border-b border-[var(--color-border)] py-2">
+          <span>Discount</span>
+          <span className="whitespace-nowrap tabular-nums text-[var(--color-teal)]">{coupon?.isProductDiscount ? `-${formatBreakupINR(number(coupon.discount))}` : "—"}</span>
+        </div>        {showGst && (
           <div className="flex items-center justify-between border-b border-[var(--color-border)] py-2">
             <h3 className="font-bold [-webkit-text-stroke:0.2px_currentColor] text-[14px] text-[var(--color-teal)]">
               GST (3%)
@@ -318,8 +388,8 @@ export default function PriceBreakup({
           </div>
         )}
         <div className="flex items-center justify-between border-b-2 border-[var(--color-teal)] bg-[var(--color-cream)] px-1 py-3 font-bold [-webkit-text-stroke:0.2px_currentColor] text-[var(--color-teal)]">
-          <span>Total Amount</span>
-          <span className="whitespace-nowrap tabular-nums">{formatBreakupINR(number(price.finalPrice))}</span>
+          <span className="text-[17px]">Total Amount</span>
+          <span className="whitespace-nowrap tabular-nums text-[17px]">{formatBreakupINR(number(price.finalPrice))}</span>
         </div>
       </div>
       <p className="mt-2 text-xs text-[var(--color-text-muted)]">
@@ -332,6 +402,22 @@ export default function PriceBreakup({
       )}
     </div>
   );
+  const couponRow = coupon ? (
+    <div className="flex items-center justify-between border-b border-[var(--color-border)] bg-[var(--color-cream)] px-1 py-2 text-xs text-[var(--color-teal)]">
+      <span className="font-semibold">
+        {coupon.isProductDiscount
+          ? `Product Discount - ${coupon.label}`
+          : coupon.appliesTo === "diamond"
+          ? `Coupon applied on Diamond Total - ${coupon.label}`
+          : coupon.appliesTo === "moissanite"
+            ? `Coupon applied on Moissanite - ${coupon.label}`
+            : `Coupon applied on Design & Craftsmanship - ${coupon.label}`}
+      </span>
+      <span className="whitespace-nowrap tabular-nums font-semibold">
+        -{formatBreakupINR(number(coupon.discount))}
+      </span>
+    </div>
+  ) : null;
 
   return (
     <section
@@ -357,30 +443,27 @@ export default function PriceBreakup({
             rateLabel="Rate/Gm"
             rows={metalRows}
           />
+          {coupon?.appliesTo === "making" && couponRow}
 
           {!isGold && hasMoissanite && (
             <FourColumnTable
               title="Moissanite"
               weightLabel="Carat"
               rateLabel="Rate/Ct"
-              rows={[
-                {
-                  component: "Moissanite",
-                  weight: `${formatMeasurement(number(price.totalMoissaniteWeight ?? product.moissaniteCaratWeight))} ct`,
-                  rate: formatBreakupINR(0),
-                  price: formatBreakupINR(number(price.moissaniteValue)),
-                },
-              ]}
+              rows={moissaniteRows}
             />
           )}
+          {coupon?.appliesTo === "moissanite" && couponRow}
           {((isGold && stoneEntries.length > 0) ||
             (!isGold && hasMoissanite && diamondEntries.length > 0)) && (
               <StoneTable
                 title={stoneTitle}
                 rows={stoneEntries}
                 formatAmount={formatBreakupINR}
+                totalLabel={isGold ? "Diamond Total" : undefined}
               />
             )}
+          {coupon?.appliesTo === "diamond" && couponRow}
           {summary}
         </div>
       )}

@@ -20,6 +20,11 @@ const categoryCouponSchema = new mongoose.Schema(
     },
     discountValue: { type: Number, required: true, min: 0 },
     minimumCartValue: { type: Number, default: 0, min: 0 },
+    appliesTo: {
+      type: String,
+      enum: ["diamond", "making", "moissanite"],
+      default: "making",
+    },
     expiryDate: { type: Date, required: true },
     usageLimit: { type: Number, default: null, min: 1 },
     usedCount: { type: Number, default: 0 },

@@ -60,6 +60,7 @@ export interface PriceBreakdown {
   polkiValue?: number;
   b2bPricingStatus?: "pending";
   b2bFinalPrice?: number;
+  b2cFinalPrice?: number;
   stoneValue?: number;
   certificateCharges?: number;
   price?: number;
@@ -109,6 +110,8 @@ export interface Product {
   isBestSeller?: boolean;
   isNewProduct?: boolean;
   isPrimeCollection?: boolean;
+  productDiscountType?: "percentage" | "flat" | null;
+  productDiscountValue?: number;
   images?: { url: string; source: "link" | "upload"; slot?: number }[];
   videoLink?: string;
   certificates?: Certificate[];

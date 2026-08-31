@@ -1,5 +1,6 @@
 ﻿import { useEffect, useState } from "react";
 import { BadgeIndianRupee, Hash, UserRound } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 import { apiRequest } from "../api/client";
 import { useB2BSessionGuard } from "../hooks/useB2BSessionGuard";
 import ProductPage from "./ProductPage";
@@ -13,7 +14,10 @@ type PartnerDetails = {
 
 export default function B2BCatalog() {
   useB2BSessionGuard();
-  const [metal, setMetal] = useState<"gold" | "silver">("gold");
+  const [searchParams] = useSearchParams();
+  const [metal, setMetal] = useState<"gold" | "silver">(() =>
+    searchParams.get("metal") === "silver" ? "silver" : "gold",
+  );
   const [partner, setPartner] = useState<PartnerDetails | null>(null);
 
   useEffect(() => {

@@ -1,7 +1,16 @@
 const { calculatePrice, resolveSettings } = require("./priceCalculator");
-const { calculateCouponDiscount } = require("./checkoutUtils");
+const {
+  calculateCouponDiscount,
+  calculateGoldCategoryCouponDiscount,
+  calculatePolkiCategoryCouponDiscount,
+  calculateMoissaniteCategoryCouponDiscount,
+  productDiscountFor,
+  calculateProductDiscount,
+} = require("./checkoutUtils");
+const { categoryCouponForPricingKey } = require("../constants/categoryCoupon.constants");
 const {
   resolveActiveCategoryCouponForPricingKey,
+  categoryCouponAppliesTo,
 } = require("../controllers/categoryCoupon.controller");
 
 const roundMoney = (value) =>
@@ -20,13 +29,34 @@ const repriceCartItem = async (item, product) => {
   let discount = 0;
   let label = "";
 
-  if (item.categoryCouponApplied) {
+  const productTotal = basePrice * quantity;
+  const productDiscountConfig = productDiscountFor(product);
+  const productDiscount = roundMoney(calculateProductDiscount(productDiscountConfig, productTotal));
+  if (productDiscount > 0) {
+    discount = productDiscount;
+    label = productDiscountConfig.productDiscountType === "percentage" ? `${productDiscountConfig.productDiscountValue}% OFF` : `₹${productDiscountConfig.productDiscountValue} OFF`;
+    item.categoryCouponApplied = false;
+  } else if (item.categoryCouponApplied) {
     const settings = await resolveSettings(product);
-    const coupon = await resolveActiveCategoryCouponForPricingKey(settings.key);
+    const coupon = await resolveActiveCategoryCouponForPricingKey(settings.key, product.SKU);
     if (coupon) {
       try {
+        const categoryCouponType = categoryCouponForPricingKey(settings.key);
+        const isGoldCoupon = categoryCouponType === "gold";
+        const isPolkiCoupon = categoryCouponType === "polki";
+        const appliesTo = categoryCouponAppliesTo(categoryCouponType, coupon.appliesTo);
+        const productTotal = basePrice * quantity;
+        const eligibleValue = isGoldCoupon
+          ? Number(price.diamondValue || 0) * quantity
+          : isPolkiCoupon || appliesTo === "making"
+            ? Number(price.makingValue || price.makingCharge || 0) * quantity
+            : Number(price.moissaniteValue || 0) * quantity;
         discount = roundMoney(
-          calculateCouponDiscount(coupon, basePrice * quantity),
+          isGoldCoupon
+            ? calculateGoldCategoryCouponDiscount(coupon, eligibleValue)
+            : isPolkiCoupon
+              ? calculatePolkiCategoryCouponDiscount(coupon, eligibleValue, productTotal)
+              : calculateMoissaniteCategoryCouponDiscount(coupon, eligibleValue, productTotal),
         );
         label =
           coupon.discountType === "percentage"
@@ -44,7 +74,7 @@ const repriceCartItem = async (item, product) => {
   item.basePrice = basePrice;
   item.categoryCouponDiscount = discount;
   item.categoryCouponLabel = label;
-  item.lineTotal = roundMoney(Math.max(0, basePrice * quantity - discount));
+  item.lineTotal = roundMoney(basePrice * quantity - discount);
   return { price, basePrice, discount, lineTotal: item.lineTotal };
 };
 

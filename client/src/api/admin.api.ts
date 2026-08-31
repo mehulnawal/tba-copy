@@ -71,9 +71,12 @@ export interface Coupon {
   activeStatus: boolean;
 }
 export type CategoryCouponCategory = "gold" | "polki" | "moissanite";
+export type CategoryCouponAppliesTo = "diamond" | "making" | "moissanite";
 export interface CategoryCoupon extends Coupon {
   category: CategoryCouponCategory;
+  appliesTo: CategoryCouponAppliesTo;
 }
+export type CategoryCouponPayload = Omit<Coupon, "_id" | "usedCount"> & { appliesTo?: CategoryCouponAppliesTo };
 export interface Partner {
   _id: string;
   referenceId: string;
@@ -173,7 +176,7 @@ export const adminApi = {
     apiRequest<CategoryCoupon[]>("/admin/category-coupons"),
   createCategoryCoupon: (
     category: CategoryCouponCategory,
-    p: Omit<Coupon, "_id" | "usedCount">,
+    p: CategoryCouponPayload,
   ) =>
     apiRequest<CategoryCoupon>(`/admin/category-coupons/${category}`, {
       method: "POST",
@@ -181,7 +184,7 @@ export const adminApi = {
     }),
   updateCategoryCoupon: (
     category: CategoryCouponCategory,
-    p: Partial<Coupon>,
+    p: Partial<CategoryCouponPayload>,
   ) =>
     apiRequest<CategoryCoupon>(`/admin/category-coupons/${category}`, {
       method: "PATCH",

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { ChevronDown, ChevronLeft, Share2 } from "lucide-react";
-import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { ApiRequestError, apiRequest } from "../api/client";
 import type { PriceBreakdown, Product } from "../types";
 import { useB2BSessionGuard } from "../hooks/useB2BSessionGuard";
@@ -121,7 +121,6 @@ export default function B2BProductDetails() {
   useB2BSessionGuard();
   const { identifier = "" } = useParams();
   const navigate = useNavigate();
-  const location = useLocation();
   const [product, setProduct] = useState<Product | null>(null);
   const [error, setError] = useState("");
   const [activeMediaIndex, setActiveMediaIndex] = useState(0);
@@ -165,6 +164,7 @@ export default function B2BProductDetails() {
       </main>
     );
   const displayPrice = selectedPrice.b2bFinalPrice ?? selectedPrice.finalPrice;
+  const b2cReferencePrice = selectedPrice.b2cFinalPrice;
   const priceForBreakup: PriceBreakdown = {
     ...selectedPrice,
     finalPrice: displayPrice,
@@ -225,7 +225,7 @@ export default function B2BProductDetails() {
       />
       <main className="min-h-screen bg-[var(--color-bg)] px-5 py-10 md:px-12">
         <Link
-          to="/b2b/catalog"
+          to={`/b2b/catalog?metal=${product.metal}`}
           className="inline-flex items-center gap-1 text-sm text-[var(--color-teal)]"
         >
           <ChevronLeft size={16} /> Back to catalogue
@@ -356,6 +356,11 @@ export default function B2BProductDetails() {
                 <span className="mt-1 block text-[11px] text-stone-500">
                   Inclusive of all taxes
                 </span>
+                {b2cReferencePrice !== undefined && (
+                  <span className="mt-1 block text-xs text-stone-600">
+                    B2C Price (Incl. GST): {formatINR(b2cReferencePrice)}
+                  </span>
+                )}
                 <span className="block text-[11px] text-stone-500">
                   *This is an estimated price, actual price may differ as per
                   actual weights.

@@ -687,6 +687,7 @@ export function ProductCard({
           : targetPriceObj.finalPrice,
       )
     : 0;
+  const b2cReferencePrice = b2b ? targetPriceObj?.b2cFinalPrice : undefined;
   const isSilver = product.metal === "silver";
 
   return (
@@ -800,15 +801,23 @@ export function ProductCard({
           </h3>
         </Link>
 
-        <div className="flex items-baseline space-x-1.5 pt-1">
-          <span className="text-lg sm:text-base font-bold text-gray-900">
-            {"\u20B9"}
-            {displaysPrice.toLocaleString("en-IN")}
-          </span>
-          {!isSilver && (
-            <span className="text-xs text-gray-400 font-normal">
-              ({activeKarat})
+        <div className="pt-1">
+          <div className="flex items-baseline space-x-1.5">
+            <span className="text-lg sm:text-base font-bold text-gray-900">
+              {"\u20B9"}
+              {displaysPrice.toLocaleString("en-IN")}
             </span>
+            {!isSilver && (
+              <span className="text-xs text-gray-400 font-normal">
+                ({activeKarat})
+              </span>
+            )}
+          </div>
+          {b2cReferencePrice !== undefined && (
+            <p className="mt-1 text-xs text-gray-500">
+              B2C Price (Incl. GST): {"\u20B9"}
+              {Math.round(b2cReferencePrice).toLocaleString("en-IN")}
+            </p>
           )}
         </div>
 

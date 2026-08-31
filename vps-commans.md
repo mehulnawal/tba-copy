@@ -62,4 +62,16 @@ pm2 logs tba-backend --lines 50
 cat /etc/nginx/sites-available/*.conf | grep -A 3 "root"
 ```
 
-Ye chala ke bata do, taaki main confirm kar sakoon ki `npm run build` ke baad Nginx sahi jagah se serve kar raha hai ya nahi.
+```bash
+ B2B catalog page: /C:/Users/Admin/Desktop/TBA/tba-website - Copy/client/src/pages/B2BCatalog.tsx
+  - B2B product Price Breakup (Silver + Gold): /C:/Users/Admin/Desktop/TBA/tba-website - Copy/client/
+    src/pages/B2BProductDetails.tsx
+    Shared breakup component: /C:/Users/Admin/Desktop/TBA/tba-website - Copy/client/src/components/
+    PriceBreakup.tsx
+
+  - B2C catalog page: /C:/Users/Admin/Desktop/TBA/tba-website - Copy/client/src/pages/ProductPage.tsx
+  - B2C product Price Breakup (Silver + Gold): /C:/Users/Admin/Desktop/TBA/tba-website - Copy/client/
+    src/pages/ProductDetails.tsx
+    Shared breakup component: /C:/Users/Admin/Desktop/TBA/tba-website - Copy/client/src/components/
+    PriceBreakup.tsx
+```

@@ -44,6 +44,8 @@ type CategoryCoupon = {
   discountType: "percentage" | "flat";
   discountValue: number;
   discount: number;
+  appliesTo: "diamond" | "making" | "moissanite" | "product";
+  isProductDiscount?: boolean;
 };
 
 type Review = {
@@ -272,6 +274,31 @@ export default function ProductDetails() {
       cancelled = true;
     };
   }, [product?.SKU, product?.metal, karat]);
+  useEffect(() => {
+    let cancelled = false;
+    if (!isAuthenticated || !product?.SKU) return;
+    void cartApi
+      .getCart()
+      .then((cart) => {
+        if (cancelled) return;
+        const applied = cart.items.some(
+          (item) =>
+            item.productId === product.SKU &&
+            item.karat === karat &&
+            item.categoryCouponApplied,
+        );
+        setAppliedCouponSkus((current) => {
+          const next = { ...current };
+          if (applied) next[product.SKU] = true;
+          else delete next[product.SKU];
+          return next;
+        });
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated, product?.SKU, karat]);
   if (!product) {
     return (
       <>
@@ -304,17 +331,12 @@ export default function ProductDetails() {
     roundMoney(Number(activePriceObj.totalCost) || 0),
   );
   const couponApplied = Boolean(
-    categoryCoupon && appliedCouponSkus[product.SKU],
+    categoryCoupon && (categoryCoupon.isProductDiscount || appliedCouponSkus[product.SKU]),
   );
   const couponDiscount = couponApplied
-    ? Math.min(
-        originalSubtotal,
-        Math.max(0, roundMoney(Number(categoryCoupon?.discount) || 0)),
-      )
+    ? Math.max(0, roundMoney(Number(categoryCoupon?.discount) || 0))
     : 0;
-  const subtotalAfterCoupon = roundMoney(
-    Math.max(0, originalSubtotal - couponDiscount),
-  );
+  const subtotalAfterCoupon = roundMoney(originalSubtotal - couponDiscount);
   const discountedGst = roundMoney(subtotalAfterCoupon * 0.03);
   const displayedPrice = couponApplied
     ? {
@@ -889,14 +911,23 @@ export default function ProductDetails() {
                   </button>
                 </div>
               </div>
-              {categoryCoupon && (
+              {categoryCoupon?.isProductDiscount && (
+                <div className="order-3 border-b border-stone-200/80 pb-3 text-xs text-stone-600 lg:order-3">
+                  <span className="font-semibold text-stone-800">Product discount: {couponLabel}</span>
+                  <span className="block text-[11px] text-stone-500">Applied to this product before GST.</span>
+                </div>
+              )}              {categoryCoupon && !categoryCoupon.isProductDiscount && (
                 <div className="order-3 flex items-center justify-between gap-3 border-b border-stone-200/80 pb-3 lg:order-3">
                   <div className="text-xs text-stone-600">
                     <span className="font-semibold text-stone-800">
                       Category offer: {couponLabel}
                     </span>
                     <span className="block text-[11px] text-stone-500">
-                      Applied to this product before GST.
+                      {isGold
+                        ? "Applied on the Diamond Total."
+                        : categoryCoupon.appliesTo === "moissanite"
+                          ? "Applied on Moissanite."
+                        : "Applied on Design & Craftsmanship charges."}
                     </span>
                   </div>
                   <button
@@ -970,7 +1001,8 @@ export default function ProductDetails() {
                     ? {
                         label: couponLabel,
                         discount: couponDiscount,
-                        subtotalAfterCoupon,
+                        appliesTo: categoryCoupon!.appliesTo === "product" ? "making" : categoryCoupon!.appliesTo,
+                        isProductDiscount: categoryCoupon!.isProductDiscount,
                       }
                     : undefined
                 }

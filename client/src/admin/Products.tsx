@@ -49,6 +49,17 @@ type FormField =
   | "moissaniteCaratWeight"
   | "grossWeight";
 type FormErrors = Partial<Record<FormField, string>>;
+type GoldImportRow = {
+  row: number;
+  title: string;
+  subCategory: string;
+  gross14: number;
+  gross18: number;
+  publish: boolean;
+  payload?: Partial<Product>;
+  fieldResults: { header: string; valid: boolean; message?: string }[];
+  error?: string;
+};
 type ProductForm = {
   SKU: string;
   title: string;
@@ -73,6 +84,8 @@ type ProductForm = {
   isBestSeller: boolean;
   isNewProduct: boolean;
   isPrimeCollection: boolean;
+  productDiscountType: "" | "percentage" | "flat" | null;
+  productDiscountValue: number;
   isActive: boolean;
 };
 const CAD_FORM_BASE_URL =
@@ -159,6 +172,40 @@ const CadSection = ({
   );
 };
 const STANDARD_RING_SIZES = Array.from({ length: 21 }, (_, index) => index + 5);
+const GOLD_IMPORT_HEADERS = [
+  "SKU", "Product Title", "Description", "Subcategory", "14KT Gross Weight (g)",
+  "18KT Gross Weight (g)", "Total Number of Diamonds", "Certificate Weight (g)",
+  "Certificates", "Sizes", "Colors", "Image URL 1", "Image URL 2", "Image URL 3",
+  "Image URL 4", "Image URL 5", "Image URL 6", "Video Link", "Best Seller",
+  "New Arrival", "Prime Collection", "Publish Product", "Product Discount Type",
+  "Product Discount Value",
+  ...Array.from({ length: 10 }, (_, index) => index + 1).flatMap((n) => [
+    `Diamond ${n} Category`, `Diamond ${n} Size`, `Diamond ${n} Sub Type`,
+    `Diamond ${n} Colour / Clarity`, `Diamond ${n} Carat Weight`,
+    `Diamond ${n} Rate per Ct (B2B)`, `Diamond ${n} Rate per Ct (B2C)`,
+  ]),
+] as const;
+const GOLD_IMPORT_SAMPLE: Record<string, string | number> = {
+  SKU: "", "Product Title": "Classic Gold Diamond Ring", Description: "18KT gold ring with a round diamond.",
+  Subcategory: "Rings", "14KT Gross Weight (g)": 4.2, "18KT Gross Weight (g)": 4.5,
+  "Total Number of Diamonds": 1, "Certificate Weight (g)": 0.1, Certificates: "IGI",
+  Sizes: "5,6,7,8,9", Colors: "Yellow Gold,White Gold", "Image URL 1": "https://example.com/ring-yellow-1.jpg",
+  "Image URL 2": "https://example.com/ring-yellow-2.jpg", "Image URL 3": "https://example.com/ring-white-1.jpg",
+  "Video Link": "https://example.com/ring-video", "Best Seller": "Yes", "New Arrival": "No",
+  "Prime Collection": "Yes", "Publish Product": "Yes", "Product Discount Type": "percentage",
+  "Product Discount Value": 10, "Diamond 1 Category": "Round", "Diamond 1 Size": "Standard",
+  "Diamond 1 Sub Type": "Round Brilliant", "Diamond 1 Colour / Clarity": "EF/VVSVS",
+  "Diamond 1 Carat Weight": 0.25, "Diamond 1 Rate per Ct (B2B)": 50000,
+  "Diamond 1 Rate per Ct (B2C)": 60000,
+};
+const downloadGoldImportTemplate = (sample = GOLD_IMPORT_SAMPLE) => {
+  const sheet = XLSX.utils.json_to_sheet([sample], { header: [...GOLD_IMPORT_HEADERS] });
+  sheet["!cols"] = GOLD_IMPORT_HEADERS.map((header) => ({ wch: Math.max(15, Math.min(30, header.length + 2)) }));
+  sheet["!autofilter"] = { ref: XLSX.utils.encode_range(XLSX.utils.decode_range(sheet["!ref"] || "A1")) };
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, sheet, "Gold Products");
+  XLSX.writeFile(workbook, "gold-product-import-template.xlsx");
+};
 const STONE_CATEGORIES = ["Center", "Small"];
 const STONE_SUB_TYPES = [
   "Round Brilliant",
@@ -196,6 +243,8 @@ const blank = (): ProductForm => ({
   isBestSeller: false,
   isNewProduct: false,
   isPrimeCollection: false,
+  productDiscountType: "",
+  productDiscountValue: 0,
   isActive: true,
 });
 const categoryId = (value?: string | { _id: string } | null) =>
@@ -762,7 +811,176 @@ export default function Products() {
     [newDiamondClarity, setNewDiamondClarity] = useState("");
   const firstInvalidRef = useRef<HTMLElement | null>(null);
   const [categoryFilter, setCategoryFilter] = useState("");
-  const filteredItems = useMemo(
+  const [goldImportRows, setGoldImportRows] = useState<GoldImportRow[]>([]);
+  const [importingGold, setImportingGold] = useState(false);
+  const goldImportInputRef = useRef<HTMLInputElement | null>(null);
+  const downloadCurrentGoldTemplate = () => {
+    const root = categories.find((category) => !category.parent && category.name.trim().toLowerCase() === "gold");
+    const subCategory = root && categories.find((category) => categoryId(category.parent) === root._id);
+    if (!subCategory) {
+      showToast("Create a Gold subcategory first, then download the import template.", "error");
+      return;
+    }
+    downloadGoldImportTemplate({
+      ...GOLD_IMPORT_SAMPLE,
+      Subcategory: subCategory.name,
+      Certificates: "",
+      "Total Number of Diamonds": 0,
+      "Certificate Weight (g)": "",
+      Colors: "Yellow Gold",
+      "Image URL 2": "",
+      "Image URL 3": "",
+      "Diamond 1 Category": "",
+      "Diamond 1 Size": "",
+      "Diamond 1 Sub Type": "",
+      "Diamond 1 Colour / Clarity": "",
+      "Diamond 1 Carat Weight": "",
+      "Diamond 1 Rate per Ct (B2B)": "",
+      "Diamond 1 Rate per Ct (B2C)": "",
+    });
+  };
+  const previewGoldImport = async (file: File) => {
+    const workbook = XLSX.read(await file.arrayBuffer(), { type: "array" });
+    if (!workbook.SheetNames.length) {
+      showToast("The workbook does not contain a sheet.", "error");
+      return;
+    }
+    const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(
+      workbook.Sheets[workbook.SheetNames[0]], { defval: "" },
+    );
+    const goldRoot = categories.find((category) => !category.parent && category.name.trim().toLowerCase() === "gold");
+    const cell = (row: Record<string, unknown>, name: string) => String(row[name] ?? "").trim();
+    const boolean = (raw: string, label: string, errors: string[]) => {
+      if (!raw) return false;
+      const value = raw.toLowerCase();
+      if (["yes", "true", "1"].includes(value)) return true;
+      if (["no", "false", "0"].includes(value)) return false;
+      errors.push(`${label} must be Yes/No, True/False, or 1/0.`);
+      return false;
+    };
+    const exact = (values: string[], raw: string) => values.find((item) => item.toLowerCase() === raw.toLowerCase());
+    setGoldImportRows(rows.map((row, index) => {
+      const errors: string[] = [];
+      const title = cell(row, "Product Title");
+      const subCategoryName = cell(row, "Subcategory");
+      const gross14Raw = cell(row, "14KT Gross Weight (g)");
+      const gross18Raw = cell(row, "18KT Gross Weight (g)");
+      const gross14 = Number(gross14Raw), gross18 = Number(gross18Raw);
+      const totalRaw = cell(row, "Total Number of Diamonds");
+      const totalNumberOfDiamonds = Number(totalRaw);
+      const certificateWeightRaw = cell(row, "Certificate Weight (g)");
+      const certificateWeight = Number(certificateWeightRaw);
+      if (!title) errors.push("Product Title is required.");
+      if (!goldRoot) errors.push("Gold root category is not configured.");
+      const subCategory = goldRoot && categories.find((category) => categoryId(category.parent) === goldRoot._id && category.name.toLowerCase() === subCategoryName.toLowerCase());
+      if (!subCategoryName) errors.push("Subcategory is required.");
+      else if (!subCategory) errors.push(`Gold subcategory '${subCategoryName}' was not found.`);
+      if (!(gross14Raw && Number.isFinite(gross14) && gross14 > 0)) errors.push("14KT Gross Weight (g) must be greater than 0.");
+      if (!(gross18Raw && Number.isFinite(gross18) && gross18 > 0)) errors.push("18KT Gross Weight (g) must be greater than 0.");
+      if (!(totalRaw && Number.isInteger(totalNumberOfDiamonds) && totalNumberOfDiamonds >= 0)) errors.push("Total Number of Diamonds must be a whole number of 0 or more.");
+      if (certificateWeightRaw && !(Number.isFinite(certificateWeight) && certificateWeight >= 0)) errors.push("Certificate Weight (g) must be 0 or more.");
+      const certificates = cell(row, "Certificates").split("|").map((value) => value.trim()).filter(Boolean).map((name) => {
+        const found = certificateOptions.find((item) => item.name.toLowerCase() === name.toLowerCase());
+        if (!found) errors.push(`Certificate '${name}' was not found.`);
+        return found?._id || "";
+      }).filter(Boolean);
+      const sizesRaw = cell(row, "Sizes");
+      const sizes = sizesRaw ? sizesRaw.split(",").map((value) => Number(value.trim())) : [];
+      if (sizesRaw && sizes.some((size) => !Number.isInteger(size) || size < 5 || size > 25)) errors.push("Sizes must be comma-separated whole numbers from 5 to 25.");
+      const colors = cell(row, "Colors").split(",").map((value) => value.trim()).filter(Boolean).map((color) => exact([YELLOW, "White Gold", "Rose Gold"], color));
+      if (!colors.length) errors.push("Colors must include at least one allowed Gold color.");
+      if (colors.some((color) => !color)) errors.push("Colors only allow Yellow Gold, White Gold, or Rose Gold.");
+      const images = Array.from({ length: 6 }, (_, imageIndex) => cell(row, `Image URL ${imageIndex + 1}`)).map((url, imageIndex) => url ? { url, source: "link" as const, slot: imageIndex + 1 } : undefined).filter(Boolean) as Image[];
+      if (!images.length) errors.push("At least one Image URL is required.");
+      images.forEach((image) => {
+        try { new URL(image.url); } catch { errors.push(`Image URL ${image.slot} must be a valid URL.`); }
+        const requiredColor = colorForSlot({ metal: "gold" }, image.slot || 1);
+        if (requiredColor && !colors.includes(requiredColor)) errors.push(`Image URL ${image.slot} requires ${requiredColor} in Colors.`);
+      });
+      const videoLink = cell(row, "Video Link");
+      if (videoLink) try { new URL(videoLink); } catch { errors.push("Video Link must be a valid URL."); }
+      const isBestSeller = boolean(cell(row, "Best Seller"), "Best Seller", errors);
+      const isNewProduct = boolean(cell(row, "New Arrival"), "New Arrival", errors);
+      const isPrimeCollection = boolean(cell(row, "Prime Collection"), "Prime Collection", errors);
+      const publish = boolean(cell(row, "Publish Product"), "Publish Product", errors);
+      const productDiscountTypeRaw = cell(row, "Product Discount Type").toLowerCase();
+      const productDiscountType = productDiscountTypeRaw === "" ? null : productDiscountTypeRaw as "percentage" | "flat";
+      const discountRaw = cell(row, "Product Discount Value");
+      const productDiscountValue = Number(discountRaw || 0);
+      if (productDiscountType && !["percentage", "flat"].includes(productDiscountType)) errors.push("Product Discount Type must be percentage or flat.");
+      if (productDiscountType && !(Number.isFinite(productDiscountValue) && productDiscountValue > 0)) errors.push("Product Discount Value must be greater than 0 when a discount type is set.");
+      if (!productDiscountType && discountRaw && productDiscountValue !== 0) errors.push("Product Discount Type is required when a discount value is provided.");
+      if (productDiscountType === "percentage" && productDiscountValue > 100) errors.push("Percentage discount cannot exceed 100.");
+      const diamonds: DiamondEntry[] = [];
+      let hasDiamondFields = false;
+      for (let diamondIndex = 1; diamondIndex <= 10; diamondIndex++) {
+        const group = ["Category", "Size", "Sub Type", "Colour / Clarity", "Carat Weight", "Rate per Ct (B2B)", "Rate per Ct (B2C)"]
+          .map((field) => cell(row, `Diamond ${diamondIndex} ${field}`));
+        if (!group.some(Boolean)) continue;
+        hasDiamondFields = true;
+        const [categoryName, size, subType, colorClarity, caratRaw, b2bRaw, b2cRaw] = group;
+        if (!categoryName || !subType || !colorClarity || !caratRaw || !b2bRaw || !b2cRaw) {
+          errors.push(`Diamond ${diamondIndex} requires Category, Sub Type, Colour / Clarity, Carat Weight, B2B rate, and B2C rate.`);
+          continue;
+        }
+        const categoryMatches = diamondCategories.filter((item) => item.categoryName.toLowerCase() === categoryName.toLowerCase());
+        const diamondMaster = categoryMatches.find((item) => item.size.toLowerCase() === size.toLowerCase()) || (categoryMatches.length === 1 && !size ? categoryMatches[0] : undefined);
+        if (!diamondMaster) errors.push(`Diamond ${diamondIndex} Category/Size does not match existing diamond master data.`);
+        if (!diamondSubcategories.some((item) => item.toLowerCase() === subType.toLowerCase())) errors.push(`Diamond ${diamondIndex} Sub Type '${subType}' was not found.`);
+        if (!diamondClarities.some((item) => item.name.toLowerCase() === colorClarity.toLowerCase())) errors.push(`Diamond ${diamondIndex} Colour / Clarity '${colorClarity}' was not found.`);
+        const caratWeight = Number(caratRaw), ratePerCtB2B = Number(b2bRaw), ratePerCtB2C = Number(b2cRaw);
+        if (!(Number.isFinite(caratWeight) && caratWeight >= 0)) errors.push(`Diamond ${diamondIndex} Carat Weight must be 0 or more.`);
+        if (!(Number.isFinite(ratePerCtB2B) && ratePerCtB2B >= 0)) errors.push(`Diamond ${diamondIndex} Rate per Ct (B2B) must be 0 or more.`);
+        if (!(Number.isFinite(ratePerCtB2C) && ratePerCtB2C >= 0)) errors.push(`Diamond ${diamondIndex} Rate per Ct (B2C) must be 0 or more.`);
+        if (diamondMaster) diamonds.push({ diamondCategoryRef: diamondMaster._id, category: diamondMaster.categoryName, subType, colorClarity, caratWeight, ratePerCtB2B, ratePerCtB2C });
+      }
+      if (totalNumberOfDiamonds === 0 && hasDiamondFields) errors.push("All Diamond groups must be blank when Total Number of Diamonds is 0.");
+      const diamondWeight = diamonds.reduce((sum, diamond) => sum + Number(diamond.caratWeight || 0), 0) / 5;
+      if (gross14Raw && gross14 < diamondWeight) errors.push("14KT Gross Weight cannot be less than total diamond weight.");
+      if (gross18Raw && gross18 < diamondWeight) errors.push("18KT Gross Weight cannot be less than total diamond weight.");
+      const fieldResults = GOLD_IMPORT_HEADERS.map((header) => {
+        const value = cell(row, header);
+        const simplified = header.toLowerCase().replace(/\s*\([^)]*\)/g, "");
+        const message = errors.find((item) => {
+          const issue = item.toLowerCase();
+          if (/^diamond \d+/.test(header)) return issue.includes(header.match(/^diamond \d+/i)?.[0]?.toLowerCase() || "");
+          if (header.startsWith("Image URL")) return issue.includes("image url") || issue.includes("at least one image");
+          if (header === "Colors") return issue.includes("colors") || issue.includes("color");
+          if (header === "Certificates") return issue.includes("certificate '");
+          return issue.includes(simplified);
+        });
+        return { header, valid: !message, message };
+      });
+      return {
+        row: index + 2, title, subCategory: subCategoryName, gross14, gross18, publish, fieldResults,
+        payload: subCategory && goldRoot ? {
+          SKU: cell(row, "SKU"), title, description: cell(row, "Description"), metal: "gold",
+          mainCategory: goldRoot._id, subCategory: subCategory._id, images, videoLink, sizes,
+          colors: colors.filter((color): color is string => Boolean(color)), certificates: certificates as unknown as Product["certificates"],
+          grossWeight: { "14kt": gross14, "18kt": gross18 }, diamonds, totalNumberOfDiamonds,
+          certificateWeight: certificateWeightRaw ? certificateWeight : undefined,
+          isBestSeller, isNewProduct, isPrimeCollection, isActive: publish,
+          productDiscountType, productDiscountValue: productDiscountType ? productDiscountValue : 0,
+        } : undefined,
+        error: errors.length ? errors.join(" ") : undefined,
+      };
+    }));
+  };
+  const confirmGoldImport = async () => {
+    const valid = goldImportRows.filter((row) => !row.error && row.payload);
+    if (!valid.length) return showToast("No valid Gold rows to import.", "error");
+    setImportingGold(true);
+    let created = 0;
+    const failures: GoldImportRow[] = [];
+    for (const row of valid) {
+      try { await adminApi.createProduct(row.payload!); created++; }
+      catch (error) { failures.push({ ...row, error: error instanceof Error ? error.message : "Could not import this row." }); }
+    }
+    setGoldImportRows(failures);
+    setImportingGold(false);
+    await load();
+    showToast(`${created} Gold product${created === 1 ? "" : "s"} imported.`, created ? "success" : "error");
+  };  const filteredItems = useMemo(
     () =>
       !categoryFilter
         ? items
@@ -1163,6 +1381,8 @@ export default function Products() {
         : {};
     return {
       ...productForm,
+      productDiscountType: form.productDiscountType || null,
+      productDiscountValue: form.productDiscountType ? form.productDiscountValue : 0,
       price: form.metal === "silver" ? silverTotal : form.price,
       ...certificateFields,
       certificates: form.certificates as unknown as Product["certificates"],
@@ -1334,12 +1554,25 @@ export default function Products() {
             >
               Export Excel
             </button>
-            <button className="admin-primary" onClick={openCreate}>
+          <input ref={goldImportInputRef} type="file" accept=".xlsx,.xls" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) void previewGoldImport(file); event.currentTarget.value = ""; }} />
+          <button className="admin-secondary" onClick={downloadCurrentGoldTemplate}>
+            Download Gold Import Template
+          </button>
+          <button className="admin-secondary" onClick={() => goldImportInputRef.current?.click()}>
+            Import Gold Excel
+          </button>            <button className="admin-primary" onClick={openCreate}>
               + Add product
             </button>
           </div>
         </header>
-        <div className="mb-5 flex flex-wrap items-center gap-3">
+        {goldImportRows.length > 0 && (
+          <section className="admin-section mb-5">
+            <h2>Gold import preview</h2>
+            <p>Nothing has been saved yet. Confirming imports only valid rows; Publish Product controls Draft or Published status.</p>
+            <div className="admin-table-wrap mt-3"><table className="admin-table"><thead><tr><th>Row</th><th>Product</th><th>Subcategory</th><th>14KT / 18KT</th><th>Field validation</th></tr></thead><tbody>{goldImportRows.map((row) => <tr key={row.row}><td>{row.row}</td><td>{row.title || "—"}</td><td>{row.subCategory || "—"}</td><td>{row.gross14 || "—"} / {row.gross18 || "—"} g</td><td>{row.error ? <><span className="text-red-700">{row.error}</span><details className="mt-2"><summary>Show field-by-field result</summary><ul className="mt-2 list-disc pl-5 text-xs">{row.fieldResults.filter((field) => field.message || field.header === "Product Title" || field.header === "Subcategory" || field.header.includes("Gross Weight") || field.header === "Total Number of Diamonds" || field.header === "Colors" || field.header.startsWith("Image URL")).map((field) => <li key={field.header} className={field.valid ? "text-green-700" : "text-red-700"}>{field.valid ? "?" : "?"} {field.header}{field.message ? `: ${field.message}` : ""}</li>)}</ul></details></> : <span className="text-green-700">Valid — all supplied fields passed — {row.publish ? "Published" : "Draft"}</span>}</td></tr>)}</tbody></table></div>
+            <div className="mt-3 flex gap-3"><button className="admin-primary" disabled={importingGold || !goldImportRows.some((row) => !row.error)} onClick={() => void confirmGoldImport()}>{importingGold ? "Importing..." : "Confirm Gold Import"}</button><button className="admin-secondary" disabled={importingGold} onClick={() => setGoldImportRows([])}>Cancel</button></div>
+          </section>
+        )}        <div className="mb-5 flex flex-wrap items-center gap-3">
           <label className="flex items-center gap-2 text-sm font-medium text-[var(--color-text)]">
             Category
             <select
@@ -1678,7 +1911,13 @@ export default function Products() {
         onRefresh={() => void refreshCadStatus()}
         refreshing={refreshingCad}
         showError={(message) => showToast(message, "error")}
-      />
+      />        <section className="admin-section">
+          <div className="admin-section-heading"><span>Offer</span><div><h2>Product Discount</h2><p>Optional. This takes priority over category-wise coupons.</p></div></div>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <Field label="Discount Type"><select className="admin-input" value={form.productDiscountType || ""} onChange={(e) => set("productDiscountType", e.target.value as ProductForm["productDiscountType"])}><option value="">No discount</option><option value="percentage">Percentage (%)</option><option value="flat">Flat amount (INR)</option></select></Field>
+            <Field label="Discount Value"><input className="admin-input" disabled={!form.productDiscountType} type="number" min="0" step="0.01" value={form.productDiscountValue || ""} onChange={(e) => set("productDiscountValue", number(e.target.value))} /></Field>
+          </div>
+        </section>
       {form.metal === "gold" ? (
         <GoldWeightBlock
           karat="18kt"

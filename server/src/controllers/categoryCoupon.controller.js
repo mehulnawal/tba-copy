@@ -8,6 +8,45 @@ const {
   categoryCouponForPricingKey,
 } = require("../constants/categoryCoupon.constants");
 
+// Development-only test coupons. These are never written to MongoDB and are
+// deliberately restricted to the two supplied SKUs.
+const LOCAL_TEST_COUPONS = Object.freeze({
+  "TBA-GLD-NL0001": {
+    category: "gold",
+    code: "LOCAL-GOLD-1",
+    discountType: DISCOUNT_TYPES.PERCENTAGE,
+    discountValue: 1,
+    minimumCartValue: 0,
+    expiryDate: new Date("2099-01-01T00:00:00.000Z"),
+    usageLimit: null,
+    usedCount: 0,
+    activeStatus: true,
+  },
+  "TBA-SLV-SLVP0001": {
+    category: "polki",
+    code: "LOCAL-POLKI-1",
+    discountType: DISCOUNT_TYPES.PERCENTAGE,
+    discountValue: 1,
+    minimumCartValue: 0,
+    expiryDate: new Date("2099-01-01T00:00:00.000Z"),
+    usageLimit: null,
+    usedCount: 0,
+    activeStatus: true,
+  },
+  "TBA-SLV-MO0001": {
+    category: "moissanite",
+    code: "LOCAL-MOISSANITE-1",
+    discountType: DISCOUNT_TYPES.PERCENTAGE,
+    discountValue: 1,
+    minimumCartValue: 0,
+    appliesTo: "moissanite",
+    expiryDate: new Date("2099-01-01T00:00:00.000Z"),
+    usageLimit: null,
+    usedCount: 0,
+    activeStatus: true,
+  },
+});
+
 const couponFields = [
   "code",
   "discountType",
@@ -17,6 +56,11 @@ const couponFields = [
   "usageLimit",
   "activeStatus",
 ];
+const categoryCouponAppliesTo = (category, appliesTo) => {
+  if (category === CATEGORY_COUPON_CATEGORIES.GOLD) return "diamond";
+  if (category === CATEGORY_COUPON_CATEGORIES.POLKI) return "making";
+  return appliesTo === "moissanite" ? "moissanite" : "making";
+};
 const validatePayload = (payload, partial = false) => {
   if (
     !partial &&
@@ -63,6 +107,11 @@ const validatePayload = (payload, partial = false) => {
     Number.isNaN(new Date(payload.expiryDate).getTime())
   )
     throw new ApiError(400, "Invalid expiry date");
+  if (
+    payload.appliesTo !== undefined &&
+    !["diamond", "making", "moissanite"].includes(payload.appliesTo)
+  )
+    throw new ApiError(400, "Invalid coupon target");
 };
 const categoryIsValid = (category) =>
   Object.values(CATEGORY_COUPON_CATEGORIES).includes(category);
@@ -92,6 +141,7 @@ const createCategoryCoupon = asyncHandler(async (req, res) => {
   const coupon = await CategoryCoupon.create({
     category,
     ...data,
+    appliesTo: categoryCouponAppliesTo(category, req.body.appliesTo),
     createdBy: req.admin._id,
   });
   res
@@ -112,6 +162,7 @@ const updateCategoryCoupon = asyncHandler(async (req, res) => {
           ? String(req.body[field]).toUpperCase()
           : req.body[field];
   });
+  coupon.appliesTo = categoryCouponAppliesTo(category, req.body.appliesTo ?? coupon.appliesTo);
   await coupon.save();
   res
     .status(200)
@@ -126,15 +177,21 @@ const deleteCategoryCoupon = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, null, "Category coupon deleted successfully"));
 });
-const resolveActiveCategoryCouponForPricingKey = async (pricingKey) => {
+const resolveActiveCategoryCouponForPricingKey = async (
+  pricingKey,
+  productSku,
+) => {
   const category = categoryCouponForPricingKey(pricingKey);
-  return category
-    ? CategoryCoupon.findOne({
-        category,
-        activeStatus: true,
-        expiryDate: { $gt: new Date() },
-      }).lean()
-    : null;
+  if (!category) return null;
+  if (process.env.NODE_ENV !== "production") {
+    const coupon = LOCAL_TEST_COUPONS[String(productSku || "")];
+    return coupon?.category === category ? coupon : null;
+  }
+  return CategoryCoupon.findOne({
+    category,
+    activeStatus: true,
+    expiryDate: { $gt: new Date() },
+  }).lean();
 };
 module.exports = {
   listCategoryCoupons,
@@ -142,4 +199,5 @@ module.exports = {
   updateCategoryCoupon,
   deleteCategoryCoupon,
   resolveActiveCategoryCouponForPricingKey,
+  categoryCouponAppliesTo,
 };

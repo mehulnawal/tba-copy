@@ -5,9 +5,18 @@ const ApiResponse = require("../utils/ApiResponse");
 const asyncHandler = require("../utils/asyncHandler");
 const { toProductResponse, slugify } = require("../services/catalog.service");
 const { calculatePrice, resolveSettings } = require("../utils/priceCalculator");
-const { calculateCouponDiscount } = require("../utils/checkoutUtils");
+const {
+  calculateCouponDiscount,
+  calculateGoldCategoryCouponDiscount,
+  calculatePolkiCategoryCouponDiscount,
+  calculateMoissaniteCategoryCouponDiscount,
+  productDiscountFor,
+  calculateProductDiscount,
+} = require("../utils/checkoutUtils");
+const { categoryCouponForPricingKey } = require("../constants/categoryCoupon.constants");
 const {
   resolveActiveCategoryCouponForPricingKey,
+  categoryCouponAppliesTo,
 } = require("./categoryCoupon.controller");
 const { uploadToCloudinary } = require("../utils/cloudinaryUpload");
 const CategoryPricingConfig = require("../models/categoryPricingConfig.model");
@@ -186,7 +195,21 @@ const getCategoryCouponForProduct = asyncHandler(async (req, res) => {
     resolveSettings(product),
     calculatePrice(product, karat, "B2C"),
   ]);
-  const coupon = await resolveActiveCategoryCouponForPricingKey(settings.key);
+  const productTotal = Math.max(0, Number(price.totalCost) || 0);
+  const productDiscountConfig = productDiscountFor(product);
+  const productDiscount = calculateProductDiscount(productDiscountConfig, productTotal);
+  if (productDiscount > 0)
+    return res.status(200).json(new ApiResponse(200, {
+      coupon: {
+        discountType: productDiscountConfig.productDiscountType,
+        discountValue: productDiscountConfig.productDiscountValue,
+        discount: productDiscount,
+        appliesTo: "product",
+        isProductDiscount: true,
+      },
+    }, "Product discount available"));
+
+  const coupon = await resolveActiveCategoryCouponForPricingKey(settings.key, product.SKU);
   if (!coupon)
     return res
       .status(200)
@@ -194,8 +217,21 @@ const getCategoryCouponForProduct = asyncHandler(async (req, res) => {
         new ApiResponse(200, { coupon: null }, "No category coupon available"),
       );
   try {
-    const subtotal = Math.max(0, Number(price.totalCost) || 0);
-    const discount = calculateCouponDiscount(coupon, subtotal);
+    const categoryCouponType = categoryCouponForPricingKey(settings.key);
+    const isGoldCoupon = categoryCouponType === "gold";
+    const isPolkiCoupon = categoryCouponType === "polki";
+    const appliesTo = categoryCouponAppliesTo(categoryCouponType, coupon.appliesTo);
+    const productTotal = Math.max(0, Number(price.totalCost) || 0);
+    const eligibleValue = isGoldCoupon
+      ? Number(price.diamondValue || 0)
+      : isPolkiCoupon || appliesTo === "making"
+        ? Number(price.makingValue || price.makingCharge || 0)
+        : Number(price.moissaniteValue || 0);
+    const discount = isGoldCoupon
+      ? calculateGoldCategoryCouponDiscount(coupon, eligibleValue)
+      : isPolkiCoupon
+        ? calculatePolkiCategoryCouponDiscount(coupon, eligibleValue, productTotal)
+        : calculateMoissaniteCategoryCouponDiscount(coupon, eligibleValue, productTotal);
     return res
       .status(200)
       .json(
@@ -206,6 +242,7 @@ const getCategoryCouponForProduct = asyncHandler(async (req, res) => {
               discountType: coupon.discountType,
               discountValue: coupon.discountValue,
               discount,
+              appliesTo,
             },
           },
           "Category coupon available",
@@ -357,8 +394,13 @@ const nextProductSku = async (metal, subCategory, excludedProductId) => {
     ) + 1;
   return `${seriesPrefix}${String(nextNumber).padStart(4, "0")}`;
 };
+const validateProductDiscount = (body) => {
+  if (!body?.productDiscountType && !body?.productDiscountValue) return;
+  if (!["percentage", "flat"].includes(body.productDiscountType) || !Number.isFinite(Number(body.productDiscountValue)) || Number(body.productDiscountValue) <= 0 || (body.productDiscountType === "percentage" && Number(body.productDiscountValue) > 100)) throw new ApiError(400, "Provide a valid product discount");
+};
 const createProduct = asyncHandler(async (req, res) => {
   const { cadFolderUrl: _cadFolderUrl, ...requestBody } = req.body || {};
+  validateProductDiscount(requestBody);
   const body = normalizeGoldWeights(requestBody);
   await validateCategories(body);
   const variantBody = await normalizeAndValidateVariants(body);
@@ -387,6 +429,7 @@ const updateProduct = asyncHandler(async (req, res) => {
   const current = await Product.findById(req.params.productId);
   if (!current) throw new ApiError(404, "Product not found");
   const { cadFolderUrl: _cadFolderUrl, ...requestBody } = req.body || {};
+  validateProductDiscount(requestBody);
   const update = normalizeGoldWeights(
     {
       ...requestBody,

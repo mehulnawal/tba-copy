@@ -90,6 +90,8 @@ const productSchema = new mongoose.Schema(
     isBestSeller: { type: Boolean, default: false },
     isNewProduct: { type: Boolean, default: false },
     isPrimeCollection: { type: Boolean, default: false },
+    productDiscountType: { type: String, enum: ["percentage", "flat"], default: null },
+    productDiscountValue: { type: Number, default: 0, min: 0 },
     images: {
       type: [imageSchema],
       required: true,

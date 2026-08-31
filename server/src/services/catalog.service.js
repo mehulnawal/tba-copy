@@ -28,7 +28,16 @@ const toProductResponse = async (doc, buyerOverride) => {
     Is_Best_Seller: product.isBestSeller,
     Is_New_Product: product.isNewProduct,
     prices: await Promise.all(
-      karats.map((karat) => calculatePrice(product, karat, buyer)),
+      karats.map(async (karat) => {
+        const price = await calculatePrice(product, karat, buyer);
+        if (String(buyer).toUpperCase() !== "B2B") return price;
+        const b2cPrice = await calculatePrice(product, karat, "B2C");
+        return {
+          ...price,
+          b2bFinalPrice: price.finalPrice,
+          b2cFinalPrice: b2cPrice.finalPrice,
+        };
+      }),
     ),
   };
 };

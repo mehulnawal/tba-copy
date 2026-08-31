@@ -6,7 +6,10 @@
   }).format(Number.isFinite(value) ? value : 0);
 
 // Prevent floating-point calculation artifacts from reaching customer-facing measurement displays.
-export const formatMeasurement = (value: number, maximumFractionDigits = 3) =>
-  new Intl.NumberFormat("en-IN", { maximumFractionDigits }).format(
+export const formatMeasurement = (value: number) =>
+  new Intl.NumberFormat("en-IN", {
+    minimumFractionDigits: 3,
+    maximumFractionDigits: 3,
+  }).format(
     Number.isFinite(value) ? value : 0,
   );

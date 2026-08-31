@@ -879,6 +879,7 @@ function CategoryWiseCoupons() {
   const [expiryDate, setExpiryDate] = useState("");
   const [usageLimit, setUsageLimit] = useState("");
   const [activeStatus, setActiveStatus] = useState(true);
+  const [appliesTo, setAppliesTo] = useState<"making" | "moissanite">("making");
   const load = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -901,6 +902,7 @@ function CategoryWiseCoupons() {
     setExpiryDate("");
     setUsageLimit("");
     setActiveStatus(true);
+    setAppliesTo("making");
   };
   const begin = (category: CategoryCouponCategory) => {
     const coupon = items.find((item) => item.category === category);
@@ -916,6 +918,7 @@ function CategoryWiseCoupons() {
     );
     setUsageLimit(coupon?.usageLimit == null ? "" : String(coupon.usageLimit));
     setActiveStatus(coupon?.activeStatus ?? true);
+    setAppliesTo(coupon?.appliesTo === "moissanite" ? "moissanite" : "making");
   };
   const save = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -1063,6 +1066,9 @@ function CategoryWiseCoupons() {
                     </p>
                     <p>Min Order: {formatCurrency(coupon.minimumCartValue)}</p>
                     <p>Expires: {formatDate(coupon.expiryDate)}</p>
+                    {key === "moissanite" && (
+                      <p>Applies to: {coupon.appliesTo === "moissanite" ? "Moissanite" : "Design & Craftsmanship"}</p>
+                    )}
                   </div>
                 ) : (
                   <p className="text-xs italic text-[var(--color-text-muted)]">
@@ -1129,6 +1135,15 @@ function CategoryWiseCoupons() {
               className="admin-input"
             />
           </label>
+          {editing === "moissanite" && (
+            <label>
+              Applies To
+              <select required value={appliesTo} onChange={(e) => setAppliesTo(e.target.value as "making" | "moissanite")} className="admin-input">
+                <option value="making">Design &amp; Craftsmanship</option>
+                <option value="moissanite">Moissanite</option>
+              </select>
+            </label>
+          )}
           <label>
             Min Order Value (INR)
             <input
