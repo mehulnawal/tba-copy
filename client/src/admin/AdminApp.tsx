@@ -856,13 +856,15 @@ function Coupons() {
 }
 
 function CategoryWiseCoupons() {
-  const categories: { key: CategoryCouponCategory; name: string }[] = [
-    { key: "gold", name: "Gold" },
-    { key: "polki", name: "Polki" },
-    { key: "moissanite", name: "Moissanite" },
+  const categories: { key: CategoryCouponCategory; appliesTo: "diamond" | "making" | "moissanite"; name: string }[] = [
+    { key: "gold", appliesTo: "making", name: "Gold Making" },
+    { key: "gold", appliesTo: "diamond", name: "Gold Diamond" },
+    { key: "polki", appliesTo: "making", name: "Polki Making" },
+    { key: "moissanite", appliesTo: "making", name: "Moissanite Making" },
+    { key: "moissanite", appliesTo: "moissanite", name: "Moissanite Stone" },
   ];
   const [items, setItems] = useState<CategoryCoupon[]>([]);
-  const [editing, setEditing] = useState<CategoryCouponCategory | null>(null);
+  const [editing, setEditing] = useState<{ key: CategoryCouponCategory; appliesTo: "diamond" | "making" | "moissanite" } | null>(null);
   const [toast, setToast] = useState<{
     message: string;
     type: "success" | "error" | "info";
@@ -879,7 +881,6 @@ function CategoryWiseCoupons() {
   const [expiryDate, setExpiryDate] = useState("");
   const [usageLimit, setUsageLimit] = useState("");
   const [activeStatus, setActiveStatus] = useState(true);
-  const [appliesTo, setAppliesTo] = useState<"making" | "moissanite">("making");
   const load = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -902,11 +903,10 @@ function CategoryWiseCoupons() {
     setExpiryDate("");
     setUsageLimit("");
     setActiveStatus(true);
-    setAppliesTo("making");
   };
-  const begin = (category: CategoryCouponCategory) => {
-    const coupon = items.find((item) => item.category === category);
-    setEditing(category);
+  const begin = (category: CategoryCouponCategory, appliesTo: "diamond" | "making" | "moissanite") => {
+    const coupon = items.find((item) => item.category === category && item.appliesTo === appliesTo);
+    setEditing({ key: category, appliesTo });
     setCode(coupon?.code || "");
     setDiscountType(coupon?.discountType || "percentage");
     setDiscountValue(coupon ? String(coupon.discountValue) : "");
@@ -918,7 +918,6 @@ function CategoryWiseCoupons() {
     );
     setUsageLimit(coupon?.usageLimit == null ? "" : String(coupon.usageLimit));
     setActiveStatus(coupon?.activeStatus ?? true);
-    setAppliesTo(coupon?.appliesTo === "moissanite" ? "moissanite" : "making");
   };
   const save = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -963,9 +962,9 @@ function CategoryWiseCoupons() {
     };
     try {
       setIsSaving(true);
-      const exists = items.some((item) => item.category === editing);
-      if (exists) await adminApi.updateCategoryCoupon(editing, payload);
-      else await adminApi.createCategoryCoupon(editing, payload);
+      const exists = items.some((item) => item.category === editing.key && item.appliesTo === editing.appliesTo);
+      if (exists) await adminApi.updateCategoryCoupon(editing.key, editing.appliesTo, payload);
+      else await adminApi.createCategoryCoupon(editing.key, { ...payload, appliesTo: editing.appliesTo });
       setToast({
         message: "Category coupon saved successfully",
         type: "success",
@@ -978,17 +977,17 @@ function CategoryWiseCoupons() {
       setIsSaving(false);
     }
   };
-  const remove = async (category: CategoryCouponCategory) => {
+  const remove = async (category: CategoryCouponCategory, appliesTo: "diamond" | "making" | "moissanite") => {
     if (!confirm("Are you sure you want to remove this category coupon?"))
       return;
     try {
       setDeleting(category);
-      await adminApi.deleteCategoryCoupon(category);
+      await adminApi.deleteCategoryCoupon(category, appliesTo);
       setToast({
         message: "Category coupon removed successfully",
         type: "success",
       });
-      if (editing === category) reset();
+      if (editing?.key === category && editing.appliesTo === appliesTo) reset();
       await load();
     } catch (e) {
       setToast({ message: errorMessage(e), type: "error" });
@@ -1015,21 +1014,21 @@ function CategoryWiseCoupons() {
       </div>
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {categories.map(({ key }) => (
+          {categories.map(({ key, appliesTo }) => (
             <div
-              key={key}
+              key={`${key}-${appliesTo}`}
               className="admin-row h-48 animate-pulse bg-[var(--color-cream-light)]"
             />
           ))}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {categories.map(({ key, name }) => {
-            const coupon = items.find((item) => item.category === key);
+          {categories.map(({ key, appliesTo, name }) => {
+            const coupon = items.find((item) => item.category === key && item.appliesTo === appliesTo);
             const expired =
               coupon && new Date(coupon.expiryDate).getTime() < Date.now();
             return (
-              <div key={key} className="admin-row flex flex-col gap-3">
+              <div key={`${key}-${appliesTo}`} className="admin-row flex flex-col gap-3">
                 <div className="flex items-start justify-between gap-2">
                   <h3 className="font-semibold text-[var(--color-charcoal)]">
                     {name}
@@ -1066,9 +1065,7 @@ function CategoryWiseCoupons() {
                     </p>
                     <p>Min Order: {formatCurrency(coupon.minimumCartValue)}</p>
                     <p>Expires: {formatDate(coupon.expiryDate)}</p>
-                    {key === "moissanite" && (
-                      <p>Applies to: {coupon.appliesTo === "moissanite" ? "Moissanite" : "Design & Craftsmanship"}</p>
-                    )}
+                    <p>Applies to: {appliesTo === "diamond" ? "Diamond" : appliesTo === "moissanite" ? "Moissanite" : "Design & Craftsmanship"}</p>
                   </div>
                 ) : (
                   <p className="text-xs italic text-[var(--color-text-muted)]">
@@ -1076,13 +1073,13 @@ function CategoryWiseCoupons() {
                   </p>
                 )}
                 <div className="mt-auto flex justify-end gap-3 text-xs">
-                  <button onClick={() => begin(key)} className="cursor-pointer">
+                  <button onClick={() => begin(key, appliesTo)} className="cursor-pointer">
                     {coupon ? "Edit" : "Configure"}
                   </button>
                   {coupon && (
                     <button
                       disabled={deleting === key}
-                      onClick={() => remove(key)}
+                      onClick={() => remove(key, appliesTo)}
                       className="text-red-700 cursor-pointer disabled:opacity-50"
                     >
                       {deleting === key ? "Removing..." : "Remove"}
@@ -1097,9 +1094,9 @@ function CategoryWiseCoupons() {
       {editing && (
         <form onSubmit={save} className="admin-form">
           <b>
-            {items.some((item) => item.category === editing)
-              ? `Edit ${categories.find((item) => item.key === editing)?.name} Coupon`
-              : `Configure ${categories.find((item) => item.key === editing)?.name} Coupon`}
+            {items.some((item) => item.category === editing.key && item.appliesTo === editing.appliesTo)
+              ? `Edit ${categories.find((item) => item.key === editing.key && item.appliesTo === editing.appliesTo)?.name} Coupon`
+              : `Configure ${categories.find((item) => item.key === editing.key && item.appliesTo === editing.appliesTo)?.name} Coupon`}
           </b>
           <label>
             Coupon Code
@@ -1135,15 +1132,6 @@ function CategoryWiseCoupons() {
               className="admin-input"
             />
           </label>
-          {editing === "moissanite" && (
-            <label>
-              Applies To
-              <select required value={appliesTo} onChange={(e) => setAppliesTo(e.target.value as "making" | "moissanite")} className="admin-input">
-                <option value="making">Design &amp; Craftsmanship</option>
-                <option value="moissanite">Moissanite</option>
-              </select>
-            </label>
-          )}
           <label>
             Min Order Value (INR)
             <input

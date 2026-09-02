@@ -19,7 +19,6 @@ const {
   getAppliedCodes,
   resolveCoupons,
   setAppliedCodes,
-  isWelcomeCoupon,
 } = require("../utils/checkoutCoupons");
 
 const client = () => {
@@ -42,7 +41,7 @@ const confirm = async (order, paymentId) => {
         ? [order.coupon]
         : [];
     for (const coupon of coupons) {
-      if (coupon.code && !isWelcomeCoupon(coupon.code))
+      if (coupon.code)
         await Coupon.updateOne(
           { code: coupon.code },
           { $inc: { usedCount: 1 } },

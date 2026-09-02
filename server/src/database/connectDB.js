@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const DiamondCategory = require("../models/diamondCategory.model");
+const CategoryCoupon = require("../models/categoryCoupon.model");
 
 const connectDB = async () => {
   const conn = await mongoose.connect(process.env.MONGODB_URI);
@@ -19,6 +20,15 @@ const connectDB = async () => {
     if (legacy) await DiamondCategory.collection.dropIndex(legacy.name);
   } catch (error) {
     console.warn("Could not reconcile DiamondCategory indexes", error.message);
+  }
+  try {
+    const indexes = await CategoryCoupon.collection.indexes();
+    const legacy = indexes.find(
+      (index) => index.unique && index.key?.category === 1 && Object.keys(index.key).length === 1,
+    );
+    if (legacy) await CategoryCoupon.collection.dropIndex(legacy.name);
+  } catch (error) {
+    console.warn("Could not reconcile CategoryCoupon indexes", error.message);
   }
   return conn;
 };

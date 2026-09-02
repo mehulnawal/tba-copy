@@ -198,54 +198,53 @@ const getCategoryCouponForProduct = asyncHandler(async (req, res) => {
   const productTotal = Math.max(0, Number(price.totalCost) || 0);
   const productDiscountConfig = productDiscountFor(product);
   const productDiscount = calculateProductDiscount(productDiscountConfig, productTotal);
-  if (productDiscount > 0)
-    return res.status(200).json(new ApiResponse(200, {
-      coupon: {
-        discountType: productDiscountConfig.productDiscountType,
-        discountValue: productDiscountConfig.productDiscountValue,
-        discount: productDiscount,
-        appliesTo: "product",
-        isProductDiscount: true,
-      },
-    }, "Product discount available"));
-
-  const coupon = await resolveActiveCategoryCouponForPricingKey(settings.key, product.SKU);
-  if (!coupon)
-    return res
-      .status(200)
-      .json(
-        new ApiResponse(200, { coupon: null }, "No category coupon available"),
-      );
+  const coupons = await resolveActiveCategoryCouponForPricingKey(settings.key, product.SKU);
   try {
     const categoryCouponType = categoryCouponForPricingKey(settings.key);
-    const isGoldCoupon = categoryCouponType === "gold";
-    const isPolkiCoupon = categoryCouponType === "polki";
-    const appliesTo = categoryCouponAppliesTo(categoryCouponType, coupon.appliesTo);
     const productTotal = Math.max(0, Number(price.totalCost) || 0);
-    const eligibleValue = isGoldCoupon
-      ? Number(price.diamondValue || 0)
-      : isPolkiCoupon || appliesTo === "making"
-        ? Number(price.makingValue || price.makingCharge || 0)
-        : Number(price.moissaniteValue || 0);
-    const discount = isGoldCoupon
-      ? calculateGoldCategoryCouponDiscount(coupon, eligibleValue)
-      : isPolkiCoupon
-        ? calculatePolkiCategoryCouponDiscount(coupon, eligibleValue, productTotal)
-        : calculateMoissaniteCategoryCouponDiscount(coupon, eligibleValue, productTotal);
+    const availableCoupons = coupons.flatMap((coupon) => {
+      try {
+        const appliesTo = categoryCouponAppliesTo(categoryCouponType, coupon.appliesTo);
+        const eligibleValue = appliesTo === "diamond"
+          ? Number(price.diamondValue || 0)
+          : appliesTo === "moissanite"
+            ? Number(price.moissaniteValue || 0)
+            : Number(price.makingValue || price.makingCharge || 0);
+        const discount = appliesTo === "diamond"
+          ? calculateGoldCategoryCouponDiscount(coupon, eligibleValue)
+          : categoryCouponType === "polki"
+            ? calculatePolkiCategoryCouponDiscount(coupon, eligibleValue, productTotal)
+            : calculateMoissaniteCategoryCouponDiscount(coupon, eligibleValue, productTotal);
+        return [{
+          code: coupon.code,
+          discountType: coupon.discountType,
+          discountValue: coupon.discountValue,
+          discount,
+          appliesTo,
+        }];
+      } catch {
+        return [];
+      }
+    });
     return res
       .status(200)
       .json(
         new ApiResponse(
           200,
           {
-            coupon: {
-              discountType: coupon.discountType,
-              discountValue: coupon.discountValue,
-              discount,
-              appliesTo,
-            },
+            productDiscount: productDiscount > 0
+              ? {
+                  discountType: productDiscountConfig.productDiscountType,
+                  discountValue: productDiscountConfig.productDiscountValue,
+                  discount: productDiscount,
+                  appliesTo: "product",
+                }
+              : null,
+            coupons: availableCoupons,
           },
-          "Category coupon available",
+          availableCoupons.length || productDiscount > 0
+            ? "Discounts fetched"
+            : "No eligible category coupon",
         ),
       );
   } catch (error) {

@@ -1,6 +1,5 @@
 const { calculatePrice, resolveSettings } = require("./priceCalculator");
 const {
-  calculateCouponDiscount,
   calculateGoldCategoryCouponDiscount,
   calculatePolkiCategoryCouponDiscount,
   calculateMoissaniteCategoryCouponDiscount,
@@ -26,55 +25,64 @@ const repriceCartItem = async (item, product) => {
   const price = await calculatePrice(product, item.karat, "B2C");
   const basePrice = Math.max(0, roundMoney(price.totalCost));
   const quantity = Math.max(1, Number(item.quantity || 1));
-  let discount = 0;
-  let label = "";
-
   const productTotal = basePrice * quantity;
   const productDiscountConfig = productDiscountFor(product);
-  const productDiscount = roundMoney(calculateProductDiscount(productDiscountConfig, productTotal));
-  if (productDiscount > 0) {
-    discount = productDiscount;
-    label = productDiscountConfig.productDiscountType === "percentage" ? `${productDiscountConfig.productDiscountValue}% OFF` : `₹${productDiscountConfig.productDiscountValue} OFF`;
-    item.categoryCouponApplied = false;
-  } else if (item.categoryCouponApplied) {
-    const settings = await resolveSettings(product);
-    const coupon = await resolveActiveCategoryCouponForPricingKey(settings.key, product.SKU);
-    if (coupon) {
+  const productDiscount = roundMoney(
+    calculateProductDiscount(productDiscountConfig, productTotal),
+  );
+  const settings = await resolveSettings(product);
+  const category = categoryCouponForPricingKey(settings.key);
+  const coupons = await resolveActiveCategoryCouponForPricingKey(
+    settings.key,
+    product.SKU,
+  );
+  const selectedTargets = item.categoryCouponsApplied?.length
+    ? item.categoryCouponsApplied
+    : [];
+  const results = coupons
+    .filter((coupon) => selectedTargets.includes(coupon.appliesTo))
+    .flatMap((coupon) => {
       try {
-        const categoryCouponType = categoryCouponForPricingKey(settings.key);
-        const isGoldCoupon = categoryCouponType === "gold";
-        const isPolkiCoupon = categoryCouponType === "polki";
-        const appliesTo = categoryCouponAppliesTo(categoryCouponType, coupon.appliesTo);
-        const productTotal = basePrice * quantity;
-        const eligibleValue = isGoldCoupon
+        const appliesTo = categoryCouponAppliesTo(category, coupon.appliesTo);
+        const eligibleValue = appliesTo === "diamond"
           ? Number(price.diamondValue || 0) * quantity
-          : isPolkiCoupon || appliesTo === "making"
-            ? Number(price.makingValue || price.makingCharge || 0) * quantity
-            : Number(price.moissaniteValue || 0) * quantity;
-        discount = roundMoney(
-          isGoldCoupon
-            ? calculateGoldCategoryCouponDiscount(coupon, eligibleValue)
-            : isPolkiCoupon
-              ? calculatePolkiCategoryCouponDiscount(coupon, eligibleValue, productTotal)
-              : calculateMoissaniteCategoryCouponDiscount(coupon, eligibleValue, productTotal),
-        );
-        label =
-          coupon.discountType === "percentage"
-            ? `${coupon.discountValue}% OFF`
-            : `₹${coupon.discountValue} OFF`;
+          : appliesTo === "moissanite"
+            ? Number(price.moissaniteValue || 0) * quantity
+            : Number(price.makingValue || price.makingCharge || 0) * quantity;
+        const value = appliesTo === "diamond"
+          ? calculateGoldCategoryCouponDiscount(coupon, eligibleValue)
+          : category === "polki"
+            ? calculatePolkiCategoryCouponDiscount(coupon, eligibleValue, productTotal)
+            : calculateMoissaniteCategoryCouponDiscount(coupon, eligibleValue, productTotal);
+        return [{ coupon, value }];
       } catch {
-        item.categoryCouponApplied = false;
+        return [];
       }
-    } else {
-      item.categoryCouponApplied = false;
-    }
-  }
+    });
+  item.categoryCouponsApplied = results.map(({ coupon }) => coupon.appliesTo);
+  item.categoryCouponApplied = item.categoryCouponsApplied.length > 0;
+  const categoryDiscount = roundMoney(
+    results.reduce((sum, entry) => sum + entry.value, 0),
+  );
+  const discount = roundMoney(productDiscount + categoryDiscount);
+  const labels = [
+    productDiscount > 0
+      ? productDiscountConfig.productDiscountType === "percentage"
+        ? `${productDiscountConfig.productDiscountValue}% OFF`
+        : `\u20b9${productDiscountConfig.productDiscountValue} OFF`
+      : "",
+    ...results.map(({ coupon }) =>
+      coupon.discountType === "percentage"
+        ? `${coupon.discountValue}% OFF`
+        : `\u20b9${coupon.discountValue} OFF`,
+    ),
+  ].filter(Boolean);
 
   item.price = basePrice;
   item.basePrice = basePrice;
   item.categoryCouponDiscount = discount;
-  item.categoryCouponLabel = label;
-  item.lineTotal = roundMoney(basePrice * quantity - discount);
+  item.categoryCouponLabel = labels.join(" + ");
+  item.lineTotal = roundMoney(Math.max(0, productTotal - discount));
   return { price, basePrice, discount, lineTotal: item.lineTotal };
 };
 

@@ -11,6 +11,7 @@ export interface CartItem {
   basePrice?: number;
   lineTotal?: number;
   categoryCouponApplied?: boolean;
+  categoryCouponsApplied?: string[];
   categoryCouponDiscount?: number;
   categoryCouponLabel?: string;
   quantity: number;
@@ -38,6 +39,7 @@ export interface CartProductPayload {
   size?: string;
   quantity?: number;
   categoryCouponApplied?: boolean;
+  categoryCouponsApplied?: string[];
 }
 
 export const cartApi = {
@@ -62,7 +64,7 @@ export const cartApi = {
     payload: Pick<
       CartProductPayload,
       "productId" | "karat" | "color" | "size"
-    > & { applied: boolean },
+    > & { applied: boolean; appliesTo: "diamond" | "making" | "moissanite" },
   ) =>
     apiRequest<Cart>("/cart/category-coupon", {
       method: "PATCH",

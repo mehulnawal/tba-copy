@@ -2,16 +2,10 @@ import { useState } from "react";
 import type { PriceBreakdown, Product } from "../types";
 import { formatINR, formatMeasurement } from "../utils/currency";
 
-type CouponBreakup = {
-  label: string;
-  discount: number;
-  appliesTo: "diamond" | "making" | "moissanite";
-  isProductDiscount?: boolean;
-};
 type Props = {
   product: Product;
   price: PriceBreakdown;
-  coupon?: CouponBreakup;
+  discount?: number;
   b2b?: boolean;
   className?: string;
 };
@@ -234,7 +228,7 @@ function StoneRowCells({
 export default function PriceBreakup({
   product,
   price,
-  coupon,
+  discount = 0,
   b2b = false,
   className = "",
 }: Props) {
@@ -378,7 +372,7 @@ export default function PriceBreakup({
         </div>
         <div className="flex items-center justify-between border-b border-[var(--color-border)] py-2">
           <span>Discount</span>
-          <span className="whitespace-nowrap tabular-nums text-[var(--color-teal)]">{coupon?.isProductDiscount ? `-${formatBreakupINR(number(coupon.discount))}` : "—"}</span>
+          <span className="whitespace-nowrap tabular-nums text-[var(--color-teal)]">{number(discount) > 0 ? `-${formatBreakupINR(number(discount))}` : "—"}</span>
         </div>        {showGst && (
           <div className="flex items-center justify-between border-b border-[var(--color-border)] py-2">
             <h3 className="font-bold [-webkit-text-stroke:0.2px_currentColor] text-[14px] text-[var(--color-teal)]">
@@ -402,23 +396,6 @@ export default function PriceBreakup({
       )}
     </div>
   );
-  const couponRow = coupon ? (
-    <div className="flex items-center justify-between border-b border-[var(--color-border)] bg-[var(--color-cream)] px-1 py-2 text-xs text-[var(--color-teal)]">
-      <span className="font-semibold">
-        {coupon.isProductDiscount
-          ? `Product Discount - ${coupon.label}`
-          : coupon.appliesTo === "diamond"
-          ? `Coupon applied on Diamond Total - ${coupon.label}`
-          : coupon.appliesTo === "moissanite"
-            ? `Coupon applied on Moissanite - ${coupon.label}`
-            : `Coupon applied on Design & Craftsmanship - ${coupon.label}`}
-      </span>
-      <span className="whitespace-nowrap tabular-nums font-semibold">
-        -{formatBreakupINR(number(coupon.discount))}
-      </span>
-    </div>
-  ) : null;
-
   return (
     <section
       className={`rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-4 ${className}`}
@@ -443,8 +420,6 @@ export default function PriceBreakup({
             rateLabel="Rate/Gm"
             rows={metalRows}
           />
-          {coupon?.appliesTo === "making" && couponRow}
-
           {!isGold && hasMoissanite && (
             <FourColumnTable
               title="Moissanite"
@@ -453,7 +428,6 @@ export default function PriceBreakup({
               rows={moissaniteRows}
             />
           )}
-          {coupon?.appliesTo === "moissanite" && couponRow}
           {((isGold && stoneEntries.length > 0) ||
             (!isGold && hasMoissanite && diamondEntries.length > 0)) && (
               <StoneTable
@@ -463,7 +437,6 @@ export default function PriceBreakup({
                 totalLabel={isGold ? "Diamond Total" : undefined}
               />
             )}
-          {coupon?.appliesTo === "diamond" && couponRow}
           {summary}
         </div>
       )}

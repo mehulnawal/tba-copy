@@ -41,12 +41,13 @@ import {
 } from "lucide-react";
 
 type CategoryCoupon = {
+  code?: string;
   discountType: "percentage" | "flat";
   discountValue: number;
   discount: number;
-  appliesTo: "diamond" | "making" | "moissanite" | "product";
-  isProductDiscount?: boolean;
+  appliesTo: "diamond" | "making" | "moissanite";
 };
+type ProductDiscount = Omit<CategoryCoupon, "appliesTo"> & { appliesTo: "product" };
 
 type Review = {
   _id: string;
@@ -171,11 +172,10 @@ export default function ProductDetails() {
   const [isPriceBreakupOpen, setIsPriceBreakupOpen] = useState(true);
   const [zoomMousePos, setZoomMousePos] = useState({ x: 0, y: 0 });
   const [isHoveringMainImage, setIsHoveringMainImage] = useState(false);
-  const [categoryCoupon, setCategoryCoupon] = useState<CategoryCoupon | null>(
-    null,
-  );
+  const [categoryCoupons, setCategoryCoupons] = useState<CategoryCoupon[]>([]);
+  const [productDiscount, setProductDiscount] = useState<ProductDiscount | null>(null);
   const [appliedCouponSkus, setAppliedCouponSkus] = useState<
-    Record<string, true>
+    Record<string, string[]>
   >({});
 
   useEffect(() => {
@@ -246,20 +246,22 @@ export default function ProductDetails() {
 
   useEffect(() => {
     let cancelled = false;
-    setCategoryCoupon(null);
+    setCategoryCoupons([]);
+    setProductDiscount(null);
     if (!product?.SKU)
       return () => {
         cancelled = true;
       };
     const params =
       product.metal === "gold" ? `?karat=${encodeURIComponent(karat)}` : "";
-    apiRequest<{ coupon: CategoryCoupon | null }>(
+    apiRequest<{ coupons: CategoryCoupon[]; productDiscount?: ProductDiscount | null }>(
       `/products/${encodeURIComponent(product.SKU)}/category-coupon${params}`,
     )
-      .then(({ coupon }) => {
+      .then(({ coupons, productDiscount }) => {
         if (cancelled) return;
-        setCategoryCoupon(coupon);
-        if (!coupon)
+        setCategoryCoupons(coupons || []);
+        setProductDiscount(productDiscount || null);
+        if (!coupons?.length)
           setAppliedCouponSkus((current) => {
             if (!current[product.SKU]) return current;
             const next = { ...current };
@@ -268,7 +270,10 @@ export default function ProductDetails() {
           });
       })
       .catch(() => {
-        if (!cancelled) setCategoryCoupon(null);
+        if (!cancelled) {
+          setCategoryCoupons([]);
+          setProductDiscount(null);
+        }
       });
     return () => {
       cancelled = true;
@@ -281,7 +286,7 @@ export default function ProductDetails() {
       .getCart()
       .then((cart) => {
         if (cancelled) return;
-        const applied = cart.items.some(
+        const applied = cart.items.find(
           (item) =>
             item.productId === product.SKU &&
             item.karat === karat &&
@@ -289,7 +294,7 @@ export default function ProductDetails() {
         );
         setAppliedCouponSkus((current) => {
           const next = { ...current };
-          if (applied) next[product.SKU] = true;
+          if (applied) next[product.SKU] = applied.categoryCouponsApplied || [];
           else delete next[product.SKU];
           return next;
         });
@@ -330,12 +335,18 @@ export default function ProductDetails() {
     0,
     roundMoney(Number(activePriceObj.totalCost) || 0),
   );
-  const couponApplied = Boolean(
-    categoryCoupon && (categoryCoupon.isProductDiscount || appliedCouponSkus[product.SKU]),
+  const appliedCouponTargets = appliedCouponSkus[product.SKU] || [];
+  const appliedCategoryCoupons = categoryCoupons.filter((coupon) =>
+    appliedCouponTargets.includes(coupon.appliesTo),
   );
-  const couponDiscount = couponApplied
-    ? Math.max(0, roundMoney(Number(categoryCoupon?.discount) || 0))
-    : 0;
+  const couponDiscount = roundMoney(
+    Math.max(0, Number(productDiscount?.discount) || 0) +
+      appliedCategoryCoupons.reduce(
+        (total, coupon) => total + Math.max(0, Number(coupon.discount) || 0),
+        0,
+      ),
+  );
+  const couponApplied = couponDiscount > 0;
   const subtotalAfterCoupon = roundMoney(originalSubtotal - couponDiscount);
   const discountedGst = roundMoney(subtotalAfterCoupon * 0.03);
   const displayedPrice = couponApplied
@@ -346,11 +357,6 @@ export default function ProductDetails() {
         finalPrice: roundMoney(subtotalAfterCoupon + discountedGst),
       }
     : activePriceObj;
-  const couponLabel = categoryCoupon
-    ? categoryCoupon.discountType === "percentage"
-      ? `${categoryCoupon.discountValue}% OFF`
-      : `${formatINR(categoryCoupon.discountValue)} OFF`
-    : "";
   const grossWeight =
     activePriceObj.grossWeight ?? weightFor(product.grossWeight, karat);
   const netWeight =
@@ -523,7 +529,8 @@ export default function ProductDetails() {
         color,
         size,
         quantity: 1,
-        categoryCouponApplied: couponApplied,
+        categoryCouponApplied: appliedCouponTargets.length > 0,
+        categoryCouponsApplied: appliedCouponTargets,
       });
       showToast("Item added to cart!", "success");
     } catch (err: unknown) {
@@ -552,16 +559,15 @@ export default function ProductDetails() {
       );
     }
   };
-  const toggleCategoryCoupon = async () => {
-    const applied = !couponApplied;
+  const toggleCategoryCoupon = async (appliesTo: "diamond" | "making" | "moissanite") => {
+    const applied = !appliedCouponTargets.includes(appliesTo);
     setAppliedCouponSkus((current) =>
-      applied
-        ? { ...current, [product.SKU]: true }
-        : (() => {
-            const next = { ...current };
-            delete next[product.SKU];
-            return next;
-          })(),
+      ({
+        ...current,
+        [product.SKU]: applied
+          ? [...(current[product.SKU] || []), appliesTo]
+          : (current[product.SKU] || []).filter((target) => target !== appliesTo),
+      }),
     );
     if (!isAuthenticated) return;
     try {
@@ -571,6 +577,7 @@ export default function ProductDetails() {
         color,
         size,
         applied,
+        appliesTo,
       });
       await queryClient.invalidateQueries({ queryKey: ["cart"] });
     } catch (error) {
@@ -911,34 +918,35 @@ export default function ProductDetails() {
                   </button>
                 </div>
               </div>
-              {categoryCoupon?.isProductDiscount && (
-                <div className="order-3 border-b border-stone-200/80 pb-3 text-xs text-stone-600 lg:order-3">
-                  <span className="font-semibold text-stone-800">Product discount: {couponLabel}</span>
-                  <span className="block text-[11px] text-stone-500">Applied to this product before GST.</span>
-                </div>
-              )}              {categoryCoupon && !categoryCoupon.isProductDiscount && (
-                <div className="order-3 flex items-center justify-between gap-3 border-b border-stone-200/80 pb-3 lg:order-3">
+              {categoryCoupons.map((coupon) => {
+                const applied = appliedCouponTargets.includes(coupon.appliesTo);
+                const couponLabel = coupon.discountType === "percentage"
+                  ? `${coupon.discountValue}% OFF`
+                  : `${formatINR(coupon.discountValue)} OFF`;
+                return (
+                <div key={coupon.appliesTo} className="order-3 flex items-center justify-between gap-3 border-b border-stone-200/80 pb-3 lg:order-3">
                   <div className="text-xs text-stone-600">
                     <span className="font-semibold text-stone-800">
                       Category offer: {couponLabel}
                     </span>
                     <span className="block text-[11px] text-stone-500">
-                      {isGold
+                      {coupon.appliesTo === "diamond"
                         ? "Applied on the Diamond Total."
-                        : categoryCoupon.appliesTo === "moissanite"
+                        : coupon.appliesTo === "moissanite"
                           ? "Applied on Moissanite."
                         : "Applied on Design & Craftsmanship charges."}
                     </span>
                   </div>
                   <button
                     type="button"
-                    onClick={() => void toggleCategoryCoupon()}
+                    onClick={() => void toggleCategoryCoupon(coupon.appliesTo)}
                     className="shrink-0 border border-[var(--color-teal)] px-3 py-2 text-xs font-semibold text-[var(--color-teal)] transition hover:bg-[var(--color-teal)] hover:text-white"
                   >
-                    {couponApplied ? "Remove Coupon" : "Apply Coupon"}
+                    {applied ? "Remove Coupon" : "Apply Coupon"}
                   </button>
                 </div>
-              )}
+                );
+              })}
               {/* Specs */}
               <div className="order-4 rounded-lg border border-stone-200/80 bg-stone-50 p-4 space-y-3 lg:order-3">
                 <h4 className="text-[11px] font-bold [-webkit-text-stroke:0.2px_currentColor] uppercase tracking-widest text-stone-700">
@@ -996,16 +1004,7 @@ export default function ProductDetails() {
               <PriceBreakup
                 product={product}
                 price={displayedPrice}
-                coupon={
-                  couponApplied
-                    ? {
-                        label: couponLabel,
-                        discount: couponDiscount,
-                        appliesTo: categoryCoupon!.appliesTo === "product" ? "making" : categoryCoupon!.appliesTo,
-                        isProductDiscount: categoryCoupon!.isProductDiscount,
-                      }
-                    : undefined
-                }
+                discount={couponDiscount}
                 className="order-7 lg:order-7"
               />
 

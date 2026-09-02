@@ -14,6 +14,7 @@ const cartItemSchema = new mongoose.Schema(
     // A Gold category flat coupon can intentionally exceed diamond value.
     lineTotal: { type: Number },
     categoryCouponApplied: { type: Boolean, default: false },
+    categoryCouponsApplied: { type: [String], default: [] },
     categoryCouponDiscount: { type: Number, default: 0, min: 0 },
     categoryCouponLabel: { type: String, default: "" },
     quantity: { type: Number, required: true, min: 1, default: 1 },

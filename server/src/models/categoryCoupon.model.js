@@ -10,7 +10,7 @@ const categoryCouponSchema = new mongoose.Schema(
       type: String,
       enum: Object.values(CATEGORY_COUPON_CATEGORIES),
       required: true,
-      unique: true,
+      index: true,
     },
     code: { type: String, required: true, uppercase: true, trim: true },
     discountType: {
@@ -37,5 +37,7 @@ const categoryCouponSchema = new mongoose.Schema(
   },
   { timestamps: true },
 );
+
+categoryCouponSchema.index({ category: 1, appliesTo: 1 }, { unique: true });
 
 module.exports = mongoose.model("CategoryCoupon", categoryCouponSchema);

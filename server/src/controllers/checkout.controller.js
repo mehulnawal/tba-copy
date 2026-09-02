@@ -8,10 +8,7 @@ const ApiResponse = require("../utils/ApiResponse");
 const asyncHandler = require("../utils/asyncHandler");
 const { calculateCartSummary } = require("../utils/checkoutUtils");
 const {
-  WELCOME_COUPON,
   getAppliedCodes,
-  isWelcomeCoupon,
-  isWelcomeEligible,
   resolveCoupons,
   setAppliedCodes,
 } = require("../utils/checkoutCoupons");
@@ -160,13 +157,7 @@ const applyCoupon = asyncHandler(async (req, res) => {
     .toUpperCase();
   if (!code) throw new ApiError(400, "Coupon code is required");
 
-  if (isWelcomeCoupon(code)) {
-    if (!(await isWelcomeEligible(req.user)))
-      throw new ApiError(
-        400,
-        "WELCOME1000 is only available for first-time customers",
-      );
-  } else if (!(await Coupon.findOne({ code }))) {
+  if (!(await Coupon.findOne({ code }))) {
     throw new ApiError(404, "Invalid coupon code");
   }
 
@@ -247,7 +238,17 @@ const removeCoupon = asyncHandler(async (req, res) => {
 });
 
 const getAvailableCoupons = asyncHandler(async (req, res) => {
-  const coupons = (await isWelcomeEligible(req.user)) ? [WELCOME_COUPON] : [];
+  const coupons = await Coupon.find({
+    activeStatus: true,
+    expiryDate: { $gt: new Date() },
+    $or: [
+      { usageLimit: null },
+      { $expr: { $lt: ["$usedCount", "$usageLimit"] } },
+    ],
+  })
+    .select("code discountType discountValue minimumCartValue expiryDate usageLimit usedCount")
+    .sort({ createdAt: -1 })
+    .lean();
   res
     .status(200)
     .json(

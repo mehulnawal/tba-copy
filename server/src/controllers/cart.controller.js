@@ -40,6 +40,7 @@ const addToCart = asyncHandler(async (req, res) => {
     size = "",
     quantity = 1,
     categoryCouponApplied = false,
+    categoryCouponsApplied = [],
   } = req.body;
   if (!productId || !Number.isInteger(Number(quantity)) || Number(quantity) < 1)
     throw new ApiError(400, "A product and valid quantity are required");
@@ -66,6 +67,8 @@ const addToCart = asyncHandler(async (req, res) => {
   if (item) {
     item.quantity += Number(quantity);
     if (categoryCouponApplied) item.categoryCouponApplied = true;
+    if (Array.isArray(categoryCouponsApplied))
+      item.categoryCouponsApplied = [...new Set(categoryCouponsApplied.map(String))];
   } else {
     item = cart.items.create({
       productId,
@@ -79,6 +82,9 @@ const addToCart = asyncHandler(async (req, res) => {
       price: 0,
       quantity: Number(quantity),
       categoryCouponApplied: Boolean(categoryCouponApplied),
+      categoryCouponsApplied: Array.isArray(categoryCouponsApplied)
+        ? [...new Set(categoryCouponsApplied.map(String))]
+        : [],
     });
     cart.items.push(item);
   }
@@ -111,6 +117,7 @@ const setCategoryCoupon = asyncHandler(async (req, res) => {
     color = "",
     size = "",
     applied,
+    appliesTo,
   } = req.body;
   const cart = await getOrCreateCart(req.user._id);
   const item = cart.items.find(
@@ -128,7 +135,13 @@ const setCategoryCoupon = asyncHandler(async (req, res) => {
     .populate("mainCategory", "name")
     .populate("subCategory", "name");
   if (!product) throw new ApiError(400, "Product is no longer available");
-  item.categoryCouponApplied = Boolean(applied);
+  const target = String(appliesTo || "").toLowerCase();
+  if (!target) throw new ApiError(400, "Coupon target is required");
+  const selected = new Set(item.categoryCouponsApplied || []);
+  if (applied) selected.add(target);
+  else selected.delete(target);
+  item.categoryCouponsApplied = [...selected];
+  item.categoryCouponApplied = item.categoryCouponsApplied.length > 0;
   await repriceCartItem(item, product);
   await cart.save();
   res.status(200).json(new ApiResponse(200, cart, "Category coupon updated"));

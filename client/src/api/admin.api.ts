@@ -184,14 +184,15 @@ export const adminApi = {
     }),
   updateCategoryCoupon: (
     category: CategoryCouponCategory,
+    appliesTo: CategoryCouponAppliesTo,
     p: Partial<CategoryCouponPayload>,
   ) =>
-    apiRequest<CategoryCoupon>(`/admin/category-coupons/${category}`, {
+    apiRequest<CategoryCoupon>(`/admin/category-coupons/${category}?appliesTo=${appliesTo}`, {
       method: "PATCH",
       body: JSON.stringify(p),
     }),
-  deleteCategoryCoupon: (category: CategoryCouponCategory) =>
-    apiRequest<null>(`/admin/category-coupons/${category}`, {
+  deleteCategoryCoupon: (category: CategoryCouponCategory, appliesTo: CategoryCouponAppliesTo) =>
+    apiRequest<null>(`/admin/category-coupons/${category}?appliesTo=${appliesTo}`, {
       method: "DELETE",
     }),
   partners: () => apiRequest<Partner[]>("/admin/partners"),

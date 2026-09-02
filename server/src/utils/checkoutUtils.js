@@ -81,11 +81,7 @@ const calculateMoissaniteCategoryCouponDiscount = (
   return Math.min(discount, eligibleValue);
 };
 
-const productDiscountFor = (product) => {
-  if (process.env.NODE_ENV !== "production" && String(product?.SKU || "").trim().toUpperCase() === "TBA-GLD-LR0005")
-    return { productDiscountType: "percentage", productDiscountValue: 1 };
-  return product;
-};
+const productDiscountFor = (product) => product;
 const calculateProductDiscount = (product, productTotal) => {
   const total = Math.max(0, Number(productTotal || 0));
   const value = Math.max(0, Number(product?.productDiscountValue || 0));
