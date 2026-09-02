@@ -1995,6 +1995,8 @@ export default function Products() {
                     const row = matches.length === 1 ? matches[0] : undefined;
                     updateDiamond(index, {
                       category: e.target.value,
+                      // A size always belongs to its category. Keep the sub-type
+                      // untouched: it is a separate product attribute.
                       diamondCategoryRef: row?._id,
                       ratePerCtB2B: row?.b2bPrice ?? diamond.ratePerCtB2B,
                       ratePerCtB2C: row?.b2cPrice ?? diamond.ratePerCtB2C,
@@ -2013,11 +2015,6 @@ export default function Products() {
                 <Field label="Size">
                   <select
                     className="admin-input"
-                    disabled={
-                      diamondCategories.filter(
-                        (item) => item.categoryName === diamond.category,
-                      ).length === 1
-                    }
                     value={diamond.diamondCategoryRef || ""}
                     onChange={(e) => {
                       const row = diamondCategories.find(
@@ -2035,9 +2032,7 @@ export default function Products() {
                       .filter(
                         (item) =>
                           item.categoryName === diamond.category &&
-                          Boolean(item.size) &&
-                          item.size !== item.categoryName &&
-                          item.size !== diamond.subType,
+                          Boolean(item.size),
                       )
                       .map((item) => (
                         <option key={item._id} value={item._id}>
