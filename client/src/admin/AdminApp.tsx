@@ -317,9 +317,8 @@ function Layout({
       </header>
 
       <aside
-        className={`fixed md:relative z-[var(--z-sticky)] inset-y-0 left-0 w-64 bg-[var(--color-bg-secondary)] border-r border-[var(--color-border)] transform transition-transform duration-300 flex flex-col justify-between ${
-          mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
-        }`}
+        className={`fixed md:relative z-[var(--z-sticky)] inset-y-0 left-0 w-64 bg-[var(--color-bg-secondary)] border-r border-[var(--color-border)] transform transition-transform duration-300 flex flex-col justify-between ${mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+          }`}
       >
         <div>
           <div className="p-6 border-b border-[var(--color-border)] hidden md:block">
@@ -1891,6 +1890,7 @@ const CATEGORY_SHORT_CODES = [
   ["MG", "Diamond Mangalsutra"],
   ["SLVM", "Silver Moissanite"],
   ["SLVP", "Silver Polki"],
+  ["NP", "Nose Pin"]
 ] as const;
 
 function Categories() {
@@ -2455,7 +2455,7 @@ function Orders() {
                             <p className="shrink-0 text-sm font-semibold text-[var(--color-charcoal)]">
                               {formatCurrency(
                                 item.priceSnapshot.finalPrice *
-                                  (item.quantity || 1),
+                                (item.quantity || 1),
                               )}
                             </p>
                           )}
