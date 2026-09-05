@@ -40,6 +40,12 @@ import {
   Share2,
 } from "lucide-react";
 
+declare global {
+  interface Window {
+    gtag?: (...args: unknown[]) => void;
+  }
+}
+
 type CategoryCoupon = {
   code?: string;
   discountType: "percentage" | "flat";
@@ -153,6 +159,7 @@ export default function ProductDetails() {
   const removeFromWishlistMutation = useRemoveFromWishlist();
 
   const [product, setProduct] = useState<Product | null>(null);
+  const lastTrackedProductId = useRef<string | null>(null);
   const [karat, setKarat] = useState<"14kt" | "18kt">("14kt");
   const [color, setColor] = useState("");
   const [size, setSize] = useState("");
@@ -177,6 +184,31 @@ export default function ProductDetails() {
   const [appliedCouponSkus, setAppliedCouponSkus] = useState<
     Record<string, string[]>
   >({});
+
+  useEffect(() => {
+    if (!product) return;
+
+    const itemId = product.SKU || product.id || product._id;
+    if (!itemId || lastTrackedProductId.current === itemId) return;
+
+    const prices = Array.isArray(product.prices) ? product.prices : [];
+    const activePrice =
+      prices.find((price) => price.karat === karat) || prices[0];
+
+    window.gtag?.("event", "view_item", {
+      currency: "INR",
+      value: Number(activePrice?.finalPrice || 0),
+      items: [
+        {
+          item_id: itemId,
+          item_name: product.title || product.name || itemId,
+          price: Number(activePrice?.finalPrice || 0),
+          quantity: 1,
+        },
+      ],
+    });
+    lastTrackedProductId.current = itemId;
+  }, [product]);
 
   useEffect(() => {
     setSimilarProducts([]);
