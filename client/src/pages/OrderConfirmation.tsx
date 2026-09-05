@@ -5,12 +5,18 @@ import { apiRequest } from "../api/client";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { formatINR } from "../utils/currency";
+import { trackGa4EventOncePerSession } from "../utils/analytics";
 
 type Order = {
   _id: string;
   amount: number;
   createdAt: string;
+  orderStatus: "pending" | "confirmed" | "failed";
+  paymentStatus: "pending" | "paid" | "failed";
+  razorpayOrderId?: string;
+  razorpayPaymentId?: string;
   items: {
+    productSku: string;
     title: string;
     image: string;
     karat: string;
@@ -41,6 +47,38 @@ export default function OrderConfirmation() {
         ),
       );
   }, [id]);
+  useEffect(() => {
+    if (
+      !order ||
+      order.orderStatus !== "confirmed" ||
+      order.paymentStatus !== "paid" ||
+      !order.items.length ||
+      order.items.some((item) => !item.productSku)
+    )
+      return;
+
+    const transactionId =
+      order.razorpayPaymentId || order.razorpayOrderId || order._id;
+    trackGa4EventOncePerSession(
+      `ga4:purchase:${transactionId}`,
+      "purchase",
+      {
+        transaction_id: transactionId,
+        currency: "INR",
+        value: Number(order.amount),
+        items: order.items.map((item) => {
+          const quantity = Math.max(Number(item.quantity || 1), 1);
+          const lineTotal = Number(item.priceSnapshot.finalPrice || 0);
+          return {
+            item_id: item.productSku,
+            item_name: item.title,
+            price: lineTotal / quantity,
+            quantity,
+          };
+        }),
+      },
+    );
+  }, [order]);
   return (
     <>
       <Navbar

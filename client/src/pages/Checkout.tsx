@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { checkoutApi } from "../api/checkout.api";
 import { apiRequest } from "../api/client";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import { trackGa4EventOncePerSession } from "../utils/analytics";
 
 type Summary = {
   subtotal: number;
@@ -18,6 +19,7 @@ type Summary = {
 
 type CartItem = {
   _id: string;
+  productId: string;
   name: string;
   image: string;
   quantity: number;
@@ -64,6 +66,7 @@ export default function Checkout() {
   const [isLoadingCoupons, setIsLoadingCoupons] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string>("All");
   const [isPaying, setIsPaying] = useState(false);
+  const beginCheckoutTracked = useRef(false);
 
   const nav = useNavigate();
   const queryClient = useQueryClient();
@@ -101,6 +104,38 @@ export default function Checkout() {
   useEffect(() => {
     fetchOrderSummary();
   }, []);
+
+  useEffect(() => {
+    if (beginCheckoutTracked.current || !items.length || !summary) return;
+
+    const cartKey = items
+      .map(
+        (item) =>
+          `${item.productId}:${item.quantity}:${item.lineTotal ?? item.price}`,
+      )
+      .join("|");
+    const tracked = trackGa4EventOncePerSession(
+      `ga4:begin_checkout:${cartKey}:${summary.total}`,
+      "begin_checkout",
+      {
+        currency: "INR",
+        value: Number(summary.total),
+        items: items.map((item) => {
+          const quantity = Math.max(Number(item.quantity || 1), 1);
+          const lineTotal = Number(
+            item.lineTotal ?? Number(item.price || 0) * quantity,
+          );
+          return {
+            item_id: item.productId,
+            item_name: item.name,
+            price: lineTotal / quantity,
+            quantity,
+          };
+        }),
+      },
+    );
+    if (tracked) beginCheckoutTracked.current = true;
+  }, [items, summary]);
 
   // 3. Fetch Available Coupons
   useEffect(() => {
