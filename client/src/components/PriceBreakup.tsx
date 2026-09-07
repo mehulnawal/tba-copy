@@ -234,8 +234,11 @@ export default function PriceBreakup({
 }: Props) {
   const [open, setOpen] = useState(true);
   const isGold = price.metal === "gold" || product.metal === "gold";
+  // Keep paise visible in the breakup. The subtotal is calculated from precise
+  // component values, so rounding every displayed row to whole rupees can make
+  // their visible sum differ by a few rupees from the subtotal.
   const formatBreakupINR = (value: number) =>
-    !isGold && value === 0 ? "—" : formatINR(value);
+    !isGold && value === 0 ? "—" : formatINR(value, 2);
   const categoryName = (
     value: Product["mainCategory"] | Product["subCategory"],
   ) => (typeof value === "string" ? value : value?.name || "").toLowerCase();
@@ -250,6 +253,7 @@ export default function PriceBreakup({
     ((product.moissaniteEntries || []).length > 0 ||
       product.moissaniteCaratWeight !== undefined);
   const showMaking = isShown(price, "showMaking");
+  const showCertificate = isShown(price, "showCertificate");
   const showGst = isShown(price, "showGst");
   const silverWeight = number(
     price.grossWeight ??
@@ -307,7 +311,7 @@ export default function PriceBreakup({
       {
         component: metalLabel,
         weight: goldWeight,
-        rate: formatINR(number(price.goldRate)),
+        rate: formatBreakupINR(number(price.goldRate)),
         price: formatBreakupINR(metalValue),
       },
       ...(showMaking
@@ -315,7 +319,7 @@ export default function PriceBreakup({
           {
             component: "Design and Craftsmanship",
             weight: goldWeight,
-            rate: formatINR(number(price.makingRatePerGram)),
+            rate: formatBreakupINR(number(price.makingRatePerGram)),
             price: formatBreakupINR(makingValue),
           },
         ]
@@ -325,7 +329,7 @@ export default function PriceBreakup({
       {
         component: "Silver",
         weight: measurement(silverWeight, "g"),
-        rate: formatINR(number(price.silverRate)),
+        rate: formatBreakupINR(number(price.silverRate)),
         price: formatBreakupINR(metalValue),
       },
       ...(showMaking
@@ -333,7 +337,7 @@ export default function PriceBreakup({
           {
             component: "Design and Craftsmanship",
             weight: measurement(silverWeight, "g"),
-            rate: formatINR(number(price.makingRatePerGram)),
+            rate: formatBreakupINR(number(price.makingRatePerGram)),
             price: formatBreakupINR(makingValue),
           },
         ]
@@ -342,18 +346,18 @@ export default function PriceBreakup({
   const moissaniteRows: FourRow[] =
     !isGold && hasMoissanite
       ? [
-          {
-            component: "Moissanite",
-            weight: measurement(
-              number(
-                price.totalMoissaniteWeight ?? product.moissaniteCaratWeight,
-              ),
-              "ct",
+        {
+          component: "Moissanite",
+          weight: measurement(
+            number(
+              price.totalMoissaniteWeight ?? product.moissaniteCaratWeight,
             ),
-            rate: formatINR(number(price.moissaniteRatePerCarat)),
-            price: formatBreakupINR(number(price.moissaniteValue)),
-          },
-        ]
+            "ct",
+          ),
+            rate: formatBreakupINR(number(price.moissaniteRatePerCarat)),
+          price: formatBreakupINR(number(price.moissaniteValue)),
+        },
+      ]
       : [];
   const stoneTitle = diamondEntries.length
     ? `Lab-Grown Diamonds${Number(product.totalNumberOfDiamonds || 0) > 0 ? ` (Total diamonds - ${product.totalNumberOfDiamonds})` : ""}`
@@ -437,6 +441,14 @@ export default function PriceBreakup({
                 totalLabel={isGold ? "Diamond Total" : undefined}
               />
             )}
+          {showCertificate && number(price.certificateCharges) > 0 && (
+            <div className="flex items-center justify-between border-b border-[var(--color-border)] py-2 pt-0 text-sm">
+              <span>Certificate Charges</span>
+              <span className="whitespace-nowrap tabular-nums">
+                {formatBreakupINR(number(price.certificateCharges))}
+              </span>
+            </div>
+          )}
           {summary}
         </div>
       )}
