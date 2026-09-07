@@ -21,7 +21,7 @@ import {
   useUpdateCartItem,
   useRemoveFromCart,
 } from "../hooks/useCart";
-import { checkoutApi } from "../api/checkout.api";
+import { checkoutApi, type CartSummary } from "../api/checkout.api";
 import { useToast } from "../context/ToastContext";
 import { ApiRequestError } from "../api/client";
 import { useAuth } from "../context/AuthContext";
@@ -128,7 +128,9 @@ export default function CartPage() {
     "idle" | "valid" | "invalid" | "expired" | "unmet"
   >("idle");
   const [appliedDiscount, setAppliedDiscount] = useState(0);
-  const [shippingFee, setShippingFee] = useState(0);
+  const [checkoutSummary, setCheckoutSummary] = useState<CartSummary | null>(
+    null,
+  );
 
   // Delivery Module Frontend State
   const [pincode, setPincode] = useState("");
@@ -152,8 +154,46 @@ export default function CartPage() {
   // Structural Math & Value Aggregation
   const totalItemsCount = cart.reduce((acc, item) => acc + item.quantity, 0);
   const subtotal = cart.reduce((acc, item) => acc + item.lineSubtotal, 0);
-  const resolvedShippingFee = shippingFee || (subtotal === 0 ? 0 : 150);
-  const estimatedTotal = subtotal - appliedDiscount + resolvedShippingFee;
+  const cartSignature = cart
+    .map((item) => `${item.id}:${item.quantity}:${item.lineSubtotal}`)
+    .join("|");
+
+  useEffect(() => {
+    if (!isAuthenticated || !cartSignature) {
+      setCheckoutSummary(null);
+      return;
+    }
+    let cancelled = false;
+    void checkoutApi
+      .getSummary()
+      .then(({ summary }) => {
+        if (!cancelled) setCheckoutSummary(summary);
+      })
+      .catch(() => {
+        if (!cancelled) setCheckoutSummary(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated, cartSignature]);
+
+  const displayedSubtotal = checkoutSummary?.subtotal ?? subtotal;
+  const displayedDiscount = checkoutSummary?.discount ?? appliedDiscount;
+  const resolvedShippingFee =
+    checkoutSummary?.shippingFee ?? (subtotal === 0 ? 0 : 150);
+  const displayedGst =
+    checkoutSummary?.gst ??
+    Math.round(
+      Math.max(0, displayedSubtotal - displayedDiscount) * 0.03 * 100,
+    ) / 100;
+  const estimatedTotal =
+    checkoutSummary?.total ??
+    Math.round(
+      (Math.max(0, displayedSubtotal - displayedDiscount) +
+        displayedGst +
+        resolvedShippingFee) *
+        100,
+    ) / 100;
 
   // Updated updateQuantity: Quantity 1 hone par remove chalega
   const updateQuantity = async (id: string, delta: number) => {
@@ -201,7 +241,7 @@ export default function CartPage() {
       const result = await checkoutApi.applyCoupon(couponCode.trim());
       setCouponStatus("valid");
       setAppliedDiscount(result.summary.discount);
-      setShippingFee(result.summary.shippingFee);
+      setCheckoutSummary(result.summary);
       showToast("Coupon applied successfully", "success");
     } catch (error) {
       setCouponStatus("invalid");
@@ -490,20 +530,43 @@ export default function CartPage() {
                       <div className="flex justify-between text-[var(--color-text-muted)]">
                         <span>Subtotal Selection</span>
                         <span className="font-display font-medium text-[var(--color-text)]">
-                          {formatINR(subtotal)}
+                          {formatINR(displayedSubtotal)}
                         </span>
                       </div>
 
-                      {appliedDiscount > 0 && (
+                      {displayedDiscount > 0 && (
                         <div className="flex justify-between text-emerald-800 font-medium">
                           <span className="flex items-center gap-1.5">
                             <Sparkles className="w-3 h-3" /> Promotion Applied
                           </span>
                           <span className="font-display">
-                            -${appliedDiscount.toLocaleString()}
+                            -{formatINR(displayedDiscount)}
                           </span>
                         </div>
                       )}
+
+                      {(checkoutSummary?.referenceDiscount || 0) > 0 && (
+                        <div className="flex justify-between text-emerald-800 font-medium">
+                          <span>Reference ID Discount</span>
+                          <span className="font-display">
+                            -{formatINR(checkoutSummary?.referenceDiscount || 0)}
+                          </span>
+                        </div>
+                      )}
+
+                      <div className="flex justify-between text-[var(--color-text-muted)]">
+                        <span>GST (3%)</span>
+                        <span className="font-display font-medium text-[var(--color-text)]">
+                          {formatINR(displayedGst)}
+                        </span>
+                      </div>
+
+                      <div className="flex justify-between text-[var(--color-text-muted)]">
+                        <span>Shipping</span>
+                        <span className="font-display font-medium text-[var(--color-text)]">
+                          {formatINR(resolvedShippingFee)}
+                        </span>
+                      </div>
 
                       <div className="pt-4 border-t border-[var(--color-border-subtle)] flex justify-between items-baseline">
                         <span className="text-sm font-medium text-[var(--color-text)]">
