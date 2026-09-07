@@ -362,6 +362,10 @@ export default function PriceBreakup({
   const stoneTitle = diamondEntries.length
     ? `Lab-Grown Diamonds${Number(product.totalNumberOfDiamonds || 0) > 0 ? ` (Total diamonds - ${product.totalNumberOfDiamonds})` : ""}`
     : "Moissanite";
+  const subtotal = number(price.totalCost);
+  const discountAmount = Math.min(Math.max(0, number(discount)), subtotal);
+  const taxableSubtotal = subtotal - discountAmount;
+  const totalAmount = taxableSubtotal + number(price.gst);
 
   const summary = (
     <div>
@@ -371,7 +375,7 @@ export default function PriceBreakup({
             Subtotal
           </h3>
           <span className="whitespace-nowrap tabular-nums">
-            {formatBreakupINR(number(price.totalCost))}
+            {formatBreakupINR(subtotal)}
           </span>
         </div>
         <div className="flex items-center justify-between border-b border-[var(--color-border)] py-2">
@@ -387,7 +391,7 @@ export default function PriceBreakup({
         )}
         <div className="flex items-center justify-between border-b-2 border-[var(--color-teal)] bg-[var(--color-cream)] px-1 py-3 font-bold [-webkit-text-stroke:0.2px_currentColor] text-[var(--color-teal)]">
           <span className="text-[17px]">Total Amount</span>
-          <span className="whitespace-nowrap tabular-nums text-[17px]">{formatBreakupINR(number(price.finalPrice))}</span>
+          <span className="whitespace-nowrap tabular-nums text-[17px]">{formatBreakupINR(totalAmount)}</span>
         </div>
       </div>
       <p className="mt-2 text-xs text-[var(--color-text-muted)]">

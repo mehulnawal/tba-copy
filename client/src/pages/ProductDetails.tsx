@@ -371,20 +371,20 @@ export default function ProductDetails() {
   const appliedCategoryCoupons = categoryCoupons.filter((coupon) =>
     appliedCouponTargets.includes(coupon.appliesTo),
   );
-  const couponDiscount = roundMoney(
+  const calculatedCouponDiscount = roundMoney(
     Math.max(0, Number(productDiscount?.discount) || 0) +
       appliedCategoryCoupons.reduce(
         (total, coupon) => total + Math.max(0, Number(coupon.discount) || 0),
         0,
       ),
   );
+  const couponDiscount = Math.min(calculatedCouponDiscount, originalSubtotal);
   const couponApplied = couponDiscount > 0;
   const subtotalAfterCoupon = roundMoney(originalSubtotal - couponDiscount);
   const discountedGst = roundMoney(subtotalAfterCoupon * 0.03);
   const displayedPrice = couponApplied
     ? {
         ...activePriceObj,
-        totalCost: subtotalAfterCoupon,
         gst: discountedGst,
         finalPrice: roundMoney(subtotalAfterCoupon + discountedGst),
       }

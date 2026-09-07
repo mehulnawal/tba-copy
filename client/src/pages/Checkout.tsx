@@ -161,8 +161,17 @@ export default function Checkout() {
 
     try {
       setApplyingCode(trimmedCode);
-      await checkoutApi.applyCoupon(trimmedCode);
-      await fetchOrderSummary();
+      const result = await checkoutApi.applyCoupon(trimmedCode);
+      setItems(result.cart.items as CartItem[]);
+      setSummary(result.summary);
+      setAppliedReferenceId(result.cart.referenceId || "");
+      const activeCoupons = result.coupons || (result.coupon ? [result.coupon] : []);
+      setAppliedCoupons(
+        activeCoupons.map((coupon) => ({
+          code: coupon.code || String(coupon),
+          discountDisplay: coupon.discountDisplay,
+        })),
+      );
       setCouponSuccess("Coupon applied successfully.");
       setManualCouponCode("");
     } catch (err: any) {
@@ -202,8 +211,17 @@ export default function Checkout() {
 
     try {
       setIsRemoving(true);
-      await checkoutApi.removeCoupon(code);
-      await fetchOrderSummary();
+      const result = await checkoutApi.removeCoupon(code);
+      setItems(result.cart.items as CartItem[]);
+      setSummary(result.summary);
+      setAppliedReferenceId(result.cart.referenceId || "");
+      const activeCoupons = result.coupons || (result.coupon ? [result.coupon] : []);
+      setAppliedCoupons(
+        activeCoupons.map((coupon) => ({
+          code: coupon.code || String(coupon),
+          discountDisplay: coupon.discountDisplay,
+        })),
+      );
       setCouponSuccess("Coupon removed successfully.");
     } catch (err: any) {
       setCouponError(
