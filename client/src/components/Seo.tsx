@@ -10,6 +10,7 @@ type SeoProps = {
   type?: "website" | "product";
   noIndex?: boolean;
   structuredData?: StructuredData;
+  canonicalPath?: string;
 };
 const configuredSiteUrl = "https://www.thebrillianceatelier.com";
 
@@ -29,11 +30,12 @@ export function Seo({
   type = "website",
   noIndex = false,
   structuredData,
+  canonicalPath,
 }: SeoProps) {
   const siteUrl = configuredSiteUrl.replace(/\/+$/, "");
   const pathname =
     typeof window === "undefined" ? "/" : window.location.pathname;
-  const canonicalUrl = absoluteUrl(pathname, siteUrl);
+  const canonicalUrl = absoluteUrl(canonicalPath || pathname, siteUrl);
   const imageUrl = absoluteUrl(image || logo, siteUrl);
 
   return (

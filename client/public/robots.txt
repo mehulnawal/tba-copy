@@ -1,5 +1,6 @@
 User-agent: *
 Allow: /
+
 Disallow: /admin/
 Disallow: /b2b/
 Disallow: /account
@@ -9,5 +10,6 @@ Disallow: /checkout
 Disallow: /orders
 Disallow: /orderConfirmation
 Disallow: /reset-password
+Disallow: /wishlist
 
 Sitemap: https://www.thebrillianceatelier.com/sitemap.xml

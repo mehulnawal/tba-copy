@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { AuthModal } from "./AuthModal";
 import { useAuth } from "../context/AuthContext";
 import { apiRequest } from "../api/client";
@@ -150,6 +150,7 @@ function weightFor(
 
 export default function ProductDetails() {
   const { slug = "" } = useParams();
+  const navigate = useNavigate();
   const { showToast } = useToast();
   const { isAuthenticated } = useAuth();
   const addToCartMutation = useAddToCart();
@@ -216,6 +217,9 @@ export default function ProductDetails() {
     apiRequest<Product>(`/products/${slug}`)
       .then((p) => {
         setProduct(p);
+        if (p.slug && slug !== p.slug) {
+          navigate(`/product/${p.slug}`, { replace: true });
+        }
         const defaultColors = selectedVariantColors(p);
         const variantImages = normalizeVariantImages(p.images);
         const defaultImage =
@@ -473,10 +477,11 @@ export default function ProductDetails() {
   const productImage = mediaList[activeMediaIndex]?.url;
 
   const availableColors = selectedVariantColors(product);
-  const siteUrl = (
-    import.meta.env.VITE_SITE_URL || "https://thebrillianceatelier.com"
-  ).replace(/\/+$/, "");
-  const productPath = `/product/${product.slug || slug}`;
+  const siteUrl = "https://www.thebrillianceatelier.com";
+  const productPath = product.slug ? `/product/${product.slug}` : undefined;
+  const canonicalProductUrl = productPath
+    ? `${siteUrl}${productPath}`
+    : undefined;
   const productSchema = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -492,12 +497,13 @@ export default function ProductDetails() {
       .filter(Boolean)
       .join(" > "),
     material: isGold ? "Gold" : "Silver",
+    url: canonicalProductUrl,
     offers: {
       "@type": "Offer",
       priceCurrency: "INR",
       price: Number(activePriceObj.finalPrice || 0).toFixed(2),
       availability: "https://schema.org/InStock",
-      url: `${siteUrl}${productPath}`,
+      url: canonicalProductUrl,
       itemCondition: "https://schema.org/NewCondition",
     },
   };
@@ -526,7 +532,7 @@ export default function ProductDetails() {
         "@type": "ListItem",
         position: subCategoryId ? 4 : 3,
         name: product.title,
-        item: `${siteUrl}${productPath}`,
+        item: canonicalProductUrl || siteUrl,
       },
     ],
   };
@@ -706,6 +712,7 @@ export default function ProductDetails() {
         }
         image={product.images[0]?.url}
         type="product"
+        canonicalPath={productPath}
         structuredData={[productSchema, breadcrumbSchema]}
       />
       <div className="min-h-screen bg-[#FAF9F6] text-stone-900 antialiased font-secondary pb-0">

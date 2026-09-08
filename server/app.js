@@ -25,6 +25,7 @@ const integrationRoutes = require("./src/routes/integration.routes");
 const errorHandler = require("./src/middlewares/error.middleware");
 const { apiLimiter } = require("./src/middlewares/rateLimiter.middleware");
 const ApiError = require("./src/utils/ApiError");
+const { getSitemap } = require("./src/controllers/sitemap.controller");
 
 const app = express();
 
@@ -92,6 +93,7 @@ app.use("/api/v1", apiLimiter);
 app.get("/health", (req, res) => {
   res.status(200).json({ success: true, message: "TBA API is running" });
 });
+app.get("/sitemap.xml", getSitemap);
 
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/user", userRoutes);

@@ -689,6 +689,11 @@ export function ProductCard({
     : 0;
   const b2cReferencePrice = b2b ? targetPriceObj?.b2cFinalPrice : undefined;
   const isSilver = product.metal === "silver";
+  const productDetailPath = b2b
+    ? `/b2b/product/${product.slug || product.SKU}`
+    : product.slug
+      ? `/product/${product.slug}`
+      : "/products";
 
   return (
     <div
@@ -699,7 +704,7 @@ export function ProductCard({
       {/* FIX #3: Proportional portrait aspect-ratio layout for card structure */}
       <div className="relative aspect-[4/5] w-full bg-gray-50 overflow-hidden">
         <Link
-          to={`${b2b ? "/b2b/product/" : "/product/"}${product.slug || product.SKU}`}
+          to={productDetailPath}
           className="block w-full h-full"
         >
           {images[currentImgIndex] ? (
@@ -790,7 +795,7 @@ export function ProductCard({
         </span>
 
         <Link
-          to={`${b2b ? "/b2b/product/" : "/product/"}${product.slug || product.SKU}`}
+          to={productDetailPath}
           className="block"
         >
           <h3

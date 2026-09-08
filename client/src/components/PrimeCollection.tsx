@@ -251,11 +251,12 @@ export default function PrimeSelection() {
     const isWishlisted =
       wishlistOverrides[product.id] ??
       wishlist.some((item) => item.productId === product.id);
+    const productPath = product.slug ? `/product/${product.slug}` : "/products";
     return (
       <article className="group relative flex gap-4 rounded-lg border border-[var(--color-border-subtle)] bg-white p-3.5 shadow-sm">
         <div className="relative h-44 w-32 shrink-0 overflow-hidden rounded-md bg-[var(--color-bg-secondary)] sm:h-56 sm:w-44">
           <Link
-            to={`/product/${product.slug || product.id}`}
+            to={productPath}
             onClick={handleCloseModal}
             aria-label={`View ${product.name}`}
           >
@@ -307,7 +308,7 @@ export default function PrimeSelection() {
                 {product.code}
               </p>
               <Link
-                to={`/product/${product.slug || product.id}`}
+                to={productPath}
                 onClick={handleCloseModal}
                 className="product-title mt-1 block font-primary text-lg leading-snug text-[var(--color-text)] hover:text-[var(--color-teal)]"
               >
