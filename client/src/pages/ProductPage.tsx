@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { apiRequest } from "../api/client";
 import { useCategories } from "../hooks/useCategories";
 import Navbar from "../components/Navbar";
@@ -56,6 +56,7 @@ export default function ProductPage({
   fixedMainCategory?: string;
 }) {
   const [params, setParams] = useSearchParams();
+  const navigate = useNavigate();
 
   const { data: categoryData = [] } = useCategories(metal);
   const categories = categoryData ?? [];
@@ -130,6 +131,10 @@ export default function ProductPage({
             ),
           ]);
   const selectCategory = (category: Category | null) => {
+    if (category?._id === "6a68a898063feb823d6d993d") {
+      navigate("/silver-jewellery/polki");
+      return;
+    }
     const next = new URLSearchParams(params);
     next.delete("category");
     if (!category) {
