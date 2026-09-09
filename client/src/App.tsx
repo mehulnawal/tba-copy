@@ -132,9 +132,9 @@ function RouteSeo() {
     },
     {
       match: (path) => path === "/silver-jewellery/polki",
-      title: "Silver Jewellery Online | Rings, Earrings & Necklaces | TBA",
+      title: "Silver Polki Jewellery Online | Polki Necklace Sets | TBA",
       description:
-        "Shop silver jewellery online at The Brilliance Atelier. Discover silver rings, earrings, necklaces, Moissanite and Polki jewellery collections.",
+        "Shop silver Polki jewellery online at The Brilliance Atelier. Explore Polki necklace sets, bridal designs, chokers and statement jewellery crafted for special occasions.",
       keywords: [
         "silver jewellery",
         "silver jewellery online",
@@ -410,6 +410,7 @@ export default function App() {
                     <ProductsPage
                       metal="silver"
                       fixedMainCategory="6a68a898063feb823d6d993d"
+                      heading="Silver Polki Jewellery"
                     />
                   </Deferred>
                 }

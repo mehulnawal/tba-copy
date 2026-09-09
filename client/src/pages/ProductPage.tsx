@@ -50,10 +50,12 @@ export default function ProductPage({
   metal = "gold",
   b2b = false,
   fixedMainCategory,
+  heading,
 }: {
   metal?: "gold" | "silver";
   b2b?: boolean;
   fixedMainCategory?: string;
+  heading?: string;
 }) {
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
@@ -268,7 +270,7 @@ export default function ProductPage({
         <div className="catalog-title-bar border-b pb-5 sm:flex sm:items-center sm:justify-between">
           <div>
             <h1 className="text-3xl font-primary font-semibold tracking-tight text-gray-900">
-              {metal === "gold" ? "Diamond Jewellery" : "Silver Jewellery"}
+              {heading || (metal === "gold" ? "Diamond Jewellery" : "Silver Jewellery")}
             </h1>
           </div>
           <div className="mt-3 sm:mt-0 sm:ml-4">
