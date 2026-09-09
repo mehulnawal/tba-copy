@@ -439,9 +439,12 @@ export default function ProductDetails() {
   const catalogPath = `/${isGold ? "gold-jewellery" : "silver-jewellery"}`;
   const mainCategoryId = categoryId(product.mainCategory);
   const subCategoryId = categoryId(product.subCategory);
-  const mainCategoryPath = mainCategoryId
-    ? `${catalogPath}?mainCategory=${encodeURIComponent(mainCategoryId)}`
-    : catalogPath;
+  const mainCategoryPath =
+    mainCategoryId === "6a68a898063feb823d6d993d"
+      ? "/silver-jewellery/polki"
+      : mainCategoryId
+        ? `${catalogPath}?mainCategory=${encodeURIComponent(mainCategoryId)}`
+        : catalogPath;
   const subCategoryPath = subCategoryId
     ? `${catalogPath}?${new URLSearchParams({
         ...(mainCategoryId ? { mainCategory: mainCategoryId } : {}),

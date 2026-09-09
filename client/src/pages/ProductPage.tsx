@@ -49,9 +49,11 @@ const formatCatalogProductTitle = (title: string) =>
 export default function ProductPage({
   metal = "gold",
   b2b = false,
+  fixedMainCategory,
 }: {
   metal?: "gold" | "silver";
   b2b?: boolean;
+  fixedMainCategory?: string;
 }) {
   const [params, setParams] = useSearchParams();
 
@@ -145,7 +147,7 @@ export default function ProductPage({
     }
     setParams(next);
   };
-  const selectedMainCategory = params.get("mainCategory");
+  const selectedMainCategory = fixedMainCategory || params.get("mainCategory");
   const selectedSubCategory = params.get("subCategory");
   const activeCategoryName =
     categories.find(

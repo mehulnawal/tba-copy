@@ -56,13 +56,14 @@ const Deferred = ({ children }: { children: React.ReactNode }) => (
 );
 
 function RouteSeo() {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const pages: Array<{
     match: (path: string) => boolean;
     title: string;
     description: string;
     keywords?: string[];
     noIndex?: boolean;
+    canonicalPath?: string;
   }> = [
     {
       match: (path) => path === "/",
@@ -128,6 +129,25 @@ function RouteSeo() {
         "sterling silver jewellery",
         "silver jewellery India",
       ],
+    },
+    {
+      match: (path) => path === "/silver-jewellery/polki",
+      title: "Silver Jewellery Online | Rings, Earrings & Necklaces | TBA",
+      description:
+        "Shop silver jewellery online at The Brilliance Atelier. Discover silver rings, earrings, necklaces, Moissanite and Polki jewellery collections.",
+      keywords: [
+        "silver jewellery",
+        "silver jewellery online",
+        "silver rings",
+        "silver earrings",
+        "silver necklaces",
+        "silver bracelets",
+        "moissanite jewellery",
+        "polki jewellery",
+        "sterling silver jewellery",
+        "silver jewellery India",
+      ],
+      canonicalPath: "/silver-jewellery/polki",
     },
     {
       match: (path) => path.startsWith("/product/"),
@@ -232,6 +252,7 @@ function RouteSeo() {
     description: string;
     keywords?: string[];
     noIndex?: boolean;
+    canonicalPath?: string;
   } = pages.find(({ match }) => match(pathname)) || {
     title: "Page Not Found | TBA jewellery",
     description: "The requested TBA jewellery page could not be found.",
@@ -248,7 +269,19 @@ function RouteSeo() {
     "/auth",
     "/reset-password",
   ].some((path) => pathname === path || pathname.startsWith(`${path}/`));
-  return <Seo {...page} noIndex={noIndex || page.noIndex} />;
+  const canonicalPath =
+    pathname === "/silver-jewellery" &&
+    new URLSearchParams(search).get("mainCategory") ===
+      "6a68a898063feb823d6d993d"
+      ? "/silver-jewellery/polki"
+      : page.canonicalPath;
+  return (
+    <Seo
+      {...page}
+      canonicalPath={canonicalPath}
+      noIndex={noIndex || page.noIndex}
+    />
+  );
 }
 function AuthRoute() {
   const location = useLocation();
@@ -269,7 +302,7 @@ function AuthRoute() {
   );
 }
 function ScrollToTop() {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
   }, [pathname]);
@@ -367,6 +400,17 @@ export default function App() {
                 element={
                   <Deferred>
                     <ProductsPage metal="silver" />
+                  </Deferred>
+                }
+              />
+              <Route
+                path="/silver-jewellery/polki"
+                element={
+                  <Deferred>
+                    <ProductsPage
+                      metal="silver"
+                      fixedMainCategory="6a68a898063feb823d6d993d"
+                    />
                   </Deferred>
                 }
               />

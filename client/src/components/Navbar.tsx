@@ -81,6 +81,13 @@ export default function Navbar({
       navigate(path);
       return;
     }
+    if (
+      metal === "silver" &&
+      category.id === "6a68a898063feb823d6d993d"
+    ) {
+      navigate("/silver-jewellery/polki");
+      return;
+    }
     const params = new URLSearchParams();
     if (category.children.length) params.set("mainCategory", category.id);
     else {

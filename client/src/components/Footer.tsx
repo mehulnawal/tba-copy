@@ -37,7 +37,7 @@ export default function Footer({
   const exploreLinks = [
     { label: "Diamond Jewellery", to: "/gold-jewellery" },
     { label: "Silver Jewellery", to: "/silver-jewellery" },
-    { label: "Polki Jewellery", to: silverTypePath("Polki") },
+    { label: "Polki Jewellery", to: "/silver-jewellery/polki" },
     { label: "Moissanite Jewellery", to: silverTypePath("Moissanite") },
   ];
   return (

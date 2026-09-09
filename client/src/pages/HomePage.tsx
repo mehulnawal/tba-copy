@@ -302,6 +302,10 @@ export default function HomePage() {
     } else {
       params.set("mainCategory", category._id);
     }
+    if (category._id === "6a68a898063feb823d6d993d") {
+      navigate("/silver-jewellery/polki");
+      return;
+    }
     navigate(
       `/${category.metal === "silver" ? "silver-jewellery" : "gold-jewellery"}?${params.toString()}`,
     );
