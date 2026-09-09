@@ -51,11 +51,15 @@ export default function ProductPage({
   b2b = false,
   fixedMainCategory,
   heading,
+  intro,
+  showPolkiBreadcrumb = false,
 }: {
   metal?: "gold" | "silver";
   b2b?: boolean;
   fixedMainCategory?: string;
   heading?: string;
+  intro?: string;
+  showPolkiBreadcrumb?: boolean;
 }) {
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
@@ -267,11 +271,27 @@ export default function ProductPage({
         />
       )}
       <main className="flex-grow mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 py-8 pb-24 lg:pb-8">
+        {showPolkiBreadcrumb && (
+          <nav aria-label="Breadcrumb" className="mb-3 flex items-center gap-2 text-sm text-gray-500">
+            <Link to="/" className="hover:text-gray-900">
+              Home
+            </Link>
+            <span aria-hidden="true">&gt;</span>
+            <Link to="/silver-jewellery" className="hover:text-gray-900">
+              Silver Jewellery
+            </Link>
+            <span aria-hidden="true">&gt;</span>
+            <span aria-current="page">Polki Jewellery</span>
+          </nav>
+        )}
         <div className="catalog-title-bar border-b pb-5 sm:flex sm:items-center sm:justify-between">
           <div>
             <h1 className="text-3xl font-primary font-semibold tracking-tight text-gray-900">
               {heading || (metal === "gold" ? "Diamond Jewellery" : "Silver Jewellery")}
             </h1>
+            {intro && (
+              <p className="mt-1 text-sm text-gray-500">{intro}</p>
+            )}
           </div>
           <div className="mt-3 sm:mt-0 sm:ml-4">
             <input

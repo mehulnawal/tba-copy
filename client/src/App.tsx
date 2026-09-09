@@ -411,6 +411,8 @@ export default function App() {
                       metal="silver"
                       fixedMainCategory="6a68a898063feb823d6d993d"
                       heading="Silver Polki Jewellery"
+                      intro="Explore Silver Polki Jewellery featuring necklace sets, chokers, bridal styles and selected bangles for weddings and special occasions."
+                      showPolkiBreadcrumb
                     />
                   </Deferred>
                 }
