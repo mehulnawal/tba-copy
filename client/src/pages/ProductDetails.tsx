@@ -494,7 +494,7 @@ export default function ProductDetails() {
     description: productDescription || `TBA jewellery ${product.title}`,
     sku: product.SKU,
     image: (product.images || []).map((item) => item.url),
-    brand: { "@type": "Brand", name: "TBA jewellery" },
+    brand: { "@type": "Brand", name: "The Brilliance Atelier" },
     category: [
       categoryName(product.mainCategory),
       categoryName(product.subCategory),
@@ -507,6 +507,7 @@ export default function ProductDetails() {
       "@type": "Offer",
       priceCurrency: "INR",
       price: Number(activePriceObj.finalPrice || 0).toFixed(2),
+      availability: "https://schema.org/InStock",
       url: canonicalProductUrl,
       itemCondition: "https://schema.org/NewCondition",
     },

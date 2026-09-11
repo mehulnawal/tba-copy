@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { 
-useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Product, PrimeHotspot, FAQ, Testimonial, Category } from "../types";
 import FloatingButtons from "../components/FloatingButtons";

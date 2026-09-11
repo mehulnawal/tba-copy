@@ -74,6 +74,15 @@ function RouteSeo() {
         "The Brilliance Atelier | Gold, Silver & Lab Grown Diamond Jewellery",
       description:
         "Shop fine gold, silver and lab grown diamond jewellery at The Brilliance Atelier. Explore elegant rings, earrings, necklaces and custom jewellery designs.",
+      structuredData: {
+        "@context": "https://schema.org",
+        "@type": "OnlineStore",
+        name: "The Brilliance Atelier",
+        url: "https://www.thebrillianceatelier.com/",
+        telephone: "+918160797411",
+        email: "customercare.tba@gmail.com",
+        sameAs: ["https://instagram.com/tbajewels"],
+      },
       keywords: [
         "The Brilliance Atelier",
         "TBA jewellery",
