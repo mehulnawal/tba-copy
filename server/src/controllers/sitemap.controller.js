@@ -1,7 +1,13 @@
 const Product = require("../models/product.model");
 
 const SITE_URL = "https://www.thebrillianceatelier.com";
-const STATIC_URLS = ["/", "/gold-jewellery", "/silver-jewellery", "/silver-jewellery/polki"];
+const STATIC_URLS = [
+  "/",
+  "/gold-jewellery",
+  "/silver-jewellery",
+  "/silver-jewellery/polki",
+  "/silver-jewellery/moissanite",
+];
 
 const XML_ENTITIES = {
   "&": "&amp;",

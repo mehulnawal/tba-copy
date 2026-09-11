@@ -50,16 +50,20 @@ export default function ProductPage({
   metal = "gold",
   b2b = false,
   fixedMainCategory,
+  fixedMainCategoryName,
   heading,
   intro,
   showPolkiBreadcrumb = false,
+  showMoissaniteBreadcrumb = false,
 }: {
   metal?: "gold" | "silver";
   b2b?: boolean;
   fixedMainCategory?: string;
+  fixedMainCategoryName?: string;
   heading?: string;
   intro?: string;
   showPolkiBreadcrumb?: boolean;
+  showMoissaniteBreadcrumb?: boolean;
 }) {
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
@@ -141,6 +145,10 @@ export default function ProductPage({
       navigate("/silver-jewellery/polki");
       return;
     }
+    if (metal === "silver" && category?.name.toLowerCase() === "moissanite") {
+      navigate("/silver-jewellery/moissanite");
+      return;
+    }
     const next = new URLSearchParams(params);
     next.delete("category");
     if (!category) {
@@ -158,7 +166,9 @@ export default function ProductPage({
     }
     setParams(next);
   };
-  const selectedMainCategory = fixedMainCategory || params.get("mainCategory");
+  const selectedMainCategory = fixedMainCategory || (fixedMainCategoryName
+    ? categories.find((category) => category.categoryKind === "type" && category.name.toLowerCase() === fixedMainCategoryName.toLowerCase())?._id
+    : params.get("mainCategory"));
   const selectedSubCategory = params.get("subCategory");
   const activeCategoryName =
     categories.find(
@@ -271,7 +281,7 @@ export default function ProductPage({
         />
       )}
       <main className="flex-grow mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 py-8 pb-24 lg:pb-8">
-        {showPolkiBreadcrumb && (
+        {(showPolkiBreadcrumb || showMoissaniteBreadcrumb) && (
           <nav aria-label="Breadcrumb" className="mb-3 flex items-center gap-2 text-sm text-gray-500">
             <Link to="/" className="hover:text-gray-900">
               Home
@@ -281,7 +291,9 @@ export default function ProductPage({
               Silver Jewellery
             </Link>
             <span aria-hidden="true">&gt;</span>
-            <span aria-current="page">Polki Jewellery</span>
+            <span aria-current="page">
+              {showMoissaniteBreadcrumb ? "Moissanite" : "Polki"} Jewellery
+            </span>
           </nav>
         )}
         <div className="catalog-title-bar border-b pb-5 sm:flex sm:items-center sm:justify-between">

@@ -88,6 +88,10 @@ export default function Navbar({
       navigate("/silver-jewellery/polki");
       return;
     }
+    if (metal === "silver" && category.name.toLowerCase() === "moissanite") {
+      navigate("/silver-jewellery/moissanite");
+      return;
+    }
     const params = new URLSearchParams();
     if (category.children.length) params.set("mainCategory", category.id);
     else {

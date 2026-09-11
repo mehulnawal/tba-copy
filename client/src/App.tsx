@@ -12,6 +12,7 @@ import Loader from "./components/Loader";
 import ToastContainer from "./components/ToastContainer";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { Seo } from "./components/Seo";
+import { useCategories } from "./hooks/useCategories";
 
 import ComingSoonPage from "./pages/CommingSoon";
 
@@ -57,6 +58,7 @@ const Deferred = ({ children }: { children: React.ReactNode }) => (
 
 function RouteSeo() {
   const { pathname, search } = useLocation();
+  const { data: silverCategories } = useCategories("silver");
   const pages: Array<{
     match: (path: string) => boolean;
     title: string;
@@ -64,6 +66,7 @@ function RouteSeo() {
     keywords?: string[];
     noIndex?: boolean;
     canonicalPath?: string;
+    structuredData?: Record<string, unknown>;
   }> = [
     {
       match: (path) => path === "/",
@@ -148,8 +151,42 @@ function RouteSeo() {
         "silver jewellery India",
       ],
       canonicalPath: "/silver-jewellery/polki",
+      structuredData: {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: "Home",
+            item: "https://www.thebrillianceatelier.com/",
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: "Silver Jewellery",
+            item: "https://www.thebrillianceatelier.com/silver-jewellery",
+          },
+          {
+            "@type": "ListItem",
+            position: 3,
+            name: "Polki Jewellery",
+            item: "https://www.thebrillianceatelier.com/silver-jewellery/polki",
+          },
+        ],
+      },
     },
     {
+      match: (path) => path === "/silver-jewellery/moissanite",
+      title: "Moissanite Jewellery Online | Silver Moissanite Necklaces | TBA",
+      description: "Shop Moissanite jewellery online at The Brilliance Atelier. Explore elegant silver Moissanite necklace designs for weddings, celebrations and special occasions.",
+      canonicalPath: "/silver-jewellery/moissanite",
+      structuredData: { "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Home", item: "https://www.thebrillianceatelier.com/" },
+        { "@type": "ListItem", position: 2, name: "Silver Jewellery", item: "https://www.thebrillianceatelier.com/silver-jewellery" },
+        { "@type": "ListItem", position: 3, name: "Moissanite Jewellery", item: "https://www.thebrillianceatelier.com/silver-jewellery/moissanite" },
+      ] },
+    },    {
       match: (path) => path.startsWith("/product/"),
       title: "Jewellery Details | TBA jewellery",
       description:
@@ -253,6 +290,7 @@ function RouteSeo() {
     keywords?: string[];
     noIndex?: boolean;
     canonicalPath?: string;
+    structuredData?: Record<string, unknown>;
   } = pages.find(({ match }) => match(pathname)) || {
     title: "Page Not Found | TBA jewellery",
     description: "The requested TBA jewellery page could not be found.",
@@ -269,17 +307,22 @@ function RouteSeo() {
     "/auth",
     "/reset-password",
   ].some((path) => pathname === path || pathname.startsWith(`${path}/`));
+  const selectedMainCategory = new URLSearchParams(search).get("mainCategory");
+  const selectedSilverType = silverCategories.find(
+    (category) => category._id === selectedMainCategory,
+  )?.name.toLowerCase();
   const canonicalPath =
-    pathname === "/silver-jewellery" &&
-    new URLSearchParams(search).get("mainCategory") ===
-      "6a68a898063feb823d6d993d"
+    pathname === "/silver-jewellery" && selectedSilverType === "polki"
       ? "/silver-jewellery/polki"
-      : page.canonicalPath;
+      : pathname === "/silver-jewellery" && selectedSilverType === "moissanite"
+        ? "/silver-jewellery/moissanite"
+        : page.canonicalPath;
   return (
     <Seo
       {...page}
       canonicalPath={canonicalPath}
       noIndex={noIndex || page.noIndex}
+      structuredData={page.structuredData}
     />
   );
 }
@@ -303,6 +346,7 @@ function AuthRoute() {
 }
 function ScrollToTop() {
   const { pathname, search } = useLocation();
+  const { data: silverCategories } = useCategories("silver");
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
   }, [pathname]);
@@ -418,6 +462,9 @@ export default function App() {
                 }
               />
               <Route
+                path="/silver-jewellery/moissanite"
+                element={<Deferred><ProductsPage metal="silver" fixedMainCategoryName="Moissanite" heading="Silver Moissanite Jewellery" intro="Explore Silver Moissanite Jewellery featuring elegant necklace designs for weddings, celebrations and special occasions." showMoissaniteBreadcrumb /></Deferred>}
+              />              <Route
                 path="/product/:slug"
                 element={
                   <Deferred>

@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { 
+useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Product, PrimeHotspot, FAQ, Testimonial, Category } from "../types";
 import FloatingButtons from "../components/FloatingButtons";
@@ -304,6 +305,10 @@ export default function HomePage() {
     }
     if (category._id === "6a68a898063feb823d6d993d") {
       navigate("/silver-jewellery/polki");
+      return;
+    }
+    if (category.metal === "silver" && category.name.toLowerCase() === "moissanite") {
+      navigate("/silver-jewellery/moissanite");
       return;
     }
     navigate(

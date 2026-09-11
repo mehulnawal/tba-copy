@@ -282,15 +282,15 @@ const productExportRows = (products: Product[]) =>
       Status: product.isActive ? "Published" : "Draft",
       "Best Seller": product.isBestSeller ? "Yes" : "No",
       "New Arrival": product.isNewProduct ? "Yes" : "No",
-      "14KT Price (INR)": price("14kt"),
-      "18KT Price (INR)": price("18kt"),
-      "Silver Price (INR)":
+      "14KT Price": price("14kt"),
+      "18KT Price": price("18kt"),
+      "Silver Price":
         product.metal === "silver"
           ? (product.prices?.[0]?.finalPrice ?? "")
           : "",
-      "Gross Weight (g)": grossWeight,
-      "14KT Gross Weight (g)": goldWeight?.["14kt"] ?? "",
-      "18KT Gross Weight (g)": goldWeight?.["18kt"] ?? "",
+      "Gross Weight": grossWeight,
+      "14KT Gross Weight": goldWeight?.["14kt"] ?? "",
+      "18KT Gross Weight": goldWeight?.["18kt"] ?? "",
       "Diamond Details": (product.diamonds || [])
         .map((diamond) =>
           [
@@ -324,6 +324,16 @@ const exportProducts = (products: Product[]) => {
       XLSX.utils.decode_range(sheet["!ref"] || "A1"),
     ),
   };
+  const headerRange = XLSX.utils.decode_range(sheet["!ref"] || "A1");
+  for (let column = headerRange.s.c; column <= headerRange.e.c; column++) {
+    const headerCell = sheet[XLSX.utils.encode_cell({ r: 0, c: column })];
+    if (headerCell) {
+      headerCell.s = {
+        font: { bold: true },
+        fill: { fgColor: { rgb: "D9EAD3" } },
+      };
+    }
+  }
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, sheet, "Products");
   XLSX.writeFile(
@@ -813,6 +823,7 @@ export default function Products() {
   const [categoryFilter, setCategoryFilter] = useState("");
   const [goldImportRows, setGoldImportRows] = useState<GoldImportRow[]>([]);
   const [importingGold, setImportingGold] = useState(false);
+  const [exportingProducts, setExportingProducts] = useState(false);
   const goldImportInputRef = useRef<HTMLInputElement | null>(null);
   const downloadCurrentGoldTemplate = () => {
     const root = categories.find((category) => !category.parent && category.name.trim().toLowerCase() === "gold");
@@ -991,6 +1002,25 @@ export default function Products() {
           ),
     [items, categoryFilter],
   );
+  const handleExportProducts = async () => {
+    setExportingProducts(true);
+    try {
+      const products = await adminApi.adminProducts();
+      if (!products.length) {
+        showToast("No products available to export.", "error");
+        return;
+      }
+      exportProducts(products);
+      showToast(`${products.length} products exported successfully.`, "success");
+    } catch (error) {
+      showToast(
+        error instanceof Error ? error.message : "Could not export products.",
+        "error",
+      );
+    } finally {
+      setExportingProducts(false);
+    }
+  };
   const categoryFilterOptions = useMemo(() => {
     const usedCategories = new Map<string, string>();
     items.forEach((product) => {
@@ -1550,9 +1580,10 @@ export default function Products() {
           <div className="flex gap-3">
             <button
               className="admin-secondary"
-              onClick={() => exportProducts(filteredItems)}
+              disabled={exportingProducts}
+              onClick={() => void handleExportProducts()}
             >
-              Export Excel
+              {exportingProducts ? "Exporting..." : "Export Excel"}
             </button>
           <input ref={goldImportInputRef} type="file" accept=".xlsx,.xls" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) void previewGoldImport(file); event.currentTarget.value = ""; }} />
           <button className="admin-secondary" onClick={downloadCurrentGoldTemplate}>

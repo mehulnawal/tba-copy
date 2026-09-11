@@ -442,6 +442,8 @@ export default function ProductDetails() {
   const mainCategoryPath =
     mainCategoryId === "6a68a898063feb823d6d993d"
       ? "/silver-jewellery/polki"
+      : categoryName(product.mainCategory).toLowerCase() === "moissanite"
+        ? "/silver-jewellery/moissanite"
       : mainCategoryId
         ? `${catalogPath}?mainCategory=${encodeURIComponent(mainCategoryId)}`
         : catalogPath;
@@ -505,7 +507,6 @@ export default function ProductDetails() {
       "@type": "Offer",
       priceCurrency: "INR",
       price: Number(activePriceObj.finalPrice || 0).toFixed(2),
-      availability: "https://schema.org/InStock",
       url: canonicalProductUrl,
       itemCondition: "https://schema.org/NewCondition",
     },

@@ -19,18 +19,6 @@ export default function Footer({
 }: {
   onCategoryChange: (category: string) => void;
 }) {
-  const { data: categories } = useCategories();
-  const silverTypePath = (name: string) => {
-    const category = categories.find(
-      (item) =>
-        item.metal === "silver" &&
-        item.categoryKind === "type" &&
-        item.name.toLowerCase() === name.toLowerCase(),
-    );
-    return category
-      ? `/silver-jewellery?mainCategory=${encodeURIComponent(category._id)}`
-      : "/silver-jewellery";
-  };
   const appointmentMessage =
     "Hello, I would like to book an appointment with The Brilliance Atelier. Please help me with the available dates and timings.";
   const appointmentWhatsAppUrl = `${SOCIAL_LINKS.whatsapp}?text=${encodeURIComponent(appointmentMessage)}`;
@@ -38,7 +26,7 @@ export default function Footer({
     { label: "Diamond Jewellery", to: "/gold-jewellery" },
     { label: "Silver Jewellery", to: "/silver-jewellery" },
     { label: "Polki Jewellery", to: "/silver-jewellery/polki" },
-    { label: "Moissanite Jewellery", to: silverTypePath("Moissanite") },
+    { label: "Moissanite Jewellery", to: "/silver-jewellery/moissanite" },
   ];
   return (
     <footer className="w-full bg-[var(--color-teal-dark)] text-white pt-4">
