@@ -53,6 +53,8 @@ export default function ProductPage({
   fixedMainCategoryName,
   heading,
   intro,
+  faqs,
+  supportingContent,
   showPolkiBreadcrumb = false,
   showMoissaniteBreadcrumb = false,
 }: {
@@ -62,6 +64,8 @@ export default function ProductPage({
   fixedMainCategoryName?: string;
   heading?: string;
   intro?: string;
+  faqs?: Array<{ question: string; answer: string }>;
+  supportingContent?: { heading: string; paragraphs: string[] };
   showPolkiBreadcrumb?: boolean;
   showMoissaniteBreadcrumb?: boolean;
 }) {
@@ -488,6 +492,47 @@ export default function ProductPage({
             )}
           </div>
         </div>
+
+        {supportingContent ? (
+          <section
+            aria-labelledby="catalog-supporting-content-heading"
+            className="mt-12 border-t border-gray-200 pt-8"
+          >
+            <h2
+              id="catalog-supporting-content-heading"
+              className="font-primary text-2xl font-semibold tracking-tight text-gray-900"
+            >
+              {supportingContent.heading}
+            </h2>
+            <div className="mt-4 w-full max-w-none space-y-3 text-sm leading-relaxed text-gray-600">
+              {supportingContent.paragraphs.map((paragraph) => (
+                <p key={paragraph}>{paragraph}</p>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        {faqs?.length ? (
+          <section
+            aria-labelledby="catalog-faqs-heading"
+            className="mt-12 border-t border-gray-200 pt-8"
+          >
+            <h2
+              id="catalog-faqs-heading"
+              className="font-primary text-2xl font-semibold tracking-tight text-gray-900"
+            >
+              {heading?.replace(/^Silver /, "")} FAQs
+            </h2>
+            <dl className="mt-5 space-y-4">
+              {faqs.map((faq) => (
+                <div key={faq.question} className="rounded-lg border border-gray-200 bg-white p-4">
+                  <dt className="text-base font-semibold text-gray-900">{faq.question}</dt>
+                  <dd className="mt-2 text-sm leading-relaxed text-gray-600">{faq.answer}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+        ) : null}
       </main>
 
       <div className="catalog-mobile-bar fixed inset-x-0 bottom-0 z-[var(--z-sticky)] flex gap-3 border-t border-[var(--color-border)] bg-[var(--color-bg-secondary)]/95 p-3 shadow-[var(--shadow-lg)] backdrop-blur lg:hidden">

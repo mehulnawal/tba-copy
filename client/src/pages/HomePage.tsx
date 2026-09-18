@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Product, PrimeHotspot, FAQ, Testimonial, Category } from "../types";
 import FloatingButtons from "../components/FloatingButtons";
@@ -57,7 +57,7 @@ const TESTIMONIALS: Testimonial[] = [
     name: "Shivani Chandak",
     location: "Ahemdabad",
     rating: 4.5,
-    review: "Made Silvering & Diamond Bangles. My Mom loved it â™¥",
+    review: "Made Silvering & Diamond Bangles. My Mom loved it ♥",
     images: [
       "https://res.cloudinary.com/dkrchgmhx/image/upload/v1786538743/WhatsApp_Image_2026-08-06_at_4.37.36_PM-_1_cstupx.jpg",
       "",
@@ -69,7 +69,7 @@ const TESTIMONIALS: Testimonial[] = [
     location: "Surat",
     rating: 5,
     review:
-      "Made Necklace for my wedding day. Goes perfect with the outfit ðŸ˜€",
+      "Made Necklace for my wedding day. Goes perfect with the outfit 😀",
     images: [
       "https://res.cloudinary.com/dkrchgmhx/image/upload/v1786538406/WhatsApp_Image_2026-08-06_at_4.37.37_PM_iyytgj.jpg",
       "",
@@ -290,7 +290,7 @@ export default function HomePage() {
       ),
     [categories],
   );
-  const openCategory = (category: Category) => {
+  const categoryHref = (category: Category) => {
     const params = new URLSearchParams();
     const parentId =
       typeof category.parent === "string"
@@ -303,16 +303,14 @@ export default function HomePage() {
       params.set("mainCategory", category._id);
     }
     if (category._id === "6a68a898063feb823d6d993d") {
-      navigate("/silver-jewellery/polki");
-      return;
+      return "/silver-jewellery/polki";
     }
     if (category.metal === "silver" && category.name.toLowerCase() === "moissanite") {
-      navigate("/silver-jewellery/moissanite");
-      return;
+      return "/silver-jewellery/moissanite";
     }
-    navigate(
-      `/${category.metal === "silver" ? "silver-jewellery" : "gold-jewellery"}?${params.toString()}`,
-    );
+    const catalogPath =
+      category.metal === "silver" ? "/silver-jewellery" : "/gold-jewellery";
+    return [catalogPath, params.toString()].join("?");
   };
 
   // Safely extract price based on product reference tracking IDs matching live engine maps
@@ -496,10 +494,9 @@ export default function HomePage() {
                     "lg:row-span-1",
                   ];
                   return (
-                    <button
+                    <Link
                       key={category._id}
-                      type="button"
-                      onClick={() => openCategory(category)}
+                      to={categoryHref(category)}
                       className={`group relative mb-3 block w-full break-inside-avoid overflow-hidden rounded-[var(--radius-md)] bg-[var(--color-bg-secondary)] md:mb-5 lg:mb-0 lg:h-auto ${tileSizes[index % tileSizes.length]} ${desktopTileSizes[index % desktopTileSizes.length]}`}
                     >
                       {category.homepageCoverImage && (
@@ -512,7 +509,7 @@ export default function HomePage() {
                       <span className="absolute inset-x-0 bottom-0 z-10 bg-black/55 px-3 py-2.5 text-left font-secondary text-[10px] tracking-[0.08em] text-white sm:text-[11px]">
                         Shop by {category.name}
                       </span>
-                    </button>
+                    </Link>
                   );
                 })}
               </div>

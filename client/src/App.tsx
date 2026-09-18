@@ -56,6 +56,37 @@ const Deferred = ({ children }: { children: React.ReactNode }) => (
   </React.Suspense>
 );
 
+const MOISSANITE_FAQS = [
+  { question: "What is Moissanite jewellery?", answer: "Moissanite jewellery features moissanite, a gemstone known for its strong brilliance and durability. The Brilliance Atelier’s current Moissanite collection includes silver necklace designs for weddings, celebrations and elegant occasion wear." },
+  { question: "Is Moissanite a diamond?", answer: "No. Moissanite and diamond are different gemstones. They have different material and optical properties, although both are known for strong brilliance." },
+  { question: "What is the difference between Moissanite and a lab-grown diamond?", answer: "A lab-grown diamond is a real diamond grown in a controlled environment and has the same crystal structure as a mined diamond. Moissanite is a different gemstone and is known for producing strong brilliance and colourful fire." },
+  { question: "Is Moissanite suitable for bridal jewellery?", answer: "Moissanite is commonly chosen for bridal and occasion jewellery because of its brilliance and elegant appearance. The final choice depends on the design, setting and personal style." },
+  { question: "Is Moissanite jewellery available in silver?", answer: "Yes. The Brilliance Atelier’s current Moissanite collection includes silver necklace designs." },
+  { question: "How should Moissanite jewellery be cared for?", answer: "Keep Moissanite jewellery away from harsh chemicals and store it separately when not in use. For routine cleaning, use a soft cloth and follow any product-specific care guidance." },
+];
+
+const POLKI_FAQS = [
+  { question: "What is Polki jewellery?", answer: "Polki jewellery is known for its traditional uncut-diamond aesthetic and heritage-inspired styling. It is commonly used in wedding, bridal and festive jewellery designs." },
+  { question: "What is Silver Polki jewellery?", answer: "Silver Polki jewellery combines Polki-style design with silver-based jewellery. The Brilliance Atelier’s current Silver Polki collection includes necklace sets and selected bangles and bracelets." },
+  { question: "What is the difference between Polki and Kundan?", answer: "Polki generally refers to jewellery featuring an uncut-diamond style, while Kundan refers to a traditional jewellery-setting technique. The two styles are often seen together in Indian bridal and occasion jewellery." },
+  { question: "Is Polki jewellery suitable for weddings?", answer: "Yes. Polki-style jewellery is commonly chosen for weddings and festive occasions because of its traditional and statement appearance." },
+  { question: "What is a Polki necklace set?", answer: "A Polki necklace set generally combines a Polki-style necklace with coordinated jewellery pieces such as matching earrings, depending on the design." },
+  { question: "How should Polki jewellery be cared for?", answer: "Keep Polki jewellery dry, avoid harsh chemicals and perfumes, and store it separately to reduce scratching or surface damage. Follow any product-specific care guidance where provided." },
+];
+const MOISSANITE_SUPPORTING_CONTENT = {
+  heading: "About Our Silver Moissanite Jewellery",
+  paragraphs: [
+    "The Brilliance Atelier\u2019s current Moissanite collection focuses on silver necklace designs created for weddings, celebrations and statement occasion styling. Explore elegant Silver Moissanite Jewellery ranging from refined necklace designs to bridal-inspired pieces, with styles suited to different occasions and preferences. This focused collection is designed for shoppers looking specifically for Moissanite necklaces in silver rather than a broad all-category Moissanite range.",
+  ],
+};
+
+const POLKI_SUPPORTING_CONTENT = {
+  heading: "Explore Our Silver Polki Jewellery",
+  paragraphs: [
+    "The Brilliance Atelier\u2019s Silver Polki Jewellery collection includes necklace sets, chokers and selected bangles and bracelets designed for weddings, festive occasions and traditional statement styling. Explore Silver Polki necklace designs and coordinated sets with heritage-inspired detailing, while keeping the collection aligned with the products currently available on the website.",
+  ],
+};
+
 function RouteSeo() {
   const { pathname, search } = useLocation();
   const { data: silverCategories } = useCategories("silver");
@@ -465,6 +496,8 @@ export default function App() {
                       fixedMainCategory="6a68a898063feb823d6d993d"
                       heading="Silver Polki Jewellery"
                       intro="Explore Silver Polki Jewellery featuring necklace sets, chokers, bridal styles and selected bangles for weddings and special occasions."
+                      faqs={POLKI_FAQS}
+                      supportingContent={POLKI_SUPPORTING_CONTENT}
                       showPolkiBreadcrumb
                     />
                   </Deferred>
@@ -472,7 +505,7 @@ export default function App() {
               />
               <Route
                 path="/silver-jewellery/moissanite"
-                element={<Deferred><ProductsPage metal="silver" fixedMainCategoryName="Moissanite" heading="Silver Moissanite Jewellery" intro="Explore Silver Moissanite Jewellery featuring elegant necklace designs for weddings, celebrations and special occasions." showMoissaniteBreadcrumb /></Deferred>}
+                element={<Deferred><ProductsPage metal="silver" fixedMainCategoryName="Moissanite" heading="Silver Moissanite Jewellery" intro="Explore Silver Moissanite Jewellery featuring elegant necklace designs for weddings, celebrations and special occasions." faqs={MOISSANITE_FAQS} supportingContent={MOISSANITE_SUPPORTING_CONTENT} showMoissaniteBreadcrumb /></Deferred>}
               />              <Route
                 path="/product/:slug"
                 element={
