@@ -26,6 +26,7 @@ const errorHandler = require("./src/middlewares/error.middleware");
 const { apiLimiter } = require("./src/middlewares/rateLimiter.middleware");
 const ApiError = require("./src/utils/ApiError");
 const { getSitemap } = require("./src/controllers/sitemap.controller");
+const { merchantFeed } = require("./src/controllers/merchantFeed.controller");
 
 const app = express();
 
@@ -94,6 +95,7 @@ app.get("/health", (req, res) => {
   res.status(200).json({ success: true, message: "TBA API is running" });
 });
 app.get("/sitemap.xml", getSitemap);
+app.get("/merchant-feed.xml", merchantFeed);
 
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/user", userRoutes);
