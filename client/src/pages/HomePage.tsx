@@ -507,7 +507,13 @@ export default function HomePage() {
                         />
                       )}
                       <span className="absolute inset-x-0 bottom-0 z-10 bg-black/55 px-3 py-2.5 text-left font-secondary text-[10px] tracking-[0.08em] text-white sm:text-[11px]">
-                        Shop by {category.name}
+                        {category.metal === "silver" &&
+                        category.name.toLowerCase() === "moissanite"
+                          ? "Shop Silver Moissanite Jewellery"
+                          : category.metal === "silver" &&
+                              category.name.toLowerCase() === "polki"
+                            ? "Shop Silver Polki Jewellery"
+                            : `Shop by ${category.name}`}
                       </span>
                     </Link>
                   );

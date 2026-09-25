@@ -76,14 +76,14 @@ const POLKI_FAQS = [
 const MOISSANITE_SUPPORTING_CONTENT = {
   heading: "About Our Silver Moissanite Jewellery",
   paragraphs: [
-    "The Brilliance Atelier\u2019s current Moissanite collection focuses on silver necklace designs created for weddings, celebrations and statement occasion styling. Explore elegant Silver Moissanite Jewellery ranging from refined necklace designs to bridal-inspired pieces, with styles suited to different occasions and preferences. This focused collection is designed for shoppers looking specifically for Moissanite necklaces in silver rather than a broad all-category Moissanite range.",
+    "Shop Moissanite Jewellery Online from The Brilliance Atelier\u2019s necklace-focused silver collection. Explore Silver Moissanite Necklace designs created for weddings, celebrations and statement occasion wear. If you are looking for a Moissanite Necklace Online, the current collection includes refined and bridal-inspired designs, including styles suited to shoppers looking for a Moissanite Bridal Necklace.",
   ],
 };
 
 const POLKI_SUPPORTING_CONTENT = {
   heading: "Explore Our Silver Polki Jewellery",
   paragraphs: [
-    "The Brilliance Atelier\u2019s Silver Polki Jewellery collection includes necklace sets, chokers and selected bangles and bracelets designed for weddings, festive occasions and traditional statement styling. Explore Silver Polki necklace designs and coordinated sets with heritage-inspired detailing, while keeping the collection aligned with the products currently available on the website.",
+    "The Brilliance Atelier\u2019s Silver Polki Jewellery collection includes necklace sets, chokers and selected bangles and bracelets designed for weddings, festive occasions and traditional statement styling. Explore Silver Polki necklace designs and coordinated sets with heritage-inspired detailing, while keeping the collection aligned with the products currently available on the website. Our Bridal Polki Jewellery selection includes existing necklace sets and choker-style designs created for weddings and traditional occasion styling.",
   ],
 };
 
