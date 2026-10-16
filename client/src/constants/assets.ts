@@ -43,9 +43,9 @@ export const AVATAR_ASSETS = {
 } as const;
 
 export const SOCIAL_LINKS = {
-  whatsapp: "https://wa.me/+918160797411",
+  whatsapp: "https://wa.me/+919374707411",
   instagram: "https://instagram.com/tbajewels",
-  phone: "+918160797411",
+  phone: "+919374707411",
 } as const;
 
 export const GOLD_API = {

@@ -125,10 +125,10 @@ export default function Footer({
                 className="text-[var(--color-cream)] shrink-0 mt-0.5"
               />
               <a
-                href="tel:+918160797411"
+                href="tel:+919374707411"
                 className="hover:text-[var(--color-cream)] transition-colors"
               >
-                +918160797411
+                93747 07411
               </a>
             </li>
             <li className="flex gap-3 items-start">

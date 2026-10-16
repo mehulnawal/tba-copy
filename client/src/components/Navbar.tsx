@@ -5,6 +5,7 @@ import {
   Search,
   Heart,
   ShoppingBag,
+  Star,
   Menu,
   X,
   User,
@@ -104,12 +105,14 @@ export default function Navbar({
   const [searchQuery, setSearchQuery] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
+  const [isB2BMenuOpen, setIsB2BMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
   const [mobileExpanded, setMobileExpanded] = useState<Record<string, boolean>>(
     { Gold: true, Silver: true },
   );
   const accountDropdownRef = useRef<HTMLDivElement>(null);
+  const b2bMenuRef = useRef<HTMLDivElement>(null);
   const lenis = useLenis();
   const toggleMobileAccordion = (title: string) =>
     setMobileExpanded((prev) => ({ ...prev, [title]: !prev[title] }));
@@ -187,6 +190,12 @@ export default function Navbar({
       ) {
         setIsAccountDropdownOpen(false);
       }
+      if (
+        b2bMenuRef.current &&
+        !b2bMenuRef.current.contains(e.target as Node)
+      ) {
+        setIsB2BMenuOpen(false);
+      }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -194,7 +203,10 @@ export default function Navbar({
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") setIsMobileMenuOpen(false);
+      if (e.key === "Escape") {
+        setIsMobileMenuOpen(false);
+        setIsB2BMenuOpen(false);
+      }
     }
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
@@ -411,7 +423,7 @@ export default function Navbar({
           {/* 3-Column Layout Grid for Balanced Symmetry */}
           <div className="container h-full px-4 sm:px-6 lg:px-8 grid grid-cols-[minmax(0,1fr)_auto] lg:grid-cols-3 items-center">
             {/* Left Column: Mobile Hamburger & Logo (Padded & Balanced) */}
-            <div className="flex items-center gap-1.5 sm:gap-4 justify-start">
+            <div className="flex items-center gap-2 sm:gap-4 justify-start">
               <button
                 onClick={() => {
                   expandAllMobileCategories();
@@ -616,16 +628,46 @@ export default function Navbar({
                 </AnimatePresence>
               </div>
 
-              <button
-                onClick={() => navigate("/b2b/access")}
-                className="hover:text-[var(--color-teal)] transition-colors duration-200 p-1.5 sm:p-2 cursor-pointer bg-transparent border-none relative flex items-center justify-center"
-                aria-label="B2B Portal"
-                title="B2B Portal"
-              >
-                <span className="flex h-5 w-6 items-center justify-center text-lg font-bold leading-none tracking-tight">
-                  B2B
-                </span>
-              </button>
+              <div ref={b2bMenuRef} className="relative flex items-center">
+                <button
+                  type="button"
+                  onClick={() => setIsB2BMenuOpen((open) => !open)}
+                  className="text-[#9A6B2F] hover:text-[#6F4A1E] transition-colors duration-200 p-1.5 sm:p-2 cursor-pointer bg-transparent border-none relative flex items-center justify-center"
+                  aria-label="B2B Access"
+                  title="B2B Access"
+                  aria-haspopup="menu"
+                  aria-expanded={isB2BMenuOpen}
+                  aria-controls="b2b-access-menu"
+                >
+                  <Star size={20} />
+                </button>
+
+                <AnimatePresence>
+                  {isB2BMenuOpen && (
+                    <motion.div
+                      id="b2b-access-menu"
+                      role="menu"
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 8 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute top-[115%] right-0 min-w-[112px] max-w-[calc(100vw-2rem)] bg-[var(--color-white)] shadow-lg border border-[var(--color-border-subtle)] py-1.5 z-[var(--z-dropdown)] rounded-sm"
+                    >
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={() => {
+                          setIsB2BMenuOpen(false);
+                          navigate("/b2b/access");
+                        }}
+                        className="text-left px-4 py-2 hover:bg-[var(--color-bg-secondary)] text-base font-normal uppercase tracking-wider text-[var(--color-text)] transition-colors cursor-pointer bg-transparent border-none w-full"
+                      >
+                        B2B
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
           </div>
         </div>
