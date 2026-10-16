@@ -133,7 +133,7 @@ export default function VisitStore() {
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 mt-2">
             {/* Primary CTA — swap href to actual Google Maps URL */}
             <a
-              href="https://maps.app.goo.gl/j4vbq5DuhdTm2XdE9"
+              href="https://maps.app.goo.gl/UiK7wHsamBMuVw6CA"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Get directions to TBA store on Google Maps"
@@ -148,10 +148,10 @@ export default function VisitStore() {
                 padding: "15px 28px",
               }}
               onMouseEnter={(e) =>
-                (e.currentTarget.style.background = "#faf9f7")
+              (e.currentTarget.style.background = "#faf9f7")
               }
               onMouseLeave={(e) =>
-                (e.currentTarget.style.background = "#dbd5b5")
+              (e.currentTarget.style.background = "#dbd5b5")
               }
             >
               Get Directions

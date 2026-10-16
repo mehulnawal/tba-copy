@@ -409,9 +409,9 @@ export default function Navbar({
           style={{ height: "var(--navbar-height)" }}
         >
           {/* 3-Column Layout Grid for Balanced Symmetry */}
-          <div className="container h-full px-4 sm:px-6 lg:px-8 grid grid-cols-2 lg:grid-cols-3 items-center">
+          <div className="container h-full px-4 sm:px-6 lg:px-8 grid grid-cols-[minmax(0,1fr)_auto] lg:grid-cols-3 items-center">
             {/* Left Column: Mobile Hamburger & Logo (Padded & Balanced) */}
-            <div className="flex items-center gap-4 justify-start">
+            <div className="flex items-center gap-1.5 sm:gap-4 justify-start">
               <button
                 onClick={() => {
                   expandAllMobileCategories();
@@ -431,7 +431,7 @@ export default function Navbar({
                 <img
                   src={logo}
                   alt="TBA"
-                  className="w-23 sm:w-28 md:w-30 lg:w-30 h-auto object-contain"
+                  className="w-20 sm:w-28 md:w-30 lg:w-30 h-auto object-contain"
                 />
               </a>
             </div>
@@ -547,11 +547,11 @@ export default function Navbar({
               })}
             </nav>
 
-            {/* Right Column: Action Icons (Wishlist, Cart, Account) */}
-            <div className="flex items-center justify-end gap-3 sm:gap-5 text-[var(--color-text)]">
+            {/* Right Column: Action Icons (Wishlist, Cart, Account, B2B) */}
+            <div className="flex items-center justify-end gap-0 sm:gap-5 text-[var(--color-text)]">
               <button
                 onClick={() => handleProtectedNav("/wishlist")}
-                className="hover:text-[var(--color-teal)] transition-colors duration-200 p-2 cursor-pointer bg-transparent border-none relative flex items-center justify-center"
+                className="hover:text-[var(--color-teal)] transition-colors duration-200 p-1.5 sm:p-2 cursor-pointer bg-transparent border-none relative flex items-center justify-center"
                 aria-label="Wishlist"
               >
                 <Heart size={20} />
@@ -559,7 +559,7 @@ export default function Navbar({
 
               <button
                 onClick={() => handleProtectedNav("/cart")}
-                className="hover:text-[var(--color-teal)] transition-colors duration-200 p-2 cursor-pointer bg-transparent border-none relative flex items-center justify-center"
+                className="hover:text-[var(--color-teal)] transition-colors duration-200 p-1.5 sm:p-2 cursor-pointer bg-transparent border-none relative flex items-center justify-center"
                 aria-label="Cart"
               >
                 <ShoppingBag size={20} />
@@ -577,7 +577,7 @@ export default function Navbar({
               >
                 <button
                   onClick={handleUserButtonClick}
-                  className="hover:text-[var(--color-teal)] transition-colors duration-200 p-2 cursor-pointer bg-transparent border-none relative flex items-center justify-center"
+                  className="hover:text-[var(--color-teal)] transition-colors duration-200 p-1.5 sm:p-2 cursor-pointer bg-transparent border-none relative flex items-center justify-center"
                   aria-label="Account"
                 >
                   <User size={20} />
@@ -615,6 +615,17 @@ export default function Navbar({
                   )}
                 </AnimatePresence>
               </div>
+
+              <button
+                onClick={() => navigate("/b2b/access")}
+                className="hover:text-[var(--color-teal)] transition-colors duration-200 p-1.5 sm:p-2 cursor-pointer bg-transparent border-none relative flex items-center justify-center"
+                aria-label="B2B Portal"
+                title="B2B Portal"
+              >
+                <span className="flex h-5 w-6 items-center justify-center text-lg font-bold leading-none tracking-tight">
+                  B2B
+                </span>
+              </button>
             </div>
           </div>
         </div>
