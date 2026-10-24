@@ -20,6 +20,7 @@ const {
 } = require("./categoryCoupon.controller");
 const { uploadToCloudinary } = require("../utils/cloudinaryUpload");
 const CategoryPricingConfig = require("../models/categoryPricingConfig.model");
+const { nextProductSku } = require("../services/productSku.service");
 const {
   normalizeImages,
   validateVariantConfiguration,
@@ -266,10 +267,10 @@ const normalizeAndValidateVariants = async (body) => {
   if (error) throw new ApiError(400, error);
   return { ...body, images: normalizeImages(body.images) };
 };
-const validateCategories = async (body) => {
+const validateCategories = async (body, { allowInactive = false } = {}) => {
   const main = await Category.findById(body.mainCategory);
   const sub = await Category.findById(body.subCategory);
-  if (!main || !sub || main.metal !== sub.metal)
+  if (!main || !sub || (!allowInactive && (!main.isActive || !sub.isActive)) || main.metal !== sub.metal)
     throw new ApiError(400, "Valid categories from one metal are required");
   if (
     main.metal === "gold" &&
@@ -363,36 +364,6 @@ const adminGetProduct = asyncHandler(async (req, res) => {
     new ApiResponse(200, await toProductResponse(product), "Product fetched"),
   );
 });
-const productSkuPrefix = async (metal, subCategory) => {
-  const category = await Category.findById(subCategory)
-    .select("name shortCode")
-    .lean();
-  const metalCode = metal === "gold" ? "GLD" : "SLV";
-  const categoryCode =
-    category?.shortCode ||
-    String(category?.name || "XX")
-      .replace(/[^a-z]/gi, "")
-      .slice(0, 2)
-      .toUpperCase()
-      .padEnd(2, "X");
-  return `TBA-${metalCode}-${categoryCode}`;
-};
-const nextProductSku = async (metal, subCategory, excludedProductId) => {
-  const seriesPrefix = await productSkuPrefix(metal, subCategory);
-  const filter = { SKU: new RegExp(`^${seriesPrefix}-?\\d{3,4}$`) };
-  if (excludedProductId) filter._id = { $ne: excludedProductId };
-  const matchingSkus = await Product.find(filter).select("SKU").lean();
-  const nextNumber =
-    matchingSkus.reduce(
-      (highest, product) =>
-        Math.max(
-          highest,
-          Number(String(product.SKU).match(/(\d+)$/)?.[1] || 0),
-        ),
-      0,
-    ) + 1;
-  return `${seriesPrefix}${String(nextNumber).padStart(4, "0")}`;
-};
 const validateProductDiscount = (body) => {
   if (!body?.productDiscountType && !body?.productDiscountValue) return;
   if (!["percentage", "flat"].includes(body.productDiscountType) || !Number.isFinite(Number(body.productDiscountValue)) || Number(body.productDiscountValue) <= 0 || (body.productDiscountType === "percentage" && Number(body.productDiscountValue) > 100)) throw new ApiError(400, "Provide a valid product discount");
@@ -450,22 +421,15 @@ const updateProduct = asyncHandler(async (req, res) => {
   update.images = variantUpdate.images;
   update.colors = variantUpdate.colors;
   if (update.title) update.slug = slugify(update.title);
+  // Preserve historical SKUs during ordinary edits and category renames.
+  delete update.SKU;
   if (update.mainCategory || update.subCategory || update.metal) {
     const nextProduct = { ...current.toObject(), ...update };
-    await validateCategories(nextProduct);
-    const expectedPrefix = await productSkuPrefix(
-      nextProduct.metal,
-      nextProduct.subCategory,
-    );
-    if (
-      String(current.SKU || "").startsWith("TBA-") &&
-      !String(current.SKU).startsWith(expectedPrefix)
-    )
-      update.SKU = await nextProductSku(
-        nextProduct.metal,
-        nextProduct.subCategory,
-        current._id,
-      );
+    const unchanged =
+      String(nextProduct.mainCategory) === String(current.mainCategory) &&
+      String(nextProduct.subCategory) === String(current.subCategory) &&
+      nextProduct.metal === current.metal;
+    await validateCategories(nextProduct, { allowInactive: unchanged });
   }
   const product = await Product.findByIdAndUpdate(current._id, update, {
     new: true,

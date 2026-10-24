@@ -133,7 +133,7 @@ export default function ProductPage({
           (category) =>
             category.categoryKind === "subcategory" &&
             parentId(category) ===
-              categories.find((root) => root.categoryKind === "metal-root")
+              categories.find((root) => root.categoryKind === "metal-root" && root.metal === "gold")
                 ?._id,
         )
       : categories

@@ -9,6 +9,21 @@ const shortCode = (value) =>
     .trim()
     .toUpperCase();
 
+const { effectiveCode } = require("../services/productSku.service");
+const validateIdentity = async ({ name, hierarchy, code, excludeId, existingCode }) => {
+  const siblings = await Category.find({ parent: hierarchy.parent, metal: hierarchy.metal })
+    .select("name").lean();
+  if (siblings.some((row) => String(row._id) !== String(excludeId) && row.name.toLowerCase() === name.toLowerCase()))
+    throw new ApiError(409, "A category with this name already exists under the selected parent");
+  if (hierarchy.categoryKind !== "subcategory") return;
+  const proposedCode = effectiveCode({ name, shortCode: code });
+  // Preserve already assigned shared codes when an existing category is edited.
+  if (existingCode === proposedCode) return;
+  const categories = await Category.find({ metal: hierarchy.metal, categoryKind: "subcategory" })
+    .select("name shortCode").lean();
+  const conflict = categories.find((row) => String(row._id) !== String(excludeId) && effectiveCode(row) === proposedCode);
+  if (conflict) throw new ApiError(409, "SKU code " + proposedCode + " is already used by " + conflict.name);
+};
 const FIXED_SUBCATEGORIES = [
   "Rings",
   "Earrings",
@@ -104,6 +119,7 @@ const create = asyncHandler(async (req, res) => {
   const name = String(req.body.name || "").trim();
   if (!name) throw new ApiError(400, "Category name is required");
   const hierarchy = await deriveHierarchy({ name, parent: req.body.parent });
+  await validateIdentity({ name, hierarchy, code: shortCode(req.body.shortCode) });
   const category = await Category.create({
     name,
     ...hierarchy,
@@ -136,6 +152,16 @@ const update = asyncHandler(async (req, res) => {
     hierarchy.categoryKind !== "metal-root"
   )
     throw new ApiError(400, "Root categories cannot be moved");
+  if (req.body.name !== undefined || req.body.parent !== undefined || req.body.shortCode !== undefined) {
+    await validateIdentity({
+      name,
+      hierarchy,
+      code: req.body.shortCode === undefined ? existing.shortCode : shortCode(req.body.shortCode),
+      excludeId: existing._id,
+      existingCode: existing.metal === hierarchy.metal && existing.categoryKind === hierarchy.categoryKind
+        ? effectiveCode(existing) : undefined,
+    });
+  }
   const category = await Category.findByIdAndUpdate(
     existing._id,
     {

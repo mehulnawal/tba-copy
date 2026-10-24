@@ -826,8 +826,8 @@ export default function Products() {
   const [exportingProducts, setExportingProducts] = useState(false);
   const goldImportInputRef = useRef<HTMLInputElement | null>(null);
   const downloadCurrentGoldTemplate = () => {
-    const root = categories.find((category) => !category.parent && category.name.trim().toLowerCase() === "gold");
-    const subCategory = root && categories.find((category) => categoryId(category.parent) === root._id);
+    const root = categories.find((category) => category.metal === "gold" && category.categoryKind === "metal-root");
+    const subCategory = root && categories.find((category) => categoryId(category.parent) === root._id && category.categoryKind === "subcategory" && category.isActive);
     if (!subCategory) {
       showToast("Create a Gold subcategory first, then download the import template.", "error");
       return;
@@ -859,7 +859,7 @@ export default function Products() {
     const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(
       workbook.Sheets[workbook.SheetNames[0]], { defval: "" },
     );
-    const goldRoot = categories.find((category) => !category.parent && category.name.trim().toLowerCase() === "gold");
+    const goldRoot = categories.find((category) => category.metal === "gold" && category.categoryKind === "metal-root");
     const cell = (row: Record<string, unknown>, name: string) => String(row[name] ?? "").trim();
     const boolean = (raw: string, label: string, errors: string[]) => {
       if (!raw) return false;
@@ -883,7 +883,7 @@ export default function Products() {
       const certificateWeight = Number(certificateWeightRaw);
       if (!title) errors.push("Product Title is required.");
       if (!goldRoot) errors.push("Gold root category is not configured.");
-      const subCategory = goldRoot && categories.find((category) => categoryId(category.parent) === goldRoot._id && category.name.toLowerCase() === subCategoryName.toLowerCase());
+      const subCategory = goldRoot && categories.find((category) => categoryId(category.parent) === goldRoot._id && category.isActive && category.name.toLowerCase() === subCategoryName.toLowerCase());
       if (!subCategoryName) errors.push("Subcategory is required.");
       else if (!subCategory) errors.push(`Gold subcategory '${subCategoryName}' was not found.`);
       if (!(gross14Raw && Number.isFinite(gross14) && gross14 > 0)) errors.push("14KT Gross Weight (g) must be greater than 0.");
@@ -1124,9 +1124,10 @@ export default function Products() {
         (c) =>
           c.metal === "gold" &&
           c.categoryKind === "subcategory" &&
+          (c.isActive || (Boolean(editing) && c._id === form.subCategory)) &&
           categoryId(c.parent) === goldRoot?._id,
       ),
-    [categories, goldRoot],
+    [categories, goldRoot, editing, form.subCategory],
   );
   const silverTypes = useMemo(
     () =>

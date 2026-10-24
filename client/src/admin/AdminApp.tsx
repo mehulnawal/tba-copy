@@ -1882,6 +1882,7 @@ function MetalRates() {
 const CATEGORY_SHORT_CODES = [
   ["NL", "Necklace"],
   ["BR", "Bracelet"],
+  ["BH", "Diamond brooch"],
   ["LR", "Ring"],
   ["ER", "Earring"],
   ["PD", "Pendant"],
